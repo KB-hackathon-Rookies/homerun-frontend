@@ -1,0 +1,13 @@
+# pnpm 11 은 설정을 package.json 이 아니라 이 파일에서 읽는다.
+#
+# pnpm 은 의존성의 postinstall 스크립트를 기본으로 막는다(공급망 공격 대비).
+# 여기 적힌 것만 허용된다. 둘 다 플랫폼별 네이티브 바이너리를 준비하는 스크립트라,
+# 막히면 pnpm install 자체가 exit 1 로 실패한다.
+#   esbuild       — Vite 가 쓰는 번들러
+#   unrs-resolver — ESLint 의 import 해석기
+#
+# 새 의존성이 스크립트를 요구하면 pnpm 이 이름을 알려 준다.
+# 무엇을 하는 스크립트인지 확인한 뒤 `pnpm approve-builds <이름>` 으로 추가한다.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true

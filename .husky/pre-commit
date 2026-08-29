@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# 커밋마다 전체 검사를 돌리면 결국 --no-verify 를 쓰게 된다. 여기서는 lint 만 한다.
+# 고치는 명령: pnpm lint:fix
+pnpm lint
