@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { apiBase } = useRuntimeConfig().public
+const { apiBase } = useRuntimeConfig().public;
 </script>
 
 <template>
@@ -8,13 +8,17 @@ const { apiBase } = useRuntimeConfig().public
       <h1 class="text-3xl font-bold tracking-tight">homerun</h1>
       <p class="text-slate-600 dark:text-slate-400">
         Nuxt 4 · TypeScript · Tailwind CSS 4 로 세팅된 프론트엔드입니다.
-        <code class="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">app/app.vue</code>
+        <code class="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800"
+          >app/app.vue</code
+        >
         를 지우고 여기서부터 시작하세요.
       </p>
       <dl class="grid gap-2 border-t border-slate-200 pt-6 text-sm dark:border-slate-800">
         <div class="flex gap-3">
           <dt class="w-28 shrink-0 text-slate-500">백엔드</dt>
-          <dd><code>{{ apiBase }}</code></dd>
+          <dd>
+            <code>{{ apiBase }}</code>
+          </dd>
         </div>
         <div class="flex gap-3">
           <dt class="w-28 shrink-0 text-slate-500">바꾸려면</dt>
