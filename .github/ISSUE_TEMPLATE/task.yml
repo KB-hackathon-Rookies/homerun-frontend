@@ -1,7 +1,5 @@
 name: '하위 이슈'
 description: '상위 기능을 구성하는 세부 구현 작업입니다.'
-title: '[하위 이슈] '
-
 body:
     - type: input
       id: parent

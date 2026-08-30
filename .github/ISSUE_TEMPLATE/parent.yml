@@ -1,7 +1,5 @@
 name: '상위 이슈'
 description: '여러 하위 작업을 포함하는 기능 단위 이슈입니다.'
-title: '[상위 이슈] '
-
 body:
     - type: textarea
       id: summary
