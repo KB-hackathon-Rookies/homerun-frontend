@@ -15,21 +15,7 @@ export default {
     'subject-case': [0],
     'type-empty': [2, 'never'],
     'type-enum': [2, 'always', [
-      '✨ Feat', ':sparkles: Feat',
-      '📦 Chore', '📦️ Chore', ':package: Chore',
-      '💄 Design', ':lipstick: Design',
-      '🚨 Fix', ':rotating_light: Fix',
-      '🎨 Style', ':art: Style',
-      '⚡ Perf', ':zap: Perf',
-      '🔥 Remove', ':fire: Remove', '➖ Remove', ':heavy_minus_sign: Remove',
-      '🚀 Release', ':rocket: Release', '🔖 Release', ':bookmark: Release',
-      '🎉 Init', ':tada: Init',
-      '✅ Test', '🧪 Test', ':white_check_mark: Test', ':test_tube: Test',
-      '🔒 Security', '🔐 Security', ':lock: Security', ':closed_lock_with_key: Security',
-      '♻ Refactor', '♻️ Refactor', ':recycle: Refactor', '🔨 Modify', ':hammer: Modify',
-      '🚚 Rename', ':truck: Rename',
-      '📝 Docs', ':memo: Docs',
-      '🚑 Hotfix', '🚑️ Hotfix', ':ambulance: Hotfix'
+      '✨ feat', '🚨 fix', '♻️ refactor', '⚡ perf', '✅ test', '📝 docs', '📦 chore'
     ]]
   }
 };

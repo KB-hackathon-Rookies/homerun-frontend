@@ -13,11 +13,21 @@
     "generate": "nuxt generate",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:staged": "lint-staged",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "typecheck": "nuxt typecheck",
     "verify": "pnpm lint && pnpm typecheck && pnpm build",
     "commit": "node scripts/commit.cjs",
     "postinstall": "nuxt prepare",
     "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,jsonc,md,yml,yaml,css}": "prettier --write"
   },
   "dependencies": {
     "nuxt": "^4.5.2",
@@ -31,6 +41,8 @@
     "@tailwindcss/vite": "^4.3.3",
     "eslint": "^10.9.1",
     "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.11"
