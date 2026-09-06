@@ -11,7 +11,7 @@ const { disabled = false } = defineProps<{ disabled?: boolean }>();
   <button
     type="button"
     :disabled="disabled"
-    class="text-headline2 text-primary-action h-field shrink-0 px-4 disabled:opacity-40"
+    class="text-headline2 text-primary-strong h-field shrink-0 px-4 disabled:opacity-40"
   >
     <slot />
   </button>

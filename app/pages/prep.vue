@@ -140,7 +140,7 @@ async function submit() {
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
-      <AppButton variant="deep" :disabled="!canProceed || pending" @click="next">
+      <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
         {{ pending ? '저장 중…' : '다음' }}
       </AppButton>
     </footer>

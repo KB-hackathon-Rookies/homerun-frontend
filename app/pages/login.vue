@@ -88,7 +88,7 @@ function social(provider: 'kakao' | 'google') {
 
       <p class="text-label2 text-ink-muted flex justify-center gap-1 pt-2">
         아직 계정이 없나요?
-        <NuxtLink to="/signup/terms" class="text-primary-text font-medium">회원가입</NuxtLink>
+        <NuxtLink to="/signup/terms" class="text-primary-deep font-medium">회원가입</NuxtLink>
       </p>
     </form>
   </PhoneFrame>

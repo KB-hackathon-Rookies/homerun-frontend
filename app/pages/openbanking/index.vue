@@ -51,7 +51,7 @@ const NOTICES = ['개인정보는 조회 목적으로만 사용해요', '언제�
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 py-2.5">
-      <AppButton variant="deep" @click="navigateTo('/openbanking/terms')">
+      <AppButton variant="strong" @click="navigateTo('/openbanking/terms')">
         약관 동의하고 시작하기
       </AppButton>
     </footer>
