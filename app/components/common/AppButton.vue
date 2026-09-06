@@ -21,15 +21,21 @@ const {
 }>();
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  solid:
-    'bg-primary text-white hover:bg-primary-strong active:bg-primary-press disabled:bg-disabled',
-  strong:
-    'bg-primary-strong-soft text-white hover:bg-primary-strong active:bg-primary-press disabled:bg-disabled',
+  solid: 'bg-primary text-white hover:bg-primary-strong active:bg-primary-press',
+  strong: 'bg-primary-strong-soft text-white hover:bg-primary-strong active:bg-primary-press',
   white:
-    'bg-surface text-ink-strong border-line border hover:bg-surface-hover active:bg-surface-press disabled:bg-disabled',
-  kakao:
-    'bg-kakao text-ink-strong hover:bg-kakao-hover active:bg-kakao-press disabled:bg-disabled',
+    'bg-surface text-ink-strong border-line border hover:bg-surface-hover active:bg-surface-press',
+  kakao: 'bg-kakao text-ink-strong hover:bg-kakao-hover active:bg-kakao-press',
 };
+
+/**
+ * 비활성 배경은 변형과 상관없이 같은 회색이다. 글자색만 다르다 — 흰 버튼은
+ * 비활성이어도 검은 글자를 쓴다(피그마 컴포넌트 표).
+ */
+const tone = computed(() => {
+  if (!disabled) return VARIANT_CLASS[variant];
+  return variant === 'white' ? 'bg-disabled text-ink-strong' : 'bg-disabled text-white';
+});
 
 /** 포커스 링도 변형을 따라간다. 카카오·구글만 테두리로 표시한다. */
 const FOCUS_CLASS: Record<Variant, string> = {
@@ -45,7 +51,7 @@ const FOCUS_CLASS: Record<Variant, string> = {
     :type="type"
     :disabled="disabled"
     class="text-headline1 rounded-button h-button flex w-full items-center justify-center gap-2.5 transition-colors outline-none"
-    :class="[VARIANT_CLASS[variant], FOCUS_CLASS[variant]]"
+    :class="[tone, FOCUS_CLASS[variant]]"
   >
     <slot />
   </button>

@@ -33,7 +33,14 @@
   --color-primary-strong-soft: rgb(51 102 255 / 0.8);
   --color-primary-press: #005eeb; /* 주 버튼 누름 */
   --color-focus: #dce7ff; /* 포커스 링 */
-  --color-focus-line: #b2cbff; /* 포커스 테두리 (카카오·구글) */ /* 진행 중 CTA. #3366ff 의 80% */
+  --color-focus-line: #b2cbff; /* 포커스 테두리 (카카오·구글) */
+
+  /* 색 · 문진 화면
+   *
+   * 독립 준비 문진 시안은 위 브랜드 색과 다른 계열이다. 시안대로 두되 여기에
+   * 모아 뒀다 — 팔레트를 합치기로 하면 이 블록만 지우면 된다.
+   */
+  --color-accent: #3182f6; /* 선택된 항목, 문진 CTA */ /* 진행 중 CTA. #3366ff 의 80% */
 
   /* ---------------------------------------------------------------
    * 색 · 의미
@@ -66,6 +73,9 @@
   --color-ink-hero-body: #596678;
   --color-ink-title: #191f28; /* 오픈뱅킹 상단 바 제목 */
   --color-ink-on-disabled: #999ead;
+  --color-ink-hint: #8b95a1; /* 문진 보조 설명 */
+  --color-ink-note: #4e5968; /* 문진 안내 문장 */
+  --color-ink-placeholder-soft: #c7c7cc; /* 문진 입력 placeholder */
 
   /* ---------------------------------------------------------------
    * 색 · 선
@@ -75,6 +85,7 @@
   --color-line-strong: rgb(112 115 124 / 0.52); /* 아이콘 스트로크 */
   --color-line-arrow: rgb(112 115 124 / 0.47);
   --color-line-card: rgb(0 0 0 / 0.12); /* 온보딩 하단 안내 카드만 이 값을 쓴다 */
+  --color-line-pill: #e5e8eb; /* 문진 선택 알약 */
 
   /* ---------------------------------------------------------------
    * 색 · 면
@@ -180,6 +191,19 @@
   --text-micro--line-height: 1.455;
   --text-micro--font-weight: 400;
 
+  /* 문진 화면 */
+  --text-question: 1.3125rem; /* 21 · 질문 */
+  --text-question--line-height: 1.191;
+  --text-question--font-weight: 700;
+
+  --text-option: 1rem; /* 16 · 선택지 제목, 문진 CTA */
+  --text-option--line-height: 1.188;
+  --text-option--font-weight: 700;
+
+  --text-hint: 0.78125rem; /* 12.5 · 선택지 설명 */
+  --text-hint--line-height: 1.2;
+  --text-hint--font-weight: 400;
+
   /* ---------------------------------------------------------------
    * 반경
    * --------------------------------------------------------------- */
@@ -208,6 +232,8 @@
   --spacing-icon: 22px; /* 상단 바 뒤로가기 */
   --spacing-gutter-tight: 16px; /* 오픈뱅킹 화면은 좌우 16 이다 */
   --spacing-cta: 56px; /* 완료 화면 버튼. 다른 화면(58)보다 낮다 */
+  --spacing-cta-step: 51px; /* 문진 버튼. 세 번째 높이다 */
+  --spacing-pill: 41px;
   --spacing-hero: 133px; /* 완료 화면 캐릭터 자리 */
 }
 
