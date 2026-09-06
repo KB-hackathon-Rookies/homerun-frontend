@@ -54,6 +54,36 @@ export interface ContractSchedule {
   warnings: string[];
 }
 
+/** 등기부를 언제 뗀 것인가. 계약 때와 잔금일 것을 각각 남긴다. */
+export type RegistryStage = 'CONTRACT_SIGNING' | 'SETTLEMENT_DAY';
+
+/**
+ * 등기부에서 읽은 사실.
+ *
+ * 모르는 값은 `null` 로 보낸다. 안 본 것을 "그대로다" 로 채우면 대조가
+ * 통과해 버린다 — 이 화면은 돈을 보내도 되는지를 가르는 자리다.
+ */
+export interface RegistryFacts {
+  ownerMatchesContractParty: boolean | null;
+  seniorDebt: number | null;
+  mortgageCount: number | null;
+  leaseholdRegistered: boolean | null;
+  seizureOrDispositionRestricted: boolean | null;
+  auctionInProgress: boolean | null;
+  trustRegistered: boolean | null;
+}
+
+export interface RegistryComparison {
+  status: 'SAFE' | 'NEED_INFO' | 'BLOCK';
+  /** 참이면 잔금을 보내면 안 된다. */
+  stopPayment: boolean;
+  signingRegistryIssuedAt: string | null;
+  settlementRegistryIssuedAt: string | null;
+  /** 계약 때와 달라진 것들. */
+  changedRisks: string[];
+  action: string | null;
+}
+
 export function useContractApi() {
   const { $api } = useNuxtApp();
 
@@ -78,6 +108,32 @@ export function useContractApi() {
         collateralMethod: entry.collateralMethod,
         houseType: entry.houseType,
       });
+    },
+
+    /**
+     * 등기부를 기록하고 곧바로 대조한다.
+     *
+     * 판정은 백엔드가 한다. 사용자가 눈으로 보고 "같다" 고 체크하는 것과
+     * 값을 넣어 서버가 비교하는 것은 다르다.
+     */
+    async recordRegistry(
+      planId: number,
+      stage: RegistryStage,
+      issuedAt: string,
+      facts: RegistryFacts,
+    ) {
+      const { data } = await $api.post<ApiResponse<RegistryComparison>>(
+        `${contract(planId)}/registry-snapshots`,
+        { stage, issuedAt, ...facts },
+      );
+      return data.data;
+    },
+
+    async registryComparison(planId: number) {
+      const { data } = await $api.get<ApiResponse<RegistryComparison>>(
+        `${contract(planId)}/registry-comparison`,
+      );
+      return data.data;
     },
 
     async schedule(planId: number) {
