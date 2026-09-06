@@ -1,16 +1,17 @@
 <script setup lang="ts">
 /**
- * AU-07 회원가입 완료.
+ * 오픈뱅킹 연동 완료.
  *
- * 이 화면만 글자 크기가 다르다. 축하 화면이라 제목이 조금 작고 본문이 옅다.
- * 이름은 가입 응답으로 받은 닉네임을 쓴다. 없으면 호칭 없이 인사한다.
+ * 가입 완료 화면과 같은 틀이다. 문구와 다음 순서만 다르다.
+ *
+ * 메인 화면은 아직 없다. 만들어지면 아래 이동 경로만 바꾸면 된다.
  */
+definePageMeta({ middleware: 'auth' });
+
 const auth = useAuthStore();
 
 const greeting = computed(() =>
-  auth.user?.nickname
-    ? `${auth.user.nickname}님, 홈런에 오신 걸 환영해요`
-    : '홈런에 오신 걸 환영해요',
+  auth.user?.nickname ? `${auth.user.nickname}님, 준비는 끝났어요.` : '준비는 끝났어요.',
 );
 </script>
 
@@ -24,20 +25,20 @@ const greeting = computed(() =>
         <BrandMark tilted :wordmark="false" class="scale-150" />
       </span>
 
-      <h1 class="text-title3 text-ink-hero">가입 완료!</h1>
+      <h1 class="text-title3 text-ink-hero">오픈뱅킹 연동 완료!</h1>
 
       <p class="text-body3 text-ink-hero-body text-center whitespace-pre-line">
-        {{ `${greeting}\n첫 독립, 홈까지 함께 완주해봐요` }}
+        {{ `${greeting}\n이제 메인 화면에서 본격적인 독립 플랜을 짜볼까요?` }}
       </p>
 
       <div class="bg-surface-info rounded-field flex w-full flex-col gap-1.5 p-3.5">
         <span class="text-caption1 text-primary-deep">다음 순서</span>
-        <span class="text-caption2 text-ink-hero-body">오픈뱅킹으로 자산 자동 연동</span>
+        <span class="text-caption2 text-ink-hero-body">메인 화면에서 나만의 독립 플랜 짜기</span>
       </div>
     </div>
 
     <footer class="flex shrink-0 px-4 pb-6">
-      <AppCtaButton @click="navigateTo('/openbanking', { replace: true })">시작하기</AppCtaButton>
+      <AppCtaButton @click="navigateTo('/', { replace: true })">메인 화면으로 이동</AppCtaButton>
     </footer>
   </PhoneFrame>
 </template>
