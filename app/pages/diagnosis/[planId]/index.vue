@@ -141,7 +141,7 @@ async function next() {
     revision.value = result.revision;
 
     if (isLast.value) {
-      await navigateTo('/onboarding');
+      await navigateTo(`/diagnosis/${planId}/finance`);
       return;
     }
     index.value += 1;

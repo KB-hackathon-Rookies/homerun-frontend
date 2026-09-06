@@ -1,11 +1,11 @@
 /**
- * 금액 표기.
+ * 금액을 사람이 읽는 말로 바꾼다.
  *
- * 백엔드는 원 단위 정수를 준다. 화면은 억·만 원으로 끊어 읽는다 —
- * `180000000` 을 그대로 두면 사람이 자릿수를 센다.
+ * 원 단위 그대로 보여주면 자릿수를 세게 된다. 억과 만으로 끊어 읽는다 —
+ * `180000000` 은 "1억 8,000만원" 이다.
  *
- * 만 원 미만은 버린다. 보증금·대출 한도는 만 원 단위로 이야기하는 값이라
- * 뒤 네 자리를 붙이면 오히려 읽기 어렵다. 대신 근사치가 되므로 화면에서
+ * 만 원 미만은 버린다. 보증금·대출 한도·자산은 만 원 단위로 이야기하는
+ * 값이라 뒤 네 자리는 읽는 데 방해만 된다. 대신 근사치가 되므로 화면에서
  * 필요하면 "약" 을 함께 쓴다.
  */
 export function formatKoreanMoney(won: number | null | undefined) {
@@ -21,10 +21,4 @@ export function formatKoreanMoney(won: number | null | undefined) {
   if (man) parts.push(`${man.toLocaleString('ko-KR')}만`);
 
   return `${sign}${parts.join(' ') || '0'}원`;
-}
-
-/** 연 이율. 백엔드가 소수로 준다 — `2.20` 은 연 2.2% 다. */
-export function formatRate(rate: number | null | undefined) {
-  if (rate === null || rate === undefined) return '—';
-  return `연 ${Number(rate)}%`;
 }
