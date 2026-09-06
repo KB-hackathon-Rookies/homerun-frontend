@@ -1,30 +1,30 @@
 name: CI
 
 on:
-  push:
-    branches: [main, dev]
-  pull_request:
+    push:
+        branches: [main, dev]
+    pull_request:
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v7
+        steps:
+            - uses: actions/checkout@v7
 
-      - uses: pnpm/setup@v1
-        with:
-          install: false
+            - uses: pnpm/setup@v1
+              with:
+                  install: false
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm verify
