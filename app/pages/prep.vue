@@ -85,7 +85,7 @@ async function submit() {
       livesApartFromParents: situation.value === 'RENTING',
       ...(skipsDeposit.value ? {} : { currentDeposit: depositAmount.value }),
     });
-    await navigateTo('/onboarding', { replace: true });
+    await navigateTo(`/diagnosis/${plan.id}`, { replace: true });
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {

@@ -20,6 +20,43 @@ export interface PlanResponse {
 }
 
 /** 문진이 채우는 값만 추렸다. 입력값에는 이보다 훨씬 많은 필드가 있다. */
+/** 백엔드 `DiagnosisInputStep` 중 문진이 다루는 것만 적었다. */
+export type DiagnosisStep =
+  | 'HOUSEHOLDER'
+  | 'HOMELESS'
+  | 'MARITAL_STATUS'
+  | 'EMPLOYMENT_TYPE'
+  | 'COMPANY_SIZE'
+  | 'EMPLOYMENT_PERIOD';
+
+export type HouseholderStatus = 'CURRENT' | 'EXPECTED' | 'NOT_HOUSEHOLDER';
+export type MaritalStatus = 'SINGLE' | 'MARRIED';
+export type EmploymentType =
+  | 'FULL_TIME'
+  | 'CONTRACT'
+  | 'INTERN'
+  | 'DAILY_WORKER'
+  | 'FREELANCER'
+  | 'UNEMPLOYED';
+export type CompanySize = 'LARGE' | 'MID_SIZE' | 'SMALL' | 'PUBLIC' | 'STARTUP' | 'OTHER';
+
+/** 한 단계에서 보내는 값. 그 단계의 필드만 채워 보낸다. */
+export interface DiagnosisStepPatch {
+  householderStatus?: HouseholderStatus;
+  isHomeless?: boolean;
+  maritalStatus?: MaritalStatus;
+  employmentType?: EmploymentType;
+  companySize?: CompanySize;
+  employmentMonths?: number;
+}
+
+export interface DiagnosisStepResult {
+  nextStep: DiagnosisStep | null;
+  progressPercent: number;
+  /** 다음 저장에 그대로 실어 보낸다. 다른 기기가 먼저 고쳤는지 서버가 이걸로 안다. */
+  revision: number;
+}
+
 export interface PlanInputPatch {
   /** 부모와 주민등록상 시·군이 다른가. 주소가 아니라 다른지 여부만 받는다. */
   livesApartFromParents?: boolean;
@@ -38,6 +75,20 @@ export function usePlanApi() {
 
     async saveInput(planId: number, patch: PlanInputPatch) {
       await $api.put<ApiResponse<unknown>>(`${BASE}/${planId}/input`, patch);
+    },
+
+    /** 한 단계만 저장한다. 서버가 다음 단계와 새 `revision` 을 돌려준다. */
+    async saveStep(
+      planId: number,
+      step: DiagnosisStep,
+      expectedRevision: number,
+      patch: DiagnosisStepPatch,
+    ) {
+      const { data } = await $api.put<ApiResponse<DiagnosisStepResult>>(
+        `${BASE}/${planId}/input/steps/${step}`,
+        { expectedRevision, ...patch },
+      );
+      return data.data;
     },
   };
 }
