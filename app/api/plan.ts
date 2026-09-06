@@ -27,7 +27,10 @@ export type DiagnosisStep =
   | 'MARITAL_STATUS'
   | 'EMPLOYMENT_TYPE'
   | 'COMPANY_SIZE'
-  | 'EMPLOYMENT_PERIOD';
+  | 'EMPLOYMENT_PERIOD'
+  | 'FINANCIAL'
+  | 'HOPE_DEPOSIT'
+  | 'REGION';
 
 export type HouseholderStatus = 'CURRENT' | 'EXPECTED' | 'NOT_HOUSEHOLDER';
 export type MaritalStatus = 'SINGLE' | 'MARRIED';
@@ -40,6 +43,9 @@ export type EmploymentType =
   | 'UNEMPLOYED';
 export type CompanySize = 'LARGE' | 'MID_SIZE' | 'SMALL' | 'PUBLIC' | 'STARTUP' | 'OTHER';
 
+/** 조회값을 그대로 쓴 건지, 사용자가 고친 건지 구분한다. */
+export type FinancialValueSource = 'OPEN_BANKING' | 'MANUAL';
+
 /** 한 단계에서 보내는 값. 그 단계의 필드만 채워 보낸다. */
 export interface DiagnosisStepPatch {
   householderStatus?: HouseholderStatus;
@@ -48,6 +54,13 @@ export interface DiagnosisStepPatch {
   employmentType?: EmploymentType;
   companySize?: CompanySize;
   employmentMonths?: number;
+  monthlyIncome?: number;
+  netAssets?: number;
+  incomeSource?: FinancialValueSource;
+  assetSource?: FinancialValueSource;
+  financialDataConfirmed?: boolean;
+  hopeDeposit?: number;
+  regionId?: number;
 }
 
 export interface DiagnosisStepResult {
