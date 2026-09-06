@@ -18,25 +18,7 @@ const { pending, error, cards } = useJeonsePolicies(planId);
 
 <template>
   <PhoneFrame>
-    <div class="h-statusbar shrink-0" />
-
-    <header
-      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
-    >
-      <button
-        type="button"
-        class="text-ink -ml-1 p-1"
-        aria-label="뒤로"
-        @click="navigateTo(`/result/${planId}/match`)"
-      >
-        <AppIcon name="chevron-left" class="size-icon" />
-      </button>
-      <h1 class="text-headline2 text-ink-hero">스펙 매칭 확인</h1>
-    </header>
-
-    <div class="px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b py-2">
-      <StepIndicator current="1루" spread />
-    </div>
+    <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <h2 class="text-headline1 text-ink-hero">받을 수 있는 대출을 모두 찾았어요</h2>
@@ -66,7 +48,7 @@ const { pending, error, cards } = useJeonsePolicies(planId);
       <AppButton
         variant="strong"
         :disabled="pending || !cards.length"
-        @click="navigateTo('/onboarding')"
+        @click="navigateTo(`/property/${planId}`)"
       >
         매물 찾으러 가기
       </AppButton>
