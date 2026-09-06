@@ -31,13 +31,13 @@ const greeting = computed(() =>
       </p>
 
       <div class="bg-surface-info rounded-field flex w-full flex-col gap-1.5 p-3.5">
-        <span class="text-caption1 text-primary-deep">다음 순서</span>
+        <span class="text-caption1 text-primary-strong">다음 순서</span>
         <span class="text-caption2 text-ink-hero-body">오픈뱅킹으로 자산 자동 연동</span>
       </div>
     </div>
 
     <footer class="flex shrink-0 px-4 pb-6">
-      <AppButton variant="deep" @click="navigateTo('/openbanking', { replace: true })">
+      <AppButton variant="strong" @click="navigateTo('/openbanking', { replace: true })">
         시작하기
       </AppButton>
     </footer>

@@ -20,7 +20,7 @@ defineProps<{ badge: string; rows: MatchRow[] }>();
 
 <template>
   <AppCard class="flex flex-col gap-2.5 px-4 py-3">
-    <span class="bg-surface-brand rounded-pill text-label2 text-primary-text self-start px-2 py-1">
+    <span class="bg-surface-brand rounded-pill text-label2 text-primary-deep self-start px-2 py-1">
       {{ badge }}
     </span>
 

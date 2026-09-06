@@ -14,7 +14,7 @@ defineProps<{ title: string; description: string; selected: boolean }>();
     class="bg-surface border-line rounded-field flex w-full flex-col gap-1 border p-4 text-left"
     :aria-pressed="selected"
   >
-    <span class="text-option" :class="selected ? 'text-primary-deep' : 'text-ink-hero'">
+    <span class="text-option" :class="selected ? 'text-primary-strong' : 'text-ink-hero'">
       {{ title }}
     </span>
     <span class="text-caption2 text-ink-muted">{{ description }}</span>

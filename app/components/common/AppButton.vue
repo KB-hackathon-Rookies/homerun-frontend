@@ -5,10 +5,13 @@
  * 크기·반경·타이포는 변형마다 같다. 배경과 글자색, 그리고 눌렀을 때 어떻게
  * 보이는지만 다르다. 상태값은 피그마 컴포넌트 표에서 가져왔다.
  *
+ * `strong` 에는 hover 가 없다. 표가 solid · white · kakao 에만 hover 를
+ * 정해 놓았다. 없는 것을 지어내지 않는다.
+ *
  * 비활성은 투명도를 낮추지 않고 회색으로 바꾼다. 투명도만 낮추면 배경에 따라
  * 대비가 들쭉날쭉해진다.
  */
-type Variant = 'solid' | 'strong' | 'deep' | 'white' | 'kakao';
+type Variant = 'solid' | 'strong' | 'white' | 'kakao';
 
 const {
   variant = 'solid',
@@ -21,9 +24,8 @@ const {
 }>();
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  solid: 'bg-primary text-white hover:bg-primary-strong active:bg-primary-press',
-  strong: 'bg-primary-strong-soft text-white hover:bg-primary-strong active:bg-primary-press',
-  deep: 'bg-primary-deep text-white hover:bg-primary-strong active:bg-primary-press',
+  solid: 'bg-primary text-white hover:bg-primary-strong active:bg-primary-deep',
+  strong: 'bg-primary-strong text-white active:bg-primary-deep',
   white:
     'bg-surface text-ink-strong border-line border hover:bg-surface-hover active:bg-surface-press',
   kakao: 'bg-kakao text-ink-strong hover:bg-kakao-hover active:bg-kakao-press',
@@ -42,7 +44,6 @@ const tone = computed(() => {
 const FOCUS_CLASS: Record<Variant, string> = {
   solid: 'focus-visible:ring-2 focus-visible:ring-focus',
   strong: 'focus-visible:ring-2 focus-visible:ring-focus',
-  deep: 'focus-visible:ring-2 focus-visible:ring-focus',
   white: 'focus-visible:ring-1 focus-visible:ring-focus-line',
   kakao: 'focus-visible:bg-kakao-focus focus-visible:ring-1 focus-visible:ring-focus-line',
 };

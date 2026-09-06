@@ -32,13 +32,13 @@ const greeting = computed(() =>
       </p>
 
       <div class="bg-surface-info rounded-field flex w-full flex-col gap-1.5 p-3.5">
-        <span class="text-caption1 text-primary-deep">다음 순서</span>
+        <span class="text-caption1 text-primary-strong">다음 순서</span>
         <span class="text-caption2 text-ink-hero-body">메인 화면에서 나만의 독립 플랜 짜기</span>
       </div>
     </div>
 
     <footer class="flex shrink-0 px-4 pb-6">
-      <AppButton variant="deep" @click="navigateTo('/', { replace: true })">
+      <AppButton variant="strong" @click="navigateTo('/', { replace: true })">
         메인 화면으로 이동
       </AppButton>
     </footer>

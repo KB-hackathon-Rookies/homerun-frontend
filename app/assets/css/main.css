@@ -26,12 +26,8 @@
    * 파랑이 다섯인데 역할이 다르다. 이름으로 구분하지 않으면 화면마다 다른 파랑을 쓴다.
    * --------------------------------------------------------------- */
   --color-primary: #6995ff; /* 주 버튼, 브랜드 아이콘 */
-  --color-primary-strong: #3366ff; /* 진행 활성, 강조 수치 */
-  --color-primary-deep: #336bfa; /* 완료 화면 CTA */
-  --color-primary-text: #005eeb; /* 뱃지 글자 */
-  --color-primary-action: #356dff; /* 인라인 액션 (인증번호 받기) */
-  --color-primary-strong-soft: rgb(51 102 255 / 0.8);
-  --color-primary-press: #005eeb; /* 주 버튼 누름 */
+  --color-primary-strong: #3366ff; /* 강한 CTA, 진행 활성, 인라인 액션 */
+  --color-primary-deep: #005eeb; /* 가장 어두운 파랑 — 누름, 뱃지 글자 */
   --color-focus: #dce7ff; /* 포커스 링 */
   --color-focus-line: #b2cbff; /* 포커스 테두리 (카카오·구글) */
 

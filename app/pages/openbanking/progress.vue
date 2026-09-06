@@ -80,7 +80,7 @@ async function poll(startedAt: number) {
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 py-2.5">
-      <AppButton variant="deep" :disabled="!done" @click="navigateTo('/openbanking/complete')">
+      <AppButton variant="strong" :disabled="!done" @click="navigateTo('/openbanking/complete')">
         {{ done ? '다음' : '모든 조회 완료까지 기다려주세요' }}
       </AppButton>
     </footer>
