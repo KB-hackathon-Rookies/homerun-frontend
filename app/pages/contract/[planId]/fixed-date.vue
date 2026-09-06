@@ -35,8 +35,7 @@ const planId = Number(route.params.planId);
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
-      <!-- 일정 만들기 화면은 아직 없다. 생기면 여기서 잇는다. -->
-      <AppButton variant="strong" @click="navigateTo(`/property/${planId}`)">
+      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/schedule`)">
         일정 만들기로
       </AppButton>
     </footer>
