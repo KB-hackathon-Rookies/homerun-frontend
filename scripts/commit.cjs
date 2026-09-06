@@ -2,7 +2,29 @@ const { spawnSync } = require('node:child_process');
 const readline = require('node:readline/promises');
 const { stdin: input, stdout: output } = require('node:process');
 
-const commitTypes = ['✨ feat', '🚨 fix', '♻️ refactor', '⚡ perf', '✅ test', '📝 docs', '📦 chore'];
+// 백엔드 scripts/commit.js 와 같은 목록이다. commitlint 의 type-enum 이 단일 출처이므로
+// 거기에 없는 타입을 여기에 넣으면 훅에서 걸린다.
+const commitTypes = [
+  '✨ Feat',
+  '📦 Chore',
+  '💄 Design',
+  '🚨 Fix',
+  '🎨 Style',
+  '⚡ Perf',
+  '🔥 Remove',
+  '🚀 Release',
+  '🎉 Init',
+  '✅ Test',
+  '🔒 Security',
+  '♻ Refactor',
+  '🔨 Modify',
+  '🚚 Rename',
+  '📝 Docs',
+  '➖ Remove',
+  '🔖 Release',
+  '🧪 Test',
+  '🚑 Hotfix',
+];
 
 function hasStagedChanges() {
   const result = spawnSync('git', ['diff', '--cached', '--quiet']);

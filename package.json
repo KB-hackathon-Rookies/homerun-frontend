@@ -30,7 +30,10 @@
     "*.{json,jsonc,md,yml,yaml,css}": "prettier --write"
   },
   "dependencies": {
+    "@pinia/nuxt": "^1.0.2",
+    "axios": "^1.20.0",
     "nuxt": "^4.5.2",
+    "pinia": "^4.0.3",
     "vue": "^3.5.42",
     "vue-router": "^5.2.0"
   },
