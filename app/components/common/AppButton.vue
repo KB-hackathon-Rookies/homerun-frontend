@@ -2,8 +2,11 @@
 /**
  * 주 버튼.
  *
- * 피그마의 모든 화면에서 높이 58 · 반경 14 로 같다. 화면마다 이 마크업을 다시 쓰면
- * 한 곳만 바뀌었을 때 나머지가 어긋난다.
+ * 크기·반경·타이포는 변형마다 같다. 배경과 글자색, 그리고 눌렀을 때·비활성일 때
+ * 어떻게 보이는지만 다르다. 상태값은 피그마 컴포넌트 표에서 그대로 가져왔다.
+ *
+ * 비활성은 투명도를 낮추지 않고 회색으로 바꾼다. 투명도만 낮추면 배경에 따라
+ * 대비가 들쭉날쭉해진다.
  */
 type Variant = 'solid' | 'strong' | 'white' | 'kakao';
 
@@ -17,12 +20,23 @@ const {
   disabled?: boolean;
 }>();
 
-/** 배경과 글자색만 변형마다 다르다. 크기·반경·타이포는 공통이다. */
 const VARIANT_CLASS: Record<Variant, string> = {
-  solid: 'bg-primary text-white',
-  strong: 'bg-primary-strong-soft text-white',
-  white: 'bg-surface text-ink-strong border border-line',
-  kakao: 'bg-kakao text-ink-strong',
+  solid:
+    'bg-primary text-white hover:bg-primary-strong active:bg-primary-press disabled:bg-disabled',
+  strong:
+    'bg-primary-strong-soft text-white hover:bg-primary-strong active:bg-primary-press disabled:bg-disabled',
+  white:
+    'bg-surface text-ink-strong border-line border hover:bg-surface-hover active:bg-surface-press disabled:bg-disabled',
+  kakao:
+    'bg-kakao text-ink-strong hover:bg-kakao-hover active:bg-kakao-press disabled:bg-disabled',
+};
+
+/** 포커스 링도 변형을 따라간다. 카카오·구글만 테두리로 표시한다. */
+const FOCUS_CLASS: Record<Variant, string> = {
+  solid: 'focus-visible:ring-2 focus-visible:ring-focus',
+  strong: 'focus-visible:ring-2 focus-visible:ring-focus',
+  white: 'focus-visible:ring-1 focus-visible:ring-focus-line',
+  kakao: 'focus-visible:bg-kakao-focus focus-visible:ring-1 focus-visible:ring-focus-line',
 };
 </script>
 
@@ -30,8 +44,8 @@ const VARIANT_CLASS: Record<Variant, string> = {
   <button
     :type="type"
     :disabled="disabled"
-    class="text-headline1 rounded-button h-button flex w-full items-center justify-center gap-2.5 disabled:opacity-40"
-    :class="VARIANT_CLASS[variant]"
+    class="text-headline1 rounded-button h-button flex w-full items-center justify-center gap-2.5 transition-colors outline-none"
+    :class="[VARIANT_CLASS[variant], FOCUS_CLASS[variant]]"
   >
     <slot />
   </button>
