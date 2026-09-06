@@ -111,7 +111,7 @@ onMounted(async () => {
       <AppButton
         variant="strong"
         :disabled="pending || !settled"
-        @click="navigateTo(`/property/${planId}`)"
+        @click="navigateTo(`/contract/${planId}/visit`)"
       >
         3루 진행 (부동산 계약)
       </AppButton>
