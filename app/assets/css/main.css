@@ -33,7 +33,7 @@
   --color-primary-strong-soft: rgb(51 102 255 / 0.8);
   --color-primary-press: #005eeb; /* 주 버튼 누름 */
   --color-focus: #dce7ff; /* 포커스 링 */
-  --color-focus-line: #b2cbff; /* 포커스 테두리 (카카오·구글) */ /* 진행 중 CTA. #3366ff 의 80% */
+  --color-focus-line: #b2cbff; /* 포커스 테두리 (카카오·구글) */
 
   /* ---------------------------------------------------------------
    * 색 · 의미
@@ -64,8 +64,6 @@
   /* 완료 화면 전용 계열 */
   --color-ink-hero: #1c212b;
   --color-ink-hero-body: #596678;
-  --color-ink-title: #191f28; /* 오픈뱅킹 상단 바 제목 */
-  --color-ink-on-disabled: #999ead;
 
   /* ---------------------------------------------------------------
    * 색 · 선
@@ -86,9 +84,7 @@
   --color-track: #dedee0;
   --color-surface-hover: #f2f0f0; /* 흰 버튼 hover */
   --color-surface-press: #d9d5d5;
-  --color-surface-muted: #f5f7fa; /* 오픈뱅킹 안내 상자 */
   --color-disabled: #a5adb8; /* 주 버튼 비활성 */
-  --color-disabled-soft: #ebedf2; /* 대기 중 CTA */
 
   /* 색 · 뱃지 — 배경은 옅게, 글자는 진하게 */
   --color-badge-success: #ebfaf0;
@@ -167,18 +163,17 @@
   --text-caption2--line-height: 1.5;
   --text-caption2--font-weight: 400;
 
-  /* 오픈뱅킹 화면 */
   --text-heading: 1.375rem; /* 22 · 조회 진행 제목 */
   --text-heading--line-height: 1.364;
   --text-heading--font-weight: 700;
 
-  --text-label1: 0.875rem; /* 14 · 안내 카드 제목 */
-  --text-label1--line-height: 1.215;
-  --text-label1--font-weight: 700;
-
   --text-micro: 0.6875rem; /* 11 · 가장 작은 안내 문구 */
   --text-micro--line-height: 1.455;
   --text-micro--font-weight: 400;
+
+  --text-option: 1rem; /* 16 · 선택지 제목, 문진 CTA */
+  --text-option--line-height: 1.188;
+  --text-option--font-weight: 700;
 
   /* ---------------------------------------------------------------
    * 반경
@@ -207,7 +202,7 @@
   --spacing-brand: 22px; /* 로고 마름모 */
   --spacing-icon: 22px; /* 상단 바 뒤로가기 */
   --spacing-gutter-tight: 16px; /* 오픈뱅킹 화면은 좌우 16 이다 */
-  --spacing-cta: 56px; /* 완료 화면 버튼. 다른 화면(58)보다 낮다 */
+  --spacing-pill: 41px;
   --spacing-hero: 133px; /* 완료 화면 캐릭터 자리 */
 }
 

@@ -38,7 +38,9 @@ const greeting = computed(() =>
     </div>
 
     <footer class="flex shrink-0 px-4 pb-6">
-      <AppCtaButton @click="navigateTo('/', { replace: true })">메인 화면으로 이동</AppCtaButton>
+      <AppButton variant="deep" @click="navigateTo('/', { replace: true })">
+        메인 화면으로 이동
+      </AppButton>
     </footer>
   </PhoneFrame>
 </template>

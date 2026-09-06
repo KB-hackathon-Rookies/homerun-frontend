@@ -37,13 +37,13 @@ const NOTICES = ['개인정보는 조회 목적으로만 사용해요', '언제�
       </div>
 
       <AppCard v-for="info in INFOS" :key="info.title" class="flex flex-col gap-2 p-3.5">
-        <span class="text-label1 text-ink-hero">{{ info.title }}</span>
+        <span class="text-numeric text-ink-hero">{{ info.title }}</span>
         <ul class="text-caption2 text-ink-hero-body">
           <li v-for="line in info.lines" :key="line">· {{ line }}</li>
         </ul>
       </AppCard>
 
-      <div class="bg-surface-muted rounded-field p-3.5">
+      <div class="bg-canvas rounded-field p-3.5">
         <ul class="text-micro text-ink-hero-body">
           <li v-for="notice in NOTICES" :key="notice">· {{ notice }}</li>
         </ul>
@@ -51,7 +51,9 @@ const NOTICES = ['개인정보는 조회 목적으로만 사용해요', '언제�
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 py-2.5">
-      <AppCtaButton @click="navigateTo('/openbanking/terms')">약관 동의하고 시작하기</AppCtaButton>
+      <AppButton variant="deep" @click="navigateTo('/openbanking/terms')">
+        약관 동의하고 시작하기
+      </AppButton>
     </footer>
   </PhoneFrame>
 </template>
