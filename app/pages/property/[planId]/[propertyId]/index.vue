@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { usePropertyApi, type PropertyCandidate, type PropertyPolicyVerdict } from '~/api/property';
+import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
+import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -14,7 +15,7 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
 
-const property = ref<PropertyCandidate | null>(null);
+const { property, fullAddress } = useProperty(planId, propertyId);
 const verdicts = ref<PropertyPolicyVerdict[]>([]);
 const pending = ref(true);
 const error = ref('');
@@ -35,21 +36,9 @@ const summary = computed(() => {
   );
 });
 
-/** 동·호수까지 붙은 주소. 집합건물은 여기까지 맞아야 등기부가 맞다. */
-const fullAddress = computed(() => {
-  const found = property.value;
-  if (!found) return '';
-  return found.buildingName ? `${found.roadAddress} (${found.buildingName})` : found.roadAddress;
-});
-
 onMounted(async () => {
-  const { candidates, policyVerdicts } = usePropertyApi();
   try {
-    const [list, result] = await Promise.all([
-      candidates(planId),
-      policyVerdicts(planId, propertyId),
-    ]);
-    property.value = list.find((item) => item.propertyId === propertyId) ?? null;
+    const result = await usePropertyApi().policyVerdicts(planId, propertyId);
     verdicts.value = result.results;
   } catch (cause) {
     error.value = messageFrom(cause, '진단 결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');

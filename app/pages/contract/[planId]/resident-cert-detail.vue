@@ -37,26 +37,15 @@ const checked = ref<Record<string, boolean>>({});
     <h2 class="text-option text-ink-hero px-1 pt-2">발급 방법 · 온라인 안 됨</h2>
 
     <AppCard class="flex flex-col gap-2">
-      <div
+      <CheckItem
         v-for="step in STEPS"
         :key="step.title"
-        class="bg-surface-info rounded-chip flex items-center gap-2.5 p-2.5"
+        v-model="checked[step.title]"
+        tone="filled"
       >
-        <button
-          type="button"
-          class="grid size-4.5 shrink-0 place-items-center rounded border transition-colors"
-          :class="checked[step.title] ? 'bg-primary border-primary' : 'border-line-strong'"
-          :aria-pressed="!!checked[step.title]"
-          :aria-label="step.title"
-          @click="checked[step.title] = !checked[step.title]"
-        >
-          <AppIcon v-if="checked[step.title]" name="check" class="size-3 text-white" />
-        </button>
-        <span class="flex-1">
-          <span class="text-caption2 text-ink-hero block font-semibold">{{ step.title }}</span>
-          <span v-if="step.note" class="text-micro text-ink-muted block">{{ step.note }}</span>
-        </span>
-      </div>
+        {{ step.title }}
+        <template v-if="step.note" #note>{{ step.note }}</template>
+      </CheckItem>
     </AppCard>
 
     <h2 class="text-option text-ink-hero px-1 pt-2">창구에서 이렇게 말해요</h2>

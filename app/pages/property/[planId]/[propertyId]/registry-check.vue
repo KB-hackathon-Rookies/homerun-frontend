@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  usePropertyApi,
-  type OfficialPriceSource,
-  type PropertyCandidate,
-  type RegistryStepPatch,
-} from '~/api/property';
+import { usePropertyApi, type OfficialPriceSource, type RegistryStepPatch } from '~/api/property';
+import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -60,7 +56,7 @@ const answers = ref<Record<string, Answer | null>>({});
 const seniorDebt = ref('');
 const officialPrice = ref('');
 
-const property = ref<PropertyCandidate | null>(null);
+const { property } = useProperty(planId, propertyId);
 const revision = ref(0);
 const pending = ref(true);
 const saving = ref(false);
@@ -85,10 +81,8 @@ const priceSource = computed<OfficialPriceSource>(() => {
 const answered = computed(() => QUESTIONS.every((question) => answers.value[question.key]));
 
 onMounted(async () => {
-  const { candidates, resume } = usePropertyApi();
   try {
-    const [list, workflow] = await Promise.all([candidates(planId), resume(planId, propertyId)]);
-    property.value = list.find((item) => item.propertyId === propertyId) ?? null;
+    const workflow = await usePropertyApi().resume(planId, propertyId);
     revision.value = workflow.revision;
   } catch (cause) {
     error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
