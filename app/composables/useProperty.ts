@@ -1,5 +1,5 @@
 import { usePropertyApi, type PropertyCandidate } from '~/api/property';
-import { HOUSE_TYPE_LABEL } from '~/components/property/consultation';
+import { houseTypeLabel } from '~/utils/labels';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
@@ -35,12 +35,23 @@ export function useProperty(planId: number, propertyId: number) {
     const parts: string[] = [];
     if (found.deposit !== null) parts.push(`전세 ${formatKoreanMoney(found.deposit)}`);
 
-    const houseType = found.houseType ? (HOUSE_TYPE_LABEL[found.houseType] ?? found.houseType) : '';
+    const houseType = found.houseType ? houseTypeLabel(found.houseType) : '';
     const area = found.exclusiveArea === null ? '' : `${found.exclusiveArea}㎡`;
     const house = [houseType, area].filter(Boolean).join(' ');
     if (house) parts.push(house);
 
     return parts.join(' · ');
+  });
+
+  /**
+   * 동·호수까지 붙은 주소. 집합건물은 여기까지 맞아야 등기부가 맞다.
+   *
+   * 여러 화면이 같은 문자열을 만들고 있어서 여기로 올렸다.
+   */
+  const fullAddress = computed(() => {
+    const found = property.value;
+    if (!found) return '';
+    return found.buildingName ? `${found.roadAddress} (${found.buildingName})` : found.roadAddress;
   });
 
   const title = computed(() => {
@@ -49,5 +60,5 @@ export function useProperty(planId: number, propertyId: number) {
     return label.value ? `${label.value} · ${found.roadAddress}` : found.roadAddress;
   });
 
-  return { property, label, title, spec, error };
+  return { property, label, title, fullAddress, spec, error };
 }

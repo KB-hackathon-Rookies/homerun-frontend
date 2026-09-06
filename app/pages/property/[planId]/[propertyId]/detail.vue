@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { LoanCard } from '~/api/policy';
-import { usePropertyApi, type PropertyCandidate } from '~/api/property';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
+import { useProperty } from '~/composables/useProperty';
 import { trafficTone } from '~/components/property/trafficLight';
-import { messageFrom } from '~/utils/error';
 
 /**
  * 2루-4 매물 상세.
@@ -23,8 +22,7 @@ const propertyId = Number(route.params.propertyId);
 
 const { pending, error, cards, results } = useJeonsePolicies(planId, propertyId);
 
-const property = ref<PropertyCandidate | null>(null);
-const propertyError = ref('');
+const { property, fullAddress, error: propertyError } = useProperty(planId, propertyId);
 
 /** 판정이 FAIL 인 상품 코드. `cards` 에는 통과한 것만 들어 있다. */
 const failedCodes = computed(
@@ -44,22 +42,7 @@ const available = computed(() => cards.value.filter((card) => !failedCodes.value
  */
 const unavailable = computed(() => results.value.filter((result) => result.verdict === 'FAIL'));
 
-const fullAddress = computed(() => {
-  const found = property.value;
-  if (!found) return '';
-  return found.buildingName ? `${found.roadAddress} (${found.buildingName})` : found.roadAddress;
-});
-
 const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/products/${code}`);
-
-onMounted(async () => {
-  try {
-    const list = await usePropertyApi().candidates(planId);
-    property.value = list.find((item) => item.propertyId === propertyId) ?? null;
-  } catch (cause) {
-    propertyError.value = messageFrom(cause, '매물을 불러오지 못했어요.');
-  }
-});
 </script>
 
 <template>
@@ -77,6 +60,8 @@ onMounted(async () => {
         </AppBadge>
         <p class="text-body3 text-ink-hero font-semibold">{{ fullAddress }}</p>
       </AppCard>
+
+      <p v-if="propertyError" class="text-label2 text-danger">{{ propertyError }}</p>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>

@@ -53,22 +53,9 @@ const checked = ref<Record<string, boolean>>({});
       <AppCard class="flex flex-col gap-2.5">
         <h2 class="text-body3 text-ink-hero font-bold">상담 체크리스트</h2>
 
-        <button
-          v-for="question in QUESTIONS"
-          :key="question"
-          type="button"
-          class="border-line rounded-chip flex items-center gap-2.5 border px-3.5 py-3 text-left"
-          :aria-pressed="!!checked[question]"
-          @click="checked[question] = !checked[question]"
-        >
-          <span
-            class="grid size-5 shrink-0 place-items-center rounded border transition-colors"
-            :class="checked[question] ? 'bg-primary border-primary' : 'border-line'"
-          >
-            <AppIcon v-if="checked[question]" name="check" class="size-3 text-white" />
-          </span>
-          <span class="text-label2 text-ink-hero flex-1">{{ question }}</span>
-        </button>
+        <CheckItem v-for="question in QUESTIONS" :key="question" v-model="checked[question]">
+          {{ question }}
+        </CheckItem>
       </AppCard>
 
       <div class="bg-surface-info rounded-field flex flex-col gap-1.5 p-4">

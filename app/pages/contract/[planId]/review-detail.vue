@@ -31,26 +31,10 @@ const checked = ref<Record<string, boolean>>({});
     <h2 class="text-option text-ink-hero px-1 pt-2">전화로 물어봐야 할 것</h2>
 
     <AppCard class="flex flex-col gap-2">
-      <div
-        v-for="ask in ASKS"
-        :key="ask.title"
-        class="bg-surface-info rounded-chip flex items-center gap-2.5 p-2.5"
-      >
-        <button
-          type="button"
-          class="grid size-4.5 shrink-0 place-items-center rounded border transition-colors"
-          :class="checked[ask.title] ? 'bg-primary border-primary' : 'border-line-strong'"
-          :aria-pressed="!!checked[ask.title]"
-          :aria-label="ask.title"
-          @click="checked[ask.title] = !checked[ask.title]"
-        >
-          <AppIcon v-if="checked[ask.title]" name="check" class="size-3 text-white" />
-        </button>
-        <span class="flex-1">
-          <span class="text-caption2 text-ink-hero block font-semibold">{{ ask.title }}</span>
-          <span v-if="ask.note" class="text-micro text-ink-muted block">{{ ask.note }}</span>
-        </span>
-      </div>
+      <CheckItem v-for="ask in ASKS" :key="ask.title" v-model="checked[ask.title]" tone="filled">
+        {{ ask.title }}
+        <template v-if="ask.note" #note>{{ ask.note }}</template>
+      </CheckItem>
     </AppCard>
 
     <h2 class="text-option text-ink-hero px-1 pt-2">상황별 대응</h2>

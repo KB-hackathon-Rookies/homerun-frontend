@@ -45,26 +45,10 @@ const checked = ref<Record<string, boolean>>({});
     <h2 class="text-option text-ink-hero px-1 pt-2">회사에 요청할 것</h2>
 
     <AppCard class="flex flex-col gap-2">
-      <div
-        v-for="doc in DOCS"
-        :key="doc.title"
-        class="bg-surface-info rounded-chip flex items-center gap-2.5 p-2.5"
-      >
-        <button
-          type="button"
-          class="grid size-4.5 shrink-0 place-items-center rounded border transition-colors"
-          :class="checked[doc.title] ? 'bg-primary border-primary' : 'border-line-strong'"
-          :aria-pressed="!!checked[doc.title]"
-          :aria-label="doc.title"
-          @click="checked[doc.title] = !checked[doc.title]"
-        >
-          <AppIcon v-if="checked[doc.title]" name="check" class="size-3 text-white" />
-        </button>
-        <span class="flex-1">
-          <span class="text-caption2 text-ink-hero block font-semibold">{{ doc.title }}</span>
-          <span class="text-micro text-ink-muted block">{{ doc.by }}</span>
-        </span>
-      </div>
+      <CheckItem v-for="doc in DOCS" :key="doc.title" v-model="checked[doc.title]" tone="filled">
+        {{ doc.title }}
+        <template #note>{{ doc.by }}</template>
+      </CheckItem>
     </AppCard>
 
     <h2 class="text-option text-ink-hero px-1 pt-2">이렇게 말해요</h2>
