@@ -2,7 +2,8 @@
 /**
  * 알약 선택.
  *
- * 답이 둘뿐이라 목록 대신 나란히 놓는다. 고른 쪽만 채운다.
+ * 답이 적을 때 목록 대신 나란히 놓는다. 고른 쪽만 채운다.
+ * 줄이 넘어가면 위아래로도 벌어진다 — 진단 문진은 알약이 여섯이다.
  */
 export interface PillOption {
   value: string;
@@ -15,7 +16,7 @@ const model = defineModel<string | null>({ default: null });
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-x-2">
+  <div class="flex flex-wrap items-center gap-2">
     <button
       v-for="option in options"
       :key="option.value"

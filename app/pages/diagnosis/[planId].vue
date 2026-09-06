@@ -1,0 +1,199 @@
+<script setup lang="ts">
+import { usePlanApi, type DiagnosisStep, type DiagnosisStepPatch } from '~/api/plan';
+import { messageFrom } from '~/utils/error';
+
+/**
+ * 1루 진단 문진.
+ *
+ * 껍데기가 여섯 다 같다 — 상단 바 · 진행 표시 · 질문 카드 · 안내 · 버튼.
+ * 카드 안 선택지만 다르다. 그래서 한 화면에서 단계를 넘긴다.
+ *
+ * 단계마다 바로 저장한다. 백엔드가 부분 저장을 받고(`.../input/steps/{code}`)
+ * 다음 단계와 새 `revision` 을 돌려준다. 그 값을 다음 저장에 그대로 실어야
+ * 다른 기기가 먼저 고친 걸 서버가 알아챈다.
+ *
+ * 플랜 번호는 주소에 있다. 새로고침해도 이어서 할 수 있어야 한다. 남의 플랜을
+ * 넣어도 백엔드가 소유자를 확인해서 막는다.
+ */
+definePageMeta({ middleware: 'auth' });
+
+interface Choice {
+  value: string;
+  label: string;
+  /** 고르면 띄울 안내. 아직 못 하는 것을 미리 알린다. */
+  warn?: string;
+}
+
+interface Question {
+  step: DiagnosisStep;
+  title: string;
+  choices: Choice[];
+  /** 고르기 전에도 늘 보이는 설명. */
+  note?: string;
+  /** 고른 값을 요청 본문으로 바꾼다. */
+  toPatch: (value: string) => DiagnosisStepPatch;
+}
+
+const QUESTIONS: Question[] = [
+  {
+    step: 'HOUSEHOLDER',
+    title: '현재 세대주이신가요?',
+    choices: [
+      { value: 'CURRENT', label: '네, 세대주입니다' },
+      { value: 'EXPECTED', label: '곧 세대주가 될 예정입니다 (예비 세대주)' },
+      { value: 'NOT_HOUSEHOLDER', label: '아니요, 세대원입니다' },
+    ],
+    toPatch: (value) => ({ householderStatus: value as never }),
+  },
+  {
+    step: 'HOMELESS',
+    title: '본인 명의로 소유한 주택이 있나요?',
+    choices: [
+      { value: 'OWNED', label: '있습니다' },
+      { value: 'NONE', label: '없습니다' },
+    ],
+    note: '함께 사는 가족(부모님 등)의 주택 소유 여부는 상관없습니다 — 독립 후 본인 명의 기준입니다',
+    toPatch: (value) => ({ isHomeless: value === 'NONE' }),
+  },
+  {
+    step: 'MARITAL_STATUS',
+    title: '혼인 여부를 알려주세요',
+    choices: [
+      { value: 'MARRIED', label: '기혼', warn: '기혼 가구 진단은 아직 준비 중이에요.' },
+      { value: 'SINGLE', label: '미혼' },
+    ],
+    toPatch: (value) => ({ maritalStatus: value as never }),
+  },
+  {
+    step: 'EMPLOYMENT_TYPE',
+    title: '현재 고용 형태를 선택해주세요',
+    choices: [
+      { value: 'FULL_TIME', label: '정규직' },
+      { value: 'CONTRACT', label: '계약직' },
+      { value: 'DAILY_WORKER', label: '일용직' },
+      { value: 'INTERN', label: '인턴' },
+      { value: 'FREELANCER', label: '프리랜서' },
+      { value: 'UNEMPLOYED', label: '무직', warn: '무직 상태 진단은 아직 준비 중이에요.' },
+    ],
+    toPatch: (value) => ({ employmentType: value as never }),
+  },
+  {
+    step: 'COMPANY_SIZE',
+    title: '재직 중인 회사 규모를 알려주세요',
+    choices: [
+      { value: 'LARGE', label: '대기업' },
+      { value: 'MID_SIZE', label: '중견기업' },
+      { value: 'SMALL', label: '중소기업' },
+      { value: 'PUBLIC', label: '공공기관·공기업' },
+      { value: 'STARTUP', label: '스타트업' },
+      { value: 'OTHER', label: '기타' },
+    ],
+    toPatch: (value) => ({ companySize: value as never }),
+  },
+  {
+    step: 'EMPLOYMENT_PERIOD',
+    title: '현재 회사에서 근무한 기간을 알려주세요',
+    choices: [
+      { value: '12', label: '1년 이상' },
+      { value: '6', label: '1년 미만' },
+    ],
+    note: '1년 미만 근무 시 소득은 최근 급여×12로 환산되며, 급여통장 사본·거래내역서가 추가로 필요합니다. 대출 한도는 2천만 원입니다',
+    toPatch: (value) => ({ employmentMonths: Number(value) }),
+  },
+];
+
+const route = useRoute();
+const planId = Number(route.params.planId);
+
+const index = ref(0);
+const answers = ref<Record<string, string>>({});
+const revision = ref(0);
+const pending = ref(false);
+const error = ref('');
+
+const question = computed(() => QUESTIONS[index.value]!);
+const answer = computed({
+  get: () => answers.value[question.value.step] ?? null,
+  set: (value: string | null) => {
+    if (value) answers.value[question.value.step] = value;
+  },
+});
+const isLast = computed(() => index.value === QUESTIONS.length - 1);
+
+/** 고른 항목에 안내가 붙어 있으면 그것을, 없으면 단계 설명을 보여준다. */
+const notice = computed(
+  () => question.value.choices.find((c) => c.value === answer.value)?.warn ?? question.value.note,
+);
+
+async function next() {
+  if (!answer.value || pending.value) return;
+  const { saveStep } = usePlanApi();
+
+  pending.value = true;
+  error.value = '';
+  try {
+    const result = await saveStep(
+      planId,
+      question.value.step,
+      revision.value,
+      question.value.toPatch(answer.value),
+    );
+    revision.value = result.revision;
+
+    if (isLast.value) {
+      await navigateTo('/onboarding');
+      return;
+    }
+    index.value += 1;
+  } catch (cause) {
+    error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+  } finally {
+    pending.value = false;
+  }
+}
+
+function back() {
+  if (index.value === 0) {
+    navigateTo('/prep');
+    return;
+  }
+  index.value -= 1;
+}
+</script>
+
+<template>
+  <PhoneFrame>
+    <div class="h-statusbar shrink-0" />
+
+    <header
+      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
+    >
+      <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
+        <AppIcon name="chevron-left" class="size-icon" />
+      </button>
+      <h1 class="text-headline2 text-ink-hero">사용자 정보 입력</h1>
+    </header>
+
+    <div class="px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b py-2">
+      <StepIndicator current="1루" spread />
+    </div>
+
+    <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
+      <QuestionCard :question="question.title">
+        <PillGroup v-model="answer" :options="question.choices" />
+      </QuestionCard>
+
+      <div v-if="notice" class="bg-surface border-line rounded-field border p-3.5">
+        <p class="text-caption2 text-ink-hero-body font-medium">{{ notice }}</p>
+      </div>
+
+      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+    </div>
+
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+      <AppButton variant="strong" :disabled="!answer || pending" @click="next">
+        {{ pending ? '저장 중…' : isLast ? '스펙 확인하러 가기' : '다음' }}
+      </AppButton>
+    </footer>
+  </PhoneFrame>
+</template>
