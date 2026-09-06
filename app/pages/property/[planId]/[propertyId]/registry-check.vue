@@ -118,7 +118,7 @@ async function save() {
   error.value = '';
   try {
     await usePropertyApi().saveRegistry(planId, propertyId, revision.value, patch);
-    await navigateTo(`/property/${planId}`);
+    await navigateTo(`/property/${planId}/${propertyId}/consultations`);
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
