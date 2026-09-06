@@ -1,5 +1,8 @@
 import type { ApplicationMethod, ContractCollateral, LoanProductKind } from '~/api/contract';
 
+/** 담보·주택유형 이름은 2루와 함께 쓴다. 같은 값이 화면마다 다르게 보이면 안 된다. */
+export { COLLATERAL_LABEL, HOUSE_TYPE_LABEL as HOUSE_LABEL } from '~/utils/labels';
+
 /** 3루 화면이 쓰는 이름. 백엔드는 코드로 준다. */
 export const PRODUCT_LABEL: Record<LoanProductKind, string> = {
   FUND_YOUTH: '청년 버팀목',
@@ -7,28 +10,9 @@ export const PRODUCT_LABEL: Record<LoanProductKind, string> = {
   BANK: '은행 전세대출',
 };
 
-/** 창구에서 부르는 이름으로 둔다. HUG·HF·SGI 는 안내문에나 나온다. */
-export const COLLATERAL_LABEL: Record<ContractCollateral, string> = {
-  HUG_SAFE_JEONSE: '안심전세 (HUG)',
-  HF: '주신보 (HF)',
-  SGI: '서신보 (SGI)',
-  CLAIM_TRANSFER: '채권양도',
-  OTHER: '기타',
-  NONE: '없음',
-};
-
 export const APPLICATION_LABEL: Record<ApplicationMethod, string> = {
   BANK_VISIT: '은행 창구 대면',
   ONLINE: '기금e든든 비대면',
-};
-
-export const HOUSE_LABEL: Record<string, string> = {
-  APARTMENT: '아파트',
-  OFFICETEL: '오피스텔',
-  VILLA: '연립·다세대',
-  MULTI_FAMILY: '다가구',
-  DETACHED: '단독',
-  OTHER: '기타',
 };
 
 /**

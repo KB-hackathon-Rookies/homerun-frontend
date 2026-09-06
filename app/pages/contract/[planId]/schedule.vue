@@ -22,6 +22,11 @@ const pending = ref(true);
 const saving = ref(false);
 const error = ref('');
 
+/** 저장된 일정이 지금 화면의 날짜로 계산된 것인가. 날짜를 고치면 어긋난다. */
+const fresh = computed(
+  () => !!schedule.value?.milestones.length && schedule.value.balanceDate === balanceDate.value,
+);
+
 const load = async () => {
   const { schedule: fetchSchedule } = useContractApi();
   try {
@@ -131,16 +136,16 @@ async function save() {
       <AppButton
         variant="strong"
         :disabled="!balanceDate || pending || saving"
-        @click="
-          schedule?.milestones.length ? navigateTo(`/contract/${planId}/company-docs`) : save()
-        "
+        @click="fresh ? navigateTo(`/contract/${planId}/company-docs`) : save()"
       >
         {{
           saving
             ? '저장 중…'
-            : schedule?.milestones.length
+            : fresh
               ? '일정 저장하고 D-30 시작'
-              : '일정 계산하기'
+              : schedule?.milestones.length
+                ? '고친 날짜로 다시 계산하기'
+                : '일정 계산하기'
         }}
       </AppButton>
     </footer>
