@@ -7,6 +7,10 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/eslint', '@pinia/nuxt'],
 
+  // 폴더로 묶되 이름에는 접두사를 붙이지 않는다. common/AppButton.vue 가
+  // <CommonAppButton /> 이 아니라 <AppButton /> 으로 쓰인다.
+  components: [{ path: '~/components', pathPrefix: false }],
+
   css: ['~/assets/css/main.css'],
 
   // Tailwind v4 는 PostCSS 설정도 tailwind.config.js 도 쓰지 않는다.

@@ -30,6 +30,7 @@
   --color-primary-deep: #336bfa; /* 완료 화면 CTA */
   --color-primary-text: #005eeb; /* 뱃지 글자 */
   --color-primary-action: #356dff; /* 인라인 액션 (인증번호 받기) */
+  --color-primary-strong-soft: rgb(51 102 255 / 0.8); /* 진행 중 CTA. #3366ff 의 80% */
 
   /* ---------------------------------------------------------------
    * 색 · 의미
@@ -99,6 +100,10 @@
   --text-headline2--line-height: 1.412;
   --text-headline2--font-weight: 700;
 
+  --text-body-strong: 1.0625rem; /* 17 · 약관 항목. 피그마 "pretendard body" */
+  --text-body-strong--line-height: 1.412;
+  --text-body-strong--font-weight: 600;
+
   --text-body1: 1rem; /* 16 · 읽기 본문 */
   --text-body1--line-height: 1.625;
   --text-body1--letter-spacing: 0.006em;
@@ -151,6 +156,8 @@
   --spacing-button: 58px; /* 주 버튼 높이 */
   --spacing-field: 54px; /* 입력 높이 */
   --spacing-avatar: 30px; /* 아이콘 원형 */
+  --spacing-step-diamond: 11px; /* 진행 표시 · 현재 단계 마름모 */
+  --spacing-step-link: 18px; /* 진행 표시 · 단계 사이 이음선 */
 }
 
 /*
