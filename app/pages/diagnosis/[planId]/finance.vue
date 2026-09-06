@@ -3,7 +3,7 @@ import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
 import { usePlanApi, type DiagnosisStep, type DiagnosisStepPatch } from '~/api/plan';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import { messageFrom } from '~/utils/error';
-import { formatManwon } from '~/utils/money';
+import { formatKoreanMoney } from '~/utils/money';
 
 /**
  * 1루 추가 정보 입력.
@@ -123,7 +123,7 @@ async function next() {
     }
 
     await save('REGION', { regionId: Number(regionId.value) });
-    await navigateTo('/onboarding');
+    await navigateTo(`/result/${planId}/match`);
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -169,13 +169,13 @@ function back() {
           <span class="flex flex-col gap-1">
             <span class="text-micro text-ink-muted">금융자산</span>
             <span class="text-numeric text-ink-hero">
-              약 {{ formatManwon(summary?.totalAccountBalance) }}
+              약 {{ formatKoreanMoney(summary?.totalAccountBalance) }}
             </span>
           </span>
           <span class="flex flex-col gap-1">
             <span class="text-micro text-ink-muted">월 평균 소득</span>
             <span class="text-numeric text-ink-hero">
-              약 {{ formatManwon(summary?.averageMonthlyNetIncome) }}
+              약 {{ formatKoreanMoney(summary?.averageMonthlyNetIncome) }}
             </span>
           </span>
         </div>
@@ -191,13 +191,28 @@ function back() {
 
       <QuestionCard v-else-if="step === 'MANUAL'" question="아래 정보를 직접 입력해주세요">
         <p class="text-caption2 text-ink-hero-body">오픈뱅킹 조회값이 틀린 경우에만 사용해요</p>
-        <AppInput v-model="income" label="월 평균 소득 (만 원)" type="tel" placeholder="숫자만 입력해주세요" />
-        <AppInput v-model="assets" label="금융자산 (만 원)" type="tel" placeholder="숫자만 입력해주세요" />
+        <AppInput
+          v-model="income"
+          label="월 평균 소득 (만 원)"
+          type="tel"
+          placeholder="숫자만 입력해주세요"
+        />
+        <AppInput
+          v-model="assets"
+          label="금융자산 (만 원)"
+          type="tel"
+          placeholder="숫자만 입력해주세요"
+        />
       </QuestionCard>
 
       <template v-else-if="step === 'DEPOSIT'">
         <QuestionCard question="희망하는 전세 보증금을 입력해주세요">
-          <AppInput v-model="deposit" label="희망 보증금 (만 원)" type="tel" placeholder="숫자만 입력해주세요" />
+          <AppInput
+            v-model="deposit"
+            label="희망 보증금 (만 원)"
+            type="tel"
+            placeholder="숫자만 입력해주세요"
+          />
         </QuestionCard>
 
         <div v-if="depositNotice" class="bg-surface border-line rounded-field border p-3.5">
