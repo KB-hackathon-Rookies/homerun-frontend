@@ -68,13 +68,19 @@ onMounted(async () => {
         </p>
       </div>
 
-      <PropertyCard
+      <button
         v-for="(property, index) in properties"
         :key="property.propertyId"
-        :property="property"
-        :label="labelOf(index)"
-        :verdicts="verdicts[property.propertyId] ?? []"
-      />
+        type="button"
+        class="text-left"
+        @click="navigateTo(`/property/${planId}/${property.propertyId}/detail`)"
+      >
+        <PropertyCard
+          :property="property"
+          :label="labelOf(index)"
+          :verdicts="verdicts[property.propertyId] ?? []"
+        />
+      </button>
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">

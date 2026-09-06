@@ -40,7 +40,7 @@ const PARTS = [
     <StageBar
       title="등기부등본 발급"
       base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+      @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">

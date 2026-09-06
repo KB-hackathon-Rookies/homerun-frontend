@@ -8,7 +8,7 @@ import { messageFrom } from '~/utils/error';
  * 값이 흔들리지 않는다. 그래서 화면 사이에 결과를 들고 다니지 않는다 —
  * 새로고침해도, 링크로 바로 들어와도 똑같이 보이는 쪽이 낫다.
  */
-export function useJeonsePolicies(planId: number) {
+export function useJeonsePolicies(planId: number, propertyId?: number) {
   const verdicts = ref<JeonsePolicyVerdicts | null>(null);
   const pending = ref(true);
   const error = ref('');
@@ -19,7 +19,7 @@ export function useJeonsePolicies(planId: number) {
 
   onMounted(async () => {
     try {
-      verdicts.value = await usePolicyApi().evaluateJeonse(planId);
+      verdicts.value = await usePolicyApi().evaluateJeonse(planId, propertyId);
     } catch (cause) {
       error.value = messageFrom(cause, '판정 결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
@@ -31,6 +31,7 @@ export function useJeonsePolicies(planId: number) {
     pending,
     error,
     cards: computed(() => verdicts.value?.cards ?? []),
+    results: computed(() => verdicts.value?.results ?? []),
     basisOf,
   };
 }
