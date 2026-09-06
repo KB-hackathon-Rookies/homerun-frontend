@@ -96,7 +96,7 @@ onMounted(async () => {
       <AppButton
         variant="strong"
         :disabled="pending"
-        @click="navigateTo(`/contract/${planId}/schedule`)"
+        @click="navigateTo(`/contract/${planId}/loan-apply`)"
       >
         {{ applies ? '발급 완료 처리' : '다음 단계로' }}
       </AppButton>
