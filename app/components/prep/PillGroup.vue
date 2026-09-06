@@ -23,8 +23,8 @@ const model = defineModel<string | null>({ default: null });
       class="rounded-pill h-pill flex items-center px-5 transition-colors"
       :class="
         model === option.value
-          ? 'bg-accent text-label1 text-white'
-          : 'bg-surface border-line-pill text-label1 text-ink-title border font-medium'
+          ? 'bg-primary-deep text-numeric text-white'
+          : 'bg-surface border-line text-numeric text-ink-hero border font-medium'
       "
       :aria-pressed="model === option.value"
       @click="model = option.value"

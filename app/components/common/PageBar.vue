@@ -18,6 +18,6 @@ const router = useRouter();
     <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="router.back()">
       <AppIcon name="chevron-left" class="size-icon" />
     </button>
-    <h1 class="text-headline2 text-ink-title">{{ title }}</h1>
+    <h1 class="text-headline2 text-ink-hero">{{ title }}</h1>
   </header>
 </template>

@@ -104,7 +104,7 @@ async function submit() {
       <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
         <AppIcon name="chevron-left" class="size-icon" />
       </button>
-      <h1 class="text-headline2 text-ink-title">독립 준비</h1>
+      <h1 class="text-headline2 text-ink-hero">독립 준비</h1>
     </header>
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
@@ -129,7 +129,7 @@ async function submit() {
         </QuestionCard>
 
         <div class="bg-surface border-line rounded-field border p-4">
-          <p class="text-hint text-ink-note">
+          <p class="text-caption2 text-ink-hero-body">
             이미 진행 중인 계약이 있다면 목록으로 보여드리고, 새로 시작하시는 거라면 바로 1루로
             안내해드려요
           </p>
@@ -140,9 +140,9 @@ async function submit() {
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
-      <AppCtaButton variant="accent" :disabled="!canProceed || pending" @click="next">
+      <AppButton variant="deep" :disabled="!canProceed || pending" @click="next">
         {{ pending ? '저장 중…' : '다음' }}
-      </AppCtaButton>
+      </AppButton>
     </footer>
   </PhoneFrame>
 </template>

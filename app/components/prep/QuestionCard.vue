@@ -9,7 +9,7 @@ defineProps<{ question: string }>();
 
 <template>
   <div class="bg-surface border-line rounded-field flex flex-col gap-3 border p-4">
-    <h2 class="text-question text-ink-title whitespace-pre-line">{{ question }}</h2>
+    <h2 class="text-heading text-ink-hero whitespace-pre-line">{{ question }}</h2>
     <slot />
   </div>
 </template>

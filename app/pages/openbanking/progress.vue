@@ -70,7 +70,7 @@ async function poll(startedAt: number) {
         {{ done ? '이제 다음으로 넘어갈 수 있어요' : '보통 30초~1분 정도 걸려요' }}
       </p>
 
-      <div class="bg-surface-muted rounded-chip p-3">
+      <div class="bg-canvas rounded-chip p-3">
         <p class="text-micro text-ink-hero-body">
           실패한 은행은 나중에 다시 시도할 수 있어요. 마이페이지에서 재연동 가능합니다
         </p>
@@ -80,9 +80,9 @@ async function poll(startedAt: number) {
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 py-2.5">
-      <AppCtaButton :disabled="!done" @click="navigateTo('/openbanking/complete')">
+      <AppButton variant="deep" :disabled="!done" @click="navigateTo('/openbanking/complete')">
         {{ done ? '다음' : '모든 조회 완료까지 기다려주세요' }}
-      </AppCtaButton>
+      </AppButton>
     </footer>
   </PhoneFrame>
 </template>
