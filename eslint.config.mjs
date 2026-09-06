@@ -9,5 +9,9 @@ export default withNuxt({
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'error',
     'prefer-const': 'error',
+
+    // 서식은 prettier 가 정한다. prettier 는 void 요소를 `<input />` 로 닫는데
+    // 이 규칙은 닫지 말라고 해서, 켜 두면 저장할 때마다 둘이 서로 되돌린다.
+    'vue/html-self-closing': 'off',
   },
 });

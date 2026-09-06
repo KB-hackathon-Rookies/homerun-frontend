@@ -56,6 +56,29 @@ export interface PropertyPolicyVerdicts {
   evaluatedAt: string | null;
 }
 
+/** 공시가격을 어디서 봤는가. 주택 유형에 따라 보는 곳이 다르다. */
+export type OfficialPriceSource =
+  'REALTY_PRICE_APARTMENT' | 'REALTY_PRICE_DETACHED' | 'HOMETAX_STANDARD_VALUE';
+
+/**
+ * STEP 4 로 저장하는 등기부 확인값.
+ *
+ * 사실값이 전부 `boolean | null` 이다. **`null` 이 "모르겠어요"** 다 — 안 본 것을
+ * `false` 로 채우면 백엔드가 확인된 사실로 받아 판정한다.
+ */
+export interface RegistryStepPatch {
+  ownerMatches: boolean | null;
+  trustRegistered: boolean | null;
+  leaseholdRegistered: boolean | null;
+  seizureOrDispositionRestricted: boolean | null;
+  auctionInProgress: boolean | null;
+  seniorDebt: number | null;
+  /** 금액·기준연도·출처는 셋이 함께 가거나 셋 다 비어 있어야 한다. */
+  officialPrice: number | null;
+  officialPriceYear: number | null;
+  officialPriceSource: OfficialPriceSource | null;
+}
+
 export interface PropertyAnalysis {
   propertyId: number;
   workflow: PropertyWorkflow;
@@ -122,6 +145,20 @@ export function usePropertyApi() {
       const { data } = await $api.put<ApiResponse<{ workflow: PropertyWorkflow }>>(
         `${properties(planId)}/${propertyId}/steps/violation`,
         { expectedRevision, violationBuilding },
+      );
+      return data.data;
+    },
+
+    /** STEP 4. 사람이 등기부를 보고 온 결과다. 모르는 값은 `null` 로 그대로 보낸다. */
+    async saveRegistry(
+      planId: number,
+      propertyId: number,
+      expectedRevision: number,
+      patch: RegistryStepPatch,
+    ) {
+      const { data } = await $api.put<ApiResponse<{ workflow: PropertyWorkflow }>>(
+        `${properties(planId)}/${propertyId}/steps/registry`,
+        { expectedRevision, ...patch },
       );
       return data.data;
     },
