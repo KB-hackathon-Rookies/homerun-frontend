@@ -8,9 +8,11 @@
  *
  * | 상태 | 마름모 | 라벨 |
  * |---|---|---|
- * | 지난 단계 | 8px 채움 | 흐림 |
+ * | 지난 단계 | 8px 채움 | 브랜드색 |
  * | 지금 단계 | **11px** 채움 | 브랜드색 |
  * | 남은 단계 | 8px 테두리만 | 흐림 |
+ *
+ * 지나온 단계도 브랜드색이다. 흐리게 두면 되돌아갈 수 없는 것처럼 보인다.
  *
  * 지금 단계만 커진다. 같은 크기로 두면 어디까지 왔는지 한눈에 안 들어온다.
  *
@@ -65,7 +67,7 @@ const steps = computed(() =>
         />
         <span
           class="text-caption1"
-          :class="step.active ? 'text-primary-strong' : 'text-ink-subtle'"
+          :class="step.done || step.active ? 'text-primary-strong' : 'text-ink-subtle'"
         >
           {{ step.label }}
         </span>

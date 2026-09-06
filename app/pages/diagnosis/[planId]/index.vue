@@ -163,20 +163,7 @@ function back() {
 
 <template>
   <PhoneFrame>
-    <div class="h-statusbar shrink-0" />
-
-    <header
-      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
-    >
-      <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
-        <AppIcon name="chevron-left" class="size-icon" />
-      </button>
-      <h1 class="text-headline2 text-ink-hero">사용자 정보 입력</h1>
-    </header>
-
-    <div class="px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b py-2">
-      <StepIndicator current="1루" spread />
-    </div>
+    <StageBar title="사용자 정보 입력" base="1루" @back="back" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
       <QuestionCard :question="question.title">

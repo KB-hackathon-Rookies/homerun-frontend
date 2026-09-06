@@ -35,12 +35,7 @@ export type DiagnosisStep =
 export type HouseholderStatus = 'CURRENT' | 'EXPECTED' | 'NOT_HOUSEHOLDER';
 export type MaritalStatus = 'SINGLE' | 'MARRIED';
 export type EmploymentType =
-  | 'FULL_TIME'
-  | 'CONTRACT'
-  | 'INTERN'
-  | 'DAILY_WORKER'
-  | 'FREELANCER'
-  | 'UNEMPLOYED';
+  'FULL_TIME' | 'CONTRACT' | 'INTERN' | 'DAILY_WORKER' | 'FREELANCER' | 'UNEMPLOYED';
 export type CompanySize = 'LARGE' | 'MID_SIZE' | 'SMALL' | 'PUBLIC' | 'STARTUP' | 'OTHER';
 
 /** 조회값을 그대로 쓴 건지, 사용자가 고친 건지 구분한다. */
@@ -70,6 +65,14 @@ export interface DiagnosisStepResult {
   revision: number;
 }
 
+/** 저장된 입력 중 다른 화면이 되읽는 것만 추렸다. */
+export interface PlanInput {
+  planId: number;
+  hopeDeposit: number | null;
+  regionId: number | null;
+  revision: number;
+}
+
 export interface PlanInputPatch {
   /** 부모와 주민등록상 시·군이 다른가. 주소가 아니라 다른지 여부만 받는다. */
   livesApartFromParents?: boolean;
@@ -83,6 +86,12 @@ export function usePlanApi() {
   return {
     async create(leaseType: LeaseType) {
       const { data } = await $api.post<ApiResponse<PlanResponse>>(BASE, { leaseType });
+      return data.data;
+    },
+
+    /** 저장해 둔 입력을 되읽는다. 2루가 희망 보증금을 여기서 가져간다. */
+    async input(planId: number) {
+      const { data } = await $api.get<ApiResponse<PlanInput>>(`${BASE}/${planId}/input`);
       return data.data;
     },
 

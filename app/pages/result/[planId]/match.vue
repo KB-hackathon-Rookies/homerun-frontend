@@ -18,25 +18,7 @@ const { pending, error, cards, basisOf } = useJeonsePolicies(planId);
 
 <template>
   <PhoneFrame>
-    <div class="h-statusbar shrink-0" />
-
-    <header
-      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
-    >
-      <button
-        type="button"
-        class="text-ink -ml-1 p-1"
-        aria-label="뒤로"
-        @click="navigateTo(`/diagnosis/${planId}`)"
-      >
-        <AppIcon name="chevron-left" class="size-icon" />
-      </button>
-      <h1 class="text-headline2 text-ink-hero">스펙 매칭 확인</h1>
-    </header>
-
-    <div class="px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b py-2">
-      <StepIndicator current="1루" spread />
-    </div>
+    <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-5 py-4">
       <h2 class="text-headline1 text-ink-hero">조건에 맞는 대출을 모두 확인했어요</h2>
