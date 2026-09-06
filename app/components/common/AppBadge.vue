@@ -2,24 +2,39 @@
 /**
  * 상태 뱃지.
  *
- * 판정 결과를 한 단어로 보여준다. 배경은 옅게, 글자는 진하게 — 세 톤 모두 같은
- * 규칙이다. 색만으로 뜻이 전달되지 않도록 글자를 반드시 함께 쓴다.
+ * 판정 결과를 한 단어로 보여준다. 색만으로 뜻이 전달되지 않도록 글자를 반드시
+ * 함께 쓴다.
+ *
+ * 채움이 둘이다. 옅은 배경(`soft`)은 카드 안에서 조용히 붙는 자리고, 꽉 찬
+ * 배경(`solid`)은 카드마다 하나씩 달려 목록을 훑을 때 눈에 걸려야 하는 자리다.
+ * 1루 결과 목록이 뒤쪽이다.
  */
-type Tone = 'positive' | 'cautionary' | 'negative';
+type Tone = 'positive' | 'cautionary' | 'negative' | 'informative';
 
-const { tone = 'positive' } = defineProps<{ tone?: Tone }>();
+const { tone = 'positive', fill = 'soft' } = defineProps<{
+  tone?: Tone;
+  fill?: 'soft' | 'solid';
+}>();
 
-const TONE_CLASS: Record<Tone, string> = {
+const SOFT: Record<Tone, string> = {
   positive: 'bg-badge-success text-success',
   cautionary: 'bg-badge-warning text-warning-strong',
   negative: 'bg-badge-danger text-danger',
+  informative: 'bg-surface-brand text-primary-deep',
+};
+
+const SOLID: Record<Tone, string> = {
+  positive: 'bg-success text-white',
+  cautionary: 'bg-warning-strong text-white',
+  negative: 'bg-danger text-white',
+  informative: 'bg-primary-strong text-white',
 };
 </script>
 
 <template>
   <span
-    class="text-headline2 rounded-pill inline-flex items-center px-2 py-1"
-    :class="TONE_CLASS[tone]"
+    class="text-caption1 rounded-pill inline-flex shrink-0 items-center px-2.5 py-1"
+    :class="fill === 'solid' ? SOLID[tone] : SOFT[tone]"
   >
     <slot />
   </span>
