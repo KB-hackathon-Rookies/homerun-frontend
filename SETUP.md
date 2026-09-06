@@ -2,10 +2,10 @@
 
 ## 필요한 것
 
-| | 버전 | 비고 |
-|---|---|---|
-| Node.js | 22.19+ 또는 24.11+ | Nuxt 4.5 요구사항 |
-| pnpm | 11.x | `corepack enable` 하면 자동으로 맞춰진다 |
+|         | 버전               | 비고                                     |
+| ------- | ------------------ | ---------------------------------------- |
+| Node.js | 22.19+ 또는 24.11+ | Nuxt 4.5 요구사항                        |
+| pnpm    | 11.x               | `corepack enable` 하면 자동으로 맞춰진다 |
 
 pnpm 을 따로 설치할 필요는 없다. `package.json` 의 `packageManager` 필드에 버전이
 박혀 있어서, corepack 이 그 버전을 알아서 받아 쓴다.
@@ -37,11 +37,11 @@ pnpm install
 
 설치되는 훅:
 
-| 훅 | 하는 일 | 걸리는 시간 |
-|---|---|---|
-| pre-commit | `pnpm lint` | 몇 초 |
-| commit-msg | commitlint — 커밋 메시지 형식 | 즉시 |
-| pre-push | `pnpm lint && pnpm typecheck` | 수십 초 |
+| 훅         | 하는 일                       | 걸리는 시간 |
+| ---------- | ----------------------------- | ----------- |
+| pre-commit | `pnpm lint`                   | 몇 초       |
+| commit-msg | commitlint — 커밋 메시지 형식 | 즉시        |
+| pre-push   | `pnpm lint && pnpm typecheck` | 수십 초     |
 
 ## 3. 실행
 
@@ -76,6 +76,7 @@ docker run --rm -p 3000:3000 homerun-frontend:local
 같은 원인이다. `.nuxt/` 가 있어야 한다. `tsconfig.json` 은 `.nuxt` 안의 설정을 참조만 한다.
 
 **pre-commit 에서 lint 에 걸림**
+
 ```bash
 pnpm lint:fix && git add -A
 ```
@@ -85,6 +86,7 @@ pnpm lint:fix && git add -A
 타입 목록은 `commitlint.config.js` 에 있다. `pnpm commit` 으로 고르는 게 안전하다.
 
 **포트 충돌**
+
 ```bash
 pnpm dev --port 3001
 ```

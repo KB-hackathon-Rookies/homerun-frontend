@@ -1,13 +1,7 @@
 import { defineStore } from 'pinia';
 
+import { useAuthApi, type MemberResponse } from '~/api/auth';
 import { tokenStorage } from '~/plugins/api';
-import type { ApiResponse, AuthTokens } from '~/types/api';
-
-export interface AuthUser {
-  memberId: number;
-  nickname: string | null;
-  email: string | null;
-}
 
 /**
  * 로그인 상태.
@@ -18,7 +12,7 @@ export interface AuthUser {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     accessToken: null as string | null,
-    user: null as AuthUser | null,
+    user: null as MemberResponse | null,
   }),
 
   getters: {
@@ -37,21 +31,20 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(email: string, password: string) {
-      const { $api } = useNuxtApp();
-      // 로그인 실패(401)가 토큰 갱신을 부르지 않도록 막는다.
-      const { data } = await $api.post<ApiResponse<AuthTokens>>(
-        '/api/v1/auth/login',
-        { email, password },
-        { skipAuth: true, skipAuthRefresh: true },
-      );
-      this.setToken(data.data.accessToken);
-      await this.fetchMe();
+      const { login } = useAuthApi();
+      // 로그인 응답에 회원 정보까지 들어 있다. /me 를 또 부를 이유가 없다.
+      this.apply(await login(email, password));
     },
 
     async fetchMe() {
-      const { $api } = useNuxtApp();
-      const { data } = await $api.get<ApiResponse<AuthUser>>('/api/v1/auth/me');
-      this.user = data.data;
+      const { me } = useAuthApi();
+      this.user = await me();
+    },
+
+    /** 로그인·가입 응답을 그대로 상태로 옮긴다. */
+    apply(response: { accessToken: string; member: MemberResponse }) {
+      this.setToken(response.accessToken);
+      this.user = response.member;
     },
 
     setToken(token: string) {
@@ -60,10 +53,9 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout() {
-      const { $api } = useNuxtApp();
+      const { logout } = useAuthApi();
       try {
-        // 서버가 리프레시 쿠키를 만료시켜야 진짜 로그아웃이다.
-        await $api.post('/api/v1/auth/logout', null, { skipAuthRefresh: true });
+        await logout();
       } finally {
         this.clear();
       }
