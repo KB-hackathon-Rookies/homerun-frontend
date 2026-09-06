@@ -40,7 +40,7 @@ async function next() {
   error.value = '';
   try {
     await usePropertyApi().saveViolation(planId, propertyId, revision.value, violation.value);
-    await navigateTo(`/property/${planId}/${propertyId}/registry`);
+    await navigateTo(`/property/${planId}/${propertyId}/detail`);
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {

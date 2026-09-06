@@ -45,6 +45,17 @@ export interface PolicyVerdictDetail {
   verdict: PolicyVerdict;
   basis: ConditionBasis[];
   missingFields: string[];
+  /** 떨어진 이유. 첫 실패에서 멈추지 않고 전부 모아 온다. */
+  rejectionReasons: RejectionReason[];
+}
+
+/** 왜 안 되는가. `alternativePolicy*` 가 있으면 대신 볼 상품이 있다는 뜻이다. */
+export interface RejectionReason {
+  reasonCode: string;
+  reasonLabel: string;
+  category: string;
+  alternativePolicyCode: string | null;
+  alternativePolicyName: string | null;
 }
 
 /**
@@ -76,10 +87,17 @@ export function usePolicyApi() {
   const { $api } = useNuxtApp();
 
   return {
-    /** 청년·일반 버팀목과 서울시 이자지원을 판정한다. */
-    async evaluateJeonse(planId: number) {
+    /**
+     * 청년·일반 버팀목과 서울시 이자지원을 판정한다.
+     *
+     * `propertyId` 를 주면 사람 조건 위에 **집 조건까지 얹어** 판정한다. 안 주면
+     * 사람 조건만 본 예상 결과다. 1루 결과 화면이 앞, 2루 매물 상세가 뒤를 쓴다.
+     */
+    async evaluateJeonse(planId: number, propertyId?: number) {
       const { data } = await $api.post<ApiResponse<JeonsePolicyVerdicts>>(
         `${BASE}/${planId}/policies/jeonse/evaluate`,
+        undefined,
+        propertyId === undefined ? undefined : { params: { propertyId } },
       );
       return data.data;
     },
