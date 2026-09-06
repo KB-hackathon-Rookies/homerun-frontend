@@ -52,27 +52,11 @@ export const BANKS = [
   'BNK부산은행',
 ];
 
+export { collateralLabel } from '~/utils/labels';
+
 const RESULT_LABEL = Object.fromEntries(RESULT_OPTIONS.map((o) => [o.value, o.label]));
 const PRODUCT_LABEL = Object.fromEntries(PRODUCT_OPTIONS.map((o) => [o.value, o.label]));
-const COLLATERAL_LABEL: Record<CollateralMethod, string> = {
-  HUG_SAFE_JEONSE: '안심전세',
-  HF: '주신보',
-  SGI: '서신보',
-  CLAIM_TRANSFER: '채권양도',
-  OTHER: '기타',
-  UNKNOWN: '보증서 미확인',
-};
-
 export const resultLabel = (value: ConsultationResult) => RESULT_LABEL[value] ?? value;
 export const productLabel = (value: ConsultedProduct) => PRODUCT_LABEL[value] ?? value;
-export const collateralLabel = (value: CollateralMethod) => COLLATERAL_LABEL[value] ?? value;
 
-/** 주택 유형 이름. 백엔드는 코드로 준다. */
-export const HOUSE_TYPE_LABEL: Record<string, string> = {
-  APARTMENT: '아파트',
-  OFFICETEL: '오피스텔',
-  VILLA: '연립·다세대',
-  MULTI_FAMILY: '다가구',
-  DETACHED: '단독',
-  OTHER: '기타',
-};
+export { HOUSE_TYPE_LABEL } from '~/utils/labels';

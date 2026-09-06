@@ -51,6 +51,16 @@ const seizureAnswer = ref<string | null>(null);
 const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
 const canCheck = computed(() => ownerAnswer.value && seizureAnswer.value);
 
+/**
+ * 답을 하나라도 고치면 대조 결과를 버린다.
+ *
+ * 안 그러면 "같아요" 로 통과한 뒤 "달라요" 로 고쳐도 통과가 남아 잔금을
+ * 보낼 수 있다. 이 화면에서 그건 그냥 두면 안 되는 상태다.
+ */
+watch([ownerAnswer, seizureAnswer, seniorDebt, mortgageCount], () => {
+  result.value = null;
+});
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 async function compare() {
