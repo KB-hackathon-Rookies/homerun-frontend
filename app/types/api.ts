@@ -4,8 +4,8 @@
  * 백엔드가 모든 성공 응답을 이 형태로 감싼다(`global.response.ApiResponse`).
  * 실제 값은 항상 `data` 안에 있다.
  *
- * 애월은 `result` 였다. 옮겨온 코드에 `.result` 가 남아 있으면 `undefined` 가 되고,
- * 화면에서는 "데이터가 없다"로 보인다.
+ * `.result` 가 아니라 `.data` 다. 잘못 쓰면 `undefined` 가 되고 화면에서는
+ * "데이터가 없다"로 보인다.
  */
 export interface ApiResponse<T> {
   success: boolean;
