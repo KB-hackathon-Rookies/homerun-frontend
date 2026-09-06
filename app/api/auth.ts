@@ -3,8 +3,8 @@ import type { ApiResponse } from '~/types/api';
 /**
  * 인증 API.
  *
- * URL 은 여기에만 둔다. 스토어와 화면은 함수 이름만 안다. 애월에서 이렇게 나눠 두니
- * 백엔드 경로가 바뀌어도 고칠 곳이 한 군데였다.
+ * URL 은 여기에만 둔다. 스토어와 화면은 함수 이름만 안다. 백엔드 경로가 바뀌어도
+ * 고칠 곳이 한 군데다.
  *
  * 이메일 계열은 `/api/v1/auth/email` 아래에 따로 모여 있다(`EmailAuthController`).
  * 로그인이 `/api/v1/auth/login` 이 아니라 `/api/v1/auth/email/login` 인 이유다.
