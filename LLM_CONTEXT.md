@@ -39,13 +39,17 @@ KB ITs Your Life 해커톤대회/
 
 ## 현재 구현 상태
 
-|             |                                                       |
-| ----------- | ----------------------------------------------------- |
-| 화면        | 없음 (`app/app.vue` 는 세팅 확인용 임시 화면)         |
-| 통신        | `app/plugins/api.ts` — axios 인스턴스와 인증 인터셉터 |
-| 상태        | `app/stores/auth.ts`                                  |
-| 라우트 가드 | `app/middleware/auth.ts`                              |
-| 타입        | `app/types/api.ts`                                    |
+|               |                                                                      |
+| ------------- | -------------------------------------------------------------------- |
+| 화면          | 진입·인증 8개 — `app/pages/` (온보딩 4단계는 `onboarding.vue` 한 장) |
+| 디자인 토큰   | `app/assets/css/main.css` — **색·크기 값은 여기에만 있다**           |
+| 공통 컴포넌트 | `app/components/common/` 10개                                        |
+| 화면 전용     | `app/components/onboarding/` 4개                                     |
+| API           | `app/api/auth.ts` — **URL 은 여기에만 둔다**                         |
+| 통신          | `app/plugins/api.ts` — axios 인스턴스와 인증 인터셉터                |
+| 상태          | `app/stores/auth.ts`, `app/stores/signup.ts`                         |
+| 라우트 가드   | `app/middleware/auth.ts`                                             |
+| 타입          | `app/types/api.ts`, `app/utils/error.ts`                             |
 
 백엔드는 컨트롤러 36개가 이미 구현돼 있다. **붙일 API 는 대부분 있다.**
 
@@ -204,7 +208,14 @@ main
 | 응답 봉투     | `result`               | **`data`**           |
 | 리프레시 토큰 | localStorage           | **httpOnly 쿠키**    |
 
-가져올 만한 것은 공통 컴포넌트, composable, 다단계 입력 패턴, 그리고 **401 큐 로직**이다. 마지막 것은 이미 옮겨 왔다.
+가져올 만한 것은 공통 컴포넌트, composable, 다단계 입력 패턴, 그리고 **401 큐 로직**이다. 401 큐, 도메인별 API 모듈(`app/api/`), 전면 토큰화까지 옮겨 왔다.
+
+## 화면을 만들 때
+
+- **새 값이 나오면 토큰을 먼저 만든다.** 화면 코드에 hex·px·`[...]` 임의값을 쓰지 않는다
+- 피그마 CSS 에는 Inter · Work Sans · Noto Sans KR 이 섞여 있다. 한글 글리프가 없어 폴백으로 떨어진 것이라 코드로 옮기지 않는다. **Work Sans 는 로고에만** 남긴다
+- 피그마 레이어 이름이 `Label` · `Value` · `뱃지` 처럼 자리표시자인 곳이 있다. 그대로 쓰지 말고 실제 문구를 채운다
+- 빌드가 통과해도 화면이 안 뜰 수 있다. 컴포넌트 이름이 안 잡히는 경우가 그랬다. **개발 서버로 실제 렌더를 본다**
 
 ---
 
