@@ -64,14 +64,14 @@ export default defineNuxtConfig({
   /*
    * 설치되는 앱으로서의 자기 소개.
    *
-   * 서비스워커는 아직 등록하지 않는다. 기본값으로 나온 `sw.js` 가 앱 셸을 굽지
-   * 않은 채 모든 이동을 `/` 로 넘기게 되어 있어, 그대로 켜면 오프라인은커녕
-   * 평소 이동까지 깨진다. 굽는 목록과 폴백은 서비스워커 작업에서 정한다.
+   * 서비스워커는 **앱 셸과 빌드 산출물만** 굽는다. 판정·상담·등기부는 개인
+   * 금융 정보고, 오프라인에서 낡은 판정을 보여주면 지난 판정을 지금 사실인
+   * 것처럼 내미는 셈이다. 그래서 런타임 캐시를 두지 않는다 — 연결이 없으면
+   * 화면은 뜨되 값 자리에 "지금 못 가져왔다" 고 적는다.
    */
   pwa: {
-    // 매니페스트만 먼저 세운다. 등록은 서비스워커 작업에서 켠다.
-    injectRegister: false,
-    client: { registerPlugin: false },
+    // 새 버전이 나와도 말없이 바꾸지 않는다. 쓰던 화면이 갑자기 갈아엎히면 곤란하다.
+    registerType: 'prompt',
 
     manifest: {
       name: '홈런 — 청년 첫 독립 코치',
@@ -91,6 +91,33 @@ export default defineNuxtConfig({
         // 안드로이드는 이걸 원·스퀴클 등으로 잘라 쓴다. 가장자리가 잘려도 캐릭터가 남는다.
         { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
+    },
+
+    workbox: {
+      /*
+       * 구울 목록. 앱 셸(`index.html`)이 여기 들어와야 폴백이 성립한다.
+       *
+       * 기본값은 이 목록을 거의 비운 채 폴백만 걸어 두어서, 그대로 켜면 굽지도
+       * 않은 주소로 모든 이동을 넘기다 깨진다.
+       */
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,webmanifest,woff2}'],
+
+      // 라우팅은 브라우저가 한다. 서버에 없는 주소는 전부 앱 셸이 받는다.
+      navigateFallback: '/',
+      // 백엔드로 가는 요청까지 앱 셸로 돌리면 안 된다.
+      navigateFallbackDenylist: [/^\/api\//],
+
+      cleanupOutdatedCaches: true,
+    },
+
+    client: {
+      // 설치 안내는 따로 만든다. 모듈이 대신 띄우지 않게 둔다.
+      installPrompt: false,
+    },
+
+    devOptions: {
+      // 개발 중에 서비스워커가 끼면 고친 것이 바로 안 보인다.
+      enabled: false,
     },
   },
 
