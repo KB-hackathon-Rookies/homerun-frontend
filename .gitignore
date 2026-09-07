@@ -25,3 +25,6 @@ logs
 
 # pnpm
 .pnpm-store
+
+# 피그마 CSS 원본(시안 참고용, 커밋하지 않는다)
+dd.md

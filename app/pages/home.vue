@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { useNotificationApi } from '~/api/notification';
+import { FEATURED_MODULES } from '~/components/coach/modules';
 import { usePush } from '~/composables/usePush';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
@@ -78,22 +79,6 @@ async function countUnread() {
     // 개수를 못 세도 화면은 그대로다. 배지를 안 그리면 된다.
   }
 }
-
-const TOOLS: { label: string; to: string | null }[] = [
-  { label: '계약 체크', to: null },
-  { label: '용어사전', to: null },
-  { label: '금융 가이드', to: null },
-];
-
-/** 계획이 있어야 갈 수 있는 도구가 있다. 계획을 모르면 자리만 둔다. */
-const tools = computed(() =>
-  TOOLS.map((tool) => {
-    if (!planId.value) return tool;
-    if (tool.label === '계약 체크') return { ...tool, to: `/contract/${planId.value}/review` };
-    if (tool.label === '금융 가이드') return { ...tool, to: `/contract/${planId.value}/documents` };
-    return tool;
-  }),
-);
 
 function resume() {
   const found = dashboard.value;
@@ -183,12 +168,35 @@ onMounted(async () => {
         @resume="resume"
       />
 
-      <div class="flex flex-col gap-2.5">
-        <h2 class="text-section text-ink-hero px-1 pt-2 pb-1">독립 도구</h2>
-        <div class="flex gap-2.5">
-          <ToolCard v-for="tool in tools" :key="tool.label" :label="tool.label" :to="tool.to" />
+      <!--
+        코치 교육. 루마다 코치가 알려주는 내용을 미리 본다. 카드를 누르면 그
+        모듈로, 전체 보기는 허브로 간다. 시안에서 독립 도구 세 버튼(전부 비활성)이
+        빠지고 이 자리로 바뀌었다.
+      -->
+      <section class="flex flex-col gap-2.5">
+        <div class="flex items-center justify-between px-1 pt-2 pb-1">
+          <h2 class="text-section text-ink-hero">코치 교육</h2>
+          <button type="button" class="text-step text-ink-muted" @click="navigateTo('/coach')">
+            전체 보기 ›
+          </button>
         </div>
-      </div>
+
+        <div class="flex gap-2.5 overflow-x-auto">
+          <button
+            v-for="module in FEATURED_MODULES"
+            :key="module.id"
+            type="button"
+            class="bg-surface border-line rounded-field flex w-40 shrink-0 flex-col gap-2 border p-3.5 text-left"
+            @click="navigateTo(`/coach/${module.id}`)"
+          >
+            <span class="text-micro text-primary-strong font-medium">
+              코치 TIME · {{ module.minutes }}분
+            </span>
+            <span class="text-row text-ink-hero">{{ module.title }}</span>
+            <span class="text-step text-ink-muted font-normal">{{ module.featured }}</span>
+          </button>
+        </div>
+      </section>
 
       <!--
         설치 안내. 계획이 생겨 돌아올 이유가 있는 사람에게만 보인다 —
