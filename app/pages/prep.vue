@@ -142,7 +142,7 @@ async function submit() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
         {{ pending ? '저장 중…' : '다음' }}
       </AppButton>

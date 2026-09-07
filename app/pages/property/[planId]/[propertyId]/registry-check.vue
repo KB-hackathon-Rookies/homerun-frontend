@@ -174,7 +174,7 @@ async function save() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!answered || pending || saving" @click="save">
         {{ saving ? '저장 중…' : '확인 완료' }}
       </AppButton>

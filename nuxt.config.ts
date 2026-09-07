@@ -13,6 +13,17 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  app: {
+    head: {
+      /*
+       * `viewport-fit=cover` 가 있어야 `env(safe-area-inset-*)` 이 0 이 아닌 값을
+       * 준다. 설치해서 전체 화면으로 뜰 때 상태바·홈 인디케이터가 화면을 덮는데,
+       * 그 두께를 이 값으로 받는다.
+       */
+      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+    },
+  },
+
   // Tailwind v4 는 PostCSS 설정도 tailwind.config.js 도 쓰지 않는다.
   // Vite 플러그인 하나와 CSS 의 @import "tailwindcss" 가 전부다.
   vite: {

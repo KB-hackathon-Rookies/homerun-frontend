@@ -155,7 +155,7 @@ function back() {
       />
     </div>
 
-    <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pb-6">
+    <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pb-cta-pad">
       <NoteCard :tone="step.noteTone">{{ step.note }}</NoteCard>
       <AppButton @click="next">{{ isLast ? '시작하기' : '다음' }}</AppButton>
     </footer>

@@ -31,7 +31,7 @@ function pathOf(key: TabKey) {
 
 <template>
   <nav
-    class="h-tabbar border-line bg-surface sticky bottom-0 flex shrink-0 items-center border-t pt-2 pb-5"
+    class="h-tabbar border-line bg-surface sticky bottom-0 flex shrink-0 items-center border-t pt-2 pb-tabbar-pad"
   >
     <button
       v-for="tab in TABS"

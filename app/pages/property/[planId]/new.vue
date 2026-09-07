@@ -136,7 +136,7 @@ async function start() {
       </button>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!chosen || saving" @click="start">
         {{ saving ? '등록 중…' : '이 매물로 진단 시작하기' }}
       </AppButton>

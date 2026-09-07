@@ -177,7 +177,7 @@ function back() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!answer || pending" @click="next">
         {{ pending ? '저장 중…' : isLast ? '스펙 확인하러 가기' : '다음' }}
       </AppButton>

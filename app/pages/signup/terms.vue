@@ -28,11 +28,13 @@ const { agreed, canProceed } = useTerms(TERMS);
       <TermsAgreement v-model="agreed" :terms="TERMS" />
     </div>
 
-    <footer class="px-gutter flex shrink-0 flex-col gap-3 pb-6">
+    <footer class="px-gutter flex shrink-0 flex-col gap-3 pb-cta-pad">
       <p class="text-caption1 text-ink-subtle text-center">
         선택항목에 동의하지 않아도 서비스 이용이 가능합니다.
       </p>
-      <AppButton :disabled="!canProceed" @click="navigateTo('/signup')">동의하고 계속하기</AppButton>
+      <AppButton :disabled="!canProceed" @click="navigateTo('/signup')"
+        >동의하고 계속하기</AppButton
+      >
     </footer>
   </PhoneFrame>
 </template>

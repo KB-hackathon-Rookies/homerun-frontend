@@ -37,7 +37,7 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <!-- 모듈 내용이 아직 없다. 목록은 보여주되 시작은 잠가 둔다. -->
       <AppButton variant="strong" disabled>교육 시작하기</AppButton>
       <p class="text-micro text-ink-muted text-center">교육 콘텐츠는 아직 준비 중이에요</p>

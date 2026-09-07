@@ -151,7 +151,7 @@ onMounted(() => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <!-- 고정지출을 저장할 API 도 화면도 아직 없다. 자리만 두고 잠가 둔다. -->
       <AppButton variant="strong" disabled>고정지출 등록하러 가기</AppButton>
       <p class="text-micro text-ink-muted text-center">고정지출 등록은 아직 준비 중이에요</p>

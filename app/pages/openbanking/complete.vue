@@ -37,7 +37,7 @@ const greeting = computed(() =>
       </div>
     </div>
 
-    <footer class="flex shrink-0 px-4 pb-6">
+    <footer class="flex shrink-0 px-4 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo('/', { replace: true })">
         메인 화면으로 이동
       </AppButton>

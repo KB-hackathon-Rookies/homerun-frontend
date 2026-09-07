@@ -102,7 +102,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="pending" @click="next">
         {{ applies ? '일정 확인' : '다음 단계로' }}
       </AppButton>

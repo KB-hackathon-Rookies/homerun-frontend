@@ -31,7 +31,7 @@ const { agreed, canProceed } = useTerms(TERMS);
       <TermsAgreement v-model="agreed" :terms="TERMS" />
     </div>
 
-    <footer class="px-gutter flex shrink-0 flex-col gap-3 pb-6">
+    <footer class="px-gutter flex shrink-0 flex-col gap-3 pb-cta-pad">
       <p class="text-label2 text-ink-muted text-center">
         선택항목에 동의하지 않아도 서비스 이용이 가능합니다.
       </p>
