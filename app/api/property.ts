@@ -104,6 +104,20 @@ export function usePropertyApi() {
   const { $api } = useNuxtApp();
 
   return {
+    /**
+     * 매물과 대출 조건을 확정한다.
+     *
+     * 3루가 여기서부터 시작한다 — 계약 초안(`contract/prefill`)이 이 값을
+     * 찾지 못하면 일정도 서류도 만들 수 없다.
+     */
+    async decide(planId: number, propertyId: number, consultationId: number) {
+      const { data } = await $api.put<ApiResponse<PropertyDecision>>(
+        `${properties(planId)}/decision`,
+        { propertyId, consultationId },
+      );
+      return data.data;
+    },
+
     /** 확정한 매물·대출 조건. 4루는 이걸 기준으로 담보와 상품을 말한다. */
     async decision(planId: number) {
       const { data } = await $api.get<ApiResponse<PropertyDecision>>(

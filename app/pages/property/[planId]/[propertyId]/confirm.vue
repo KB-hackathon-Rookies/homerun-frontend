@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useConsultationApi, type Consultation } from '~/api/consultation';
+import { usePropertyApi } from '~/api/property';
 import { collateralLabel, productLabel } from '~/components/property/consultation';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
@@ -25,6 +26,9 @@ const { property, title } = useProperty(planId, propertyId);
 const settled = ref<Consultation | null>(null);
 const pending = ref(true);
 const error = ref('');
+const saving = ref(false);
+/** 저장 실패는 따로 담는다. `error` 에 넣으면 확정 카드가 사라져 무엇을 확정하려던 건지 안 보인다. */
+const saveError = ref('');
 
 const rows = computed(() => {
   const item = settled.value;
@@ -51,6 +55,28 @@ const rows = computed(() => {
     { label: '기한', value: '잔금일 1개월 전까지 신청' },
   ];
 });
+
+/**
+ * 확정을 서버에 남기고 3루로 넘어간다.
+ *
+ * 화면에 "확정된 조건" 을 그려 놓고 넘어가기만 하면, 3루가 계약 초안을
+ * 만들 때 확정을 찾지 못해 거기서 막힌다. 실패하면 넘어가지 않는다 —
+ * 넘어간 뒤에 막히면 어디서 잘못됐는지 알 수 없다.
+ */
+async function proceed() {
+  if (!settled.value || saving.value) return;
+
+  saving.value = true;
+  saveError.value = '';
+  try {
+    await usePropertyApi().decide(planId, propertyId, settled.value.consultationId);
+    await navigateTo(`/contract/${planId}/visit`);
+  } catch (cause) {
+    saveError.value = messageFrom(cause, '확정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+  } finally {
+    saving.value = false;
+  }
+}
 
 onMounted(async () => {
   try {
@@ -107,12 +133,10 @@ onMounted(async () => {
       <p class="text-caption2 text-ink-muted">{{ title }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="pending || !settled"
-        @click="navigateTo(`/contract/${planId}/visit`)"
-      >
+    <footer class="px-gutter-tight flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+      <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
+
+      <AppButton variant="strong" :disabled="pending || saving || !settled" @click="proceed">
         3루 진행 (부동산 계약)
       </AppButton>
     </footer>
