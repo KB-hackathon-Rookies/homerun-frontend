@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useOpenBankingApi } from '~/api/openbanking';
+import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -23,13 +24,30 @@ const { connect, connection, financialSummary } = useOpenBankingApi();
 
 const done = ref(false);
 const error = ref('');
+
+/**
+ * 연동이 막히면 안내 화면으로 보낸다.
+ *
+ * 연결 실패는 막힘이 아니라 값의 출처가 바뀌는 일이다 — 직접 입력해도 판정
+ * 정확도는 같다. 그 말을 해 주는 화면이 따로 있다.
+ *
+ * 계획이 없으면 갈 곳도 없으니 이 화면에 오류만 남긴다.
+ */
+async function giveUp(message: string) {
+  const planId = currentPlan.get();
+  if (!planId) {
+    error.value = message;
+    return;
+  }
+  await navigateTo(`/status/${planId}/openbanking-failed`, { replace: true });
+}
 let timer: ReturnType<typeof setTimeout> | undefined;
 
 onMounted(async () => {
   try {
     window.open(await connect(), '_blank', 'noopener');
   } catch (cause) {
-    error.value = messageFrom(cause, '연동을 시작하지 못했어요.');
+    await giveUp(messageFrom(cause, '연동을 시작하지 못했어요.'));
     return;
   }
   poll(Date.now());
@@ -45,12 +63,12 @@ async function poll(startedAt: number) {
       return;
     }
   } catch (cause) {
-    error.value = messageFrom(cause, '연동 상태를 확인하지 못했어요.');
+    await giveUp(messageFrom(cause, '연동 상태를 확인하지 못했어요.'));
     return;
   }
 
   if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
-    error.value = '연동이 끝나지 않았어요. 다시 시도해주세요.';
+    await giveUp('연동이 끝나지 않았어요. 다시 시도해주세요.');
     return;
   }
   timer = setTimeout(() => poll(startedAt), POLL_INTERVAL_MS);
