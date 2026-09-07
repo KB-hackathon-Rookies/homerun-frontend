@@ -15,14 +15,14 @@ pnpm dev                   # http://localhost:3000
 
 ## 자주 쓰는 명령
 
-| 명령 | 하는 일 |
-|---|---|
-| `pnpm dev` | 개발 서버 (HMR) |
-| `pnpm verify` | lint + 타입체크 + 빌드. CI 가 도는 것과 같다 |
-| `pnpm lint:fix` | lint 에 걸렸을 때 고치는 명령 |
-| `pnpm typecheck` | 타입만 확인 |
-| `pnpm build` → `pnpm preview` | 프로덕션 빌드를 로컬에서 확인 |
-| `pnpm commit` | 커밋 타입을 골라서 컨벤션에 맞는 메시지로 커밋 |
+| 명령                          | 하는 일                                        |
+| ----------------------------- | ---------------------------------------------- |
+| `pnpm dev`                    | 개발 서버 (HMR)                                |
+| `pnpm verify`                 | lint + 타입체크 + 빌드. CI 가 도는 것과 같다   |
+| `pnpm lint:fix`               | lint 에 걸렸을 때 고치는 명령                  |
+| `pnpm typecheck`              | 타입만 확인                                    |
+| `pnpm build` → `pnpm preview` | 프로덕션 빌드를 로컬에서 확인                  |
+| `pnpm commit`                 | 커밋 타입을 골라서 컨벤션에 맞는 메시지로 커밋 |
 
 ## 구조
 
@@ -33,7 +33,8 @@ app/
 public/                    그대로 서빙되는 정적 파일
 nuxt.config.ts             Tailwind Vite 플러그인, ESLint 모듈, runtimeConfig
 eslint.config.mjs          .nuxt 가 만들어 준 설정을 감싼다
-Dockerfile                 SSR 런타임 이미지
+nginx.conf                 SPA 정적 서빙 (없는 경로 → index.html)
+Dockerfile                 정적 빌드 + nginx 이미지
 ```
 
 ## 규칙

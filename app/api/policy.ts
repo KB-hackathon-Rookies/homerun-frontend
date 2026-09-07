@@ -43,6 +43,8 @@ export interface PolicyVerdictDetail {
   policyCode: string;
   policyName: string;
   verdict: PolicyVerdict;
+  /** 이 판정에 쓴 규칙 버전. 계획의 규칙 버전과 다르면 다시 판정해야 한다. */
+  ruleVersion: number | null;
   basis: ConditionBasis[];
   missingFields: string[];
   /** 떨어진 이유. 첫 실패에서 멈추지 않고 전부 모아 온다. */

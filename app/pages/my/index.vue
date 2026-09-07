@@ -46,14 +46,8 @@ const materials = computed(() => [
     value: propertyCount.value === null ? '' : `${propertyCount.value}건`,
     to: `/property/${planId.value}`,
   },
-  { label: '서류 가이드', value: '발급 방법', to: `/contract/${planId.value}/documents` },
+  { label: '저장함', value: '정책 목록', to: '/my/saved' },
 ]);
-
-async function logout() {
-  await auth.logout();
-  currentPlan.clear();
-  await navigateTo('/welcome', { replace: true });
-}
 
 onMounted(async () => {
   if (!auth.user) auth.fetchMe().catch(() => {});
@@ -140,13 +134,9 @@ onMounted(async () => {
 
       <div class="rounded-card border-line bg-surface flex flex-col border p-4">
         <h2 class="text-headline2 text-ink pb-1">내 정보</h2>
-        <RowChevron
-          label="진단 정보"
-          value="다시 입력"
-          @select="navigateTo(planId ? `/diagnosis/${planId}` : '/prep')"
-        />
-        <RowChevron label="금융정보 연결" value="오픈뱅킹" @select="navigateTo('/openbanking')" />
-        <RowChevron label="로그아웃" last @select="logout" />
+        <RowChevron label="입력값 수정" value="소득·자산" @select="navigateTo('/my/inputs')" />
+        <RowChevron label="연결 관리" value="오픈뱅킹" @select="navigateTo('/my/connections')" />
+        <RowChevron label="설정" value="알림·약관" last @select="navigateTo('/my/settings')" />
       </div>
     </div>
 

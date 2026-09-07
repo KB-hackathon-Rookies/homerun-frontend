@@ -5,6 +5,22 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  /*
+   * 서버에서 그리지 않는다.
+   *
+   * 토큰이 `localStorage` 에 있어 서버는 로그인 여부를 모른다(`middleware/auth.ts`
+   * 가 서버에서 바로 손을 뗀다). 화면도 전부 `onMounted` 에서 데이터를 받는다.
+   * 그래서 SSR 이 그려 보내던 건 "불러오는 중이에요…" 뿐이었다.
+   *
+   * 대신 얻는 게 있다. 모든 경로가 `index.html` 하나에서 시작하므로 그 파일
+   * 하나를 서비스워커에 구워 두면 오프라인에서도 앱이 뜬다 — 경로마다 HTML 이
+   * 달라지는 SSR 로는 구워 둘 파일이 없다.
+   *
+   * 잃는 건 검색 노출인데, 로그인해야 쓰는 앱이라 색인될 페이지가 웰컴·로그인
+   * 정도다.
+   */
+  ssr: false,
+
   modules: ['@nuxt/eslint', '@pinia/nuxt'],
 
   // 폴더로 묶되 이름에는 접두사를 붙이지 않는다. common/AppButton.vue 가

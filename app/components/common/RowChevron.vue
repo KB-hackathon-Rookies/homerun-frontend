@@ -4,7 +4,7 @@
  *
  * 마지막 줄은 아래 선을 지운다 — 카드 테두리와 겹쳐 두 줄로 보인다.
  */
-defineProps<{ label: string; value?: string; last?: boolean }>();
+defineProps<{ label: string; value?: string; last?: boolean; disabled?: boolean }>();
 
 defineEmits<{ select: [] }>();
 </script>
@@ -12,8 +12,9 @@ defineEmits<{ select: [] }>();
 <template>
   <button
     type="button"
-    class="h-row flex w-full items-center justify-between py-3.5"
+    class="h-row flex w-full items-center justify-between py-3.5 disabled:opacity-40"
     :class="last ? '' : 'border-line-soft border-b'"
+    :disabled="disabled"
     @click="$emit('select')"
   >
     <span class="text-headline2 text-ink">{{ label }}</span>
