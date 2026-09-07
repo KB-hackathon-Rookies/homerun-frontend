@@ -25,7 +25,8 @@ export type IconName =
   | 'bell'
   | 'search'
   | 'persons'
-  | 'bolt';
+  | 'bolt'
+  | 'share';
 
 const { name } = defineProps<{ name: IconName }>();
 
@@ -46,6 +47,8 @@ const PATHS: Record<IconName, string> = {
   persons:
     'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6 9a6 6 0 0 1 12 0m1.5-15.7a3.5 3.5 0 0 1 0 6.9M17 20h4a5 5 0 0 0-3-4.6',
   bolt: 'M13 3 5 13.5h6L11 21l8-10.5h-6z',
+  /* iOS 공유 버튼. 위로 향한 화살표가 상자에서 나가는 모양이다. */
+  share: 'M12 15V3m0 0L8 7m4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7',
 };
 </script>
 
