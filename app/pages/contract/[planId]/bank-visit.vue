@@ -83,7 +83,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/resident-cert`)">
         방문 예약 완료
       </AppButton>

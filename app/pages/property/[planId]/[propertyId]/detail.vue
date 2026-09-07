@@ -106,7 +106,7 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(`/property/${planId}/${propertyId}/registry`)">
         등기부등본 확인하러 가기
       </AppButton>

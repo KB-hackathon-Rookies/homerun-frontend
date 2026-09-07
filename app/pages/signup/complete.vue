@@ -36,7 +36,7 @@ const greeting = computed(() =>
       </div>
     </div>
 
-    <footer class="flex shrink-0 px-4 pb-6">
+    <footer class="flex shrink-0 px-4 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo('/openbanking', { replace: true })">
         시작하기
       </AppButton>

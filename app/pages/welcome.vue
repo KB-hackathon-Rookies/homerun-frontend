@@ -26,7 +26,7 @@
       <StepIndicator />
     </div>
 
-    <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pt-2.5 pb-6">
+    <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
       <AppButton @click="navigateTo('/onboarding')">시작하기</AppButton>
       <AppButton variant="white" @click="navigateTo('/login')">이미 가입했어요</AppButton>
     </footer>

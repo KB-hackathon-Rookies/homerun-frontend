@@ -95,7 +95,7 @@ onMounted(() => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(HOMETAX_URL, { external: true })">
         홈택스 간소화 열기
       </AppButton>

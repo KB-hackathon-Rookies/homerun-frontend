@@ -75,7 +75,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton @click="navigateTo(`/diagnosis/${planId}`)">부족한 값 채우러 가기</AppButton>
     </footer>
   </PhoneFrame>

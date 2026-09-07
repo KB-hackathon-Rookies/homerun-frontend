@@ -91,7 +91,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <!-- 대출 신청 화면은 다음 묶음이다. 생기면 여기서 잇는다. -->
       <AppButton
         variant="strong"

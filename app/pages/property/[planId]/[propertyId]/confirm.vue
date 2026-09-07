@@ -107,7 +107,7 @@ onMounted(async () => {
       <p class="text-caption2 text-ink-muted">{{ title }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         :disabled="pending || !settled"

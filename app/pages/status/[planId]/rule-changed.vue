@@ -103,7 +103,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton :disabled="recalculating" @click="recalculate">
         {{ recalculating ? '다시 판정하는 중…' : '지금 다시 판정' }}
       </AppButton>

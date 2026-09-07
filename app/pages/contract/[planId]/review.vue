@@ -55,7 +55,7 @@ const checked = ref<Record<string, boolean>>({});
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
         심사 정상 · D-day 준비
       </AppButton>

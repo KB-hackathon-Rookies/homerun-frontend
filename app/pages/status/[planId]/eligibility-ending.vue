@@ -100,7 +100,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton @click="navigateTo(`/result/${planId}/spec`)">기한 안에 신청 준비하기</AppButton>
     </footer>
   </PhoneFrame>

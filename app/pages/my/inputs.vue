@@ -159,7 +159,7 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton :disabled="!changed || saving" @click="save">
         {{ saving ? '저장 중…' : '영향 확인하고 저장' }}
       </AppButton>

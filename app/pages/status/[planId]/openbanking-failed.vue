@@ -66,7 +66,7 @@ onMounted(() => {
       </SectionCard>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-6">
+    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <AppButton @click="navigateTo('/openbanking')">다시 시도</AppButton>
       <AppButton variant="white" @click="navigateTo(`/diagnosis/${planId}/finance`)">
         직접 입력할게요

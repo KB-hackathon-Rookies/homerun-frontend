@@ -31,7 +31,7 @@ defineEmits<{ back: [] }>();
       <slot />
     </div>
 
-    <footer class="bg-surface px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="bg-surface px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <slot name="cta" />
     </footer>
   </div>

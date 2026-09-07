@@ -29,7 +29,7 @@ const { pending, error, cards, basisOf } = useJeonsePolicies(planId);
       <MatchPolicyCard v-for="card in cards" :key="card.code" :card="card" :basis="basisOf(card)" />
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         :disabled="pending || !cards.length"

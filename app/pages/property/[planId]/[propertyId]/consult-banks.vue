@@ -69,7 +69,7 @@ const start = () =>
       </p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!chosen.length" @click="start">
         {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
       </AppButton>

@@ -69,7 +69,7 @@ const PARTS = [
       </button>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
