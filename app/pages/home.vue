@@ -172,6 +172,12 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!--
+        설치 안내. 계획이 생겨 돌아올 이유가 있는 사람에게만 보인다 —
+        첫 화면에서 바로 물으면 대부분 거절한다.
+      -->
+      <InstallCard v-if="planId" />
+
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between px-1 pt-2 pb-1">
           <h2 class="text-section text-ink-hero">최근 이슈</h2>
