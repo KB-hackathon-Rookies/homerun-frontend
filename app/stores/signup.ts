@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
 import { useAuthApi } from '~/api/auth';
+import { useRequiredTerms } from '~/composables/useRequiredTerms';
 
 import { useAuthStore } from './auth';
 
@@ -41,6 +42,14 @@ export const useSignupStore = defineStore('signup', {
       });
 
       auth.apply(response);
+
+      /*
+       * 약관 화면에서 받은 동의를 여기서 서버에 남긴다. 목록 조회에 인증이
+       * 필요해 가입 전에는 부를 수 없어서다. 이걸 빠뜨리면 백엔드가 이후
+       * 요청을 전부 403 으로 막는다.
+       */
+      await useRequiredTerms().ensure();
+
       this.$reset();
       return response;
     },

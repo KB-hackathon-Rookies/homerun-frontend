@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
 import { useAuthApi, type MemberResponse } from '~/api/auth';
+import { useRequiredTerms } from '~/composables/useRequiredTerms';
 import { tokenStorage } from '~/plugins/api';
 
 /**
@@ -34,6 +35,17 @@ export const useAuthStore = defineStore('auth', {
       const { login } = useAuthApi();
       // 로그인 응답에 회원 정보까지 들어 있다. /me 를 또 부를 이유가 없다.
       this.apply(await login(email, password));
+
+      /*
+       * 동의 기록이 없으면 백엔드가 이후 요청을 전부 403 으로 막는다. 가입할
+       * 때 남기지 못한 계정이 있을 수 있어 로그인 때도 확인한다.
+       *
+       * 여기서 실패해도 로그인 자체는 유지한다. 막히는 건 다음 화면이고,
+       * 그때 서버 문구가 뜬다.
+       */
+      await useRequiredTerms()
+        .ensure()
+        .catch(() => {});
     },
 
     async fetchMe() {
