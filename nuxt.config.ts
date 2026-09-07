@@ -21,7 +21,7 @@ export default defineNuxtConfig({
    */
   ssr: false,
 
-  modules: ['@nuxt/eslint', '@pinia/nuxt'],
+  modules: ['@nuxt/eslint', '@pinia/nuxt', '@vite-pwa/nuxt'],
 
   // 폴더로 묶되 이름에는 접두사를 붙이지 않는다. common/AppButton.vue 가
   // <CommonAppButton /> 이 아니라 <AppButton /> 으로 쓰인다.
@@ -37,6 +37,60 @@ export default defineNuxtConfig({
        * 그 두께를 이 값으로 받는다.
        */
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+
+      link: [
+        /*
+         * 매니페스트 링크를 직접 건다. SPA 로 뽑을 때는 모듈이 이 링크를 넣어
+         * 주지 않아서, 없으면 브라우저가 설치 가능한 앱으로 보지 않는다.
+         */
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        // iOS 는 매니페스트의 아이콘을 보지 않는다. 이 링크로만 홈 화면 아이콘을 정한다.
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+      ],
+
+      meta: [
+        { name: 'theme-color', content: '#3366ff' },
+        /*
+         * iOS 에서 주소창 없이 뜨게 한다. `black-translucent` 는 상태바를 화면
+         * 위에 겹치는데, 그 두께는 `env(safe-area-inset-top)` 이 받는다.
+         */
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: '홈런' },
+      ],
+    },
+  },
+
+  /*
+   * 설치되는 앱으로서의 자기 소개.
+   *
+   * 서비스워커는 아직 등록하지 않는다. 기본값으로 나온 `sw.js` 가 앱 셸을 굽지
+   * 않은 채 모든 이동을 `/` 로 넘기게 되어 있어, 그대로 켜면 오프라인은커녕
+   * 평소 이동까지 깨진다. 굽는 목록과 폴백은 서비스워커 작업에서 정한다.
+   */
+  pwa: {
+    // 매니페스트만 먼저 세운다. 등록은 서비스워커 작업에서 켠다.
+    injectRegister: false,
+    client: { registerPlugin: false },
+
+    manifest: {
+      name: '홈런 — 청년 첫 독립 코치',
+      short_name: '홈런',
+      description: '전세 계약을 1루부터 홈까지, 놓치는 것 없이 함께 도는 코치',
+      lang: 'ko',
+      start_url: '/',
+      scope: '/',
+      display: 'standalone',
+      // 세로 고정 디자인이다. 가로로 돌리면 390 폭 기준이 다 어긋난다.
+      orientation: 'portrait',
+      background_color: '#ffffff',
+      theme_color: '#3366ff',
+      icons: [
+        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+        // 안드로이드는 이걸 원·스퀴클 등으로 잘라 쓴다. 가장자리가 잘려도 캐릭터가 남는다.
+        { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
     },
   },
 
