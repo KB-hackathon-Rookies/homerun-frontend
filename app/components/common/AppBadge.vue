@@ -9,7 +9,7 @@
  * 배경(`solid`)은 카드마다 하나씩 달려 목록을 훑을 때 눈에 걸려야 하는 자리다.
  * 1루 결과 목록이 뒤쪽이다.
  */
-type Tone = 'positive' | 'cautionary' | 'negative' | 'informative';
+type Tone = 'positive' | 'cautionary' | 'negative' | 'informative' | 'brand';
 
 const { tone = 'positive', fill = 'soft' } = defineProps<{
   tone?: Tone;
@@ -21,6 +21,8 @@ const SOFT: Record<Tone, string> = {
   cautionary: 'bg-badge-warning text-warning-strong',
   negative: 'bg-badge-danger text-danger',
   informative: 'bg-surface-brand text-primary-deep',
+  /** 판정이 아니라 화면 상태를 말하는 자리. 마이·상태 화면이 쓴다. */
+  brand: 'bg-surface-info text-primary-strong',
 };
 
 const SOLID: Record<Tone, string> = {
@@ -28,6 +30,7 @@ const SOLID: Record<Tone, string> = {
   cautionary: 'bg-warning-strong text-white',
   negative: 'bg-danger text-white',
   informative: 'bg-primary-strong text-white',
+  brand: 'bg-primary-strong text-white',
 };
 </script>
 

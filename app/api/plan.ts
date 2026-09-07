@@ -73,6 +73,13 @@ export interface PlanInput {
   /** 4루가 주거비 비중(RIR)을 계산할 때 분모로 쓴다. */
   monthlyIncome: number | null;
   maintenanceFee: number | null;
+  netAssets: number | null;
+  /** 부모와 주민등록상 시·군이 다른가. 마이의 가구 항목이 이걸 뒤집어 보여준다. */
+  livesApartFromParents: boolean | null;
+  /** 오픈뱅킹에서 읽어온 값인가, 사용자가 적은 값인가. */
+  incomeSource: FinancialValueSource | null;
+  /** 조회값을 사용자가 확인했는가. 확인 전에는 판정에 쓰지 않는다. */
+  financialDataConfirmed: boolean | null;
   revision: number;
 }
 
@@ -90,6 +97,16 @@ export function usePlanApi() {
     async create(leaseType: LeaseType) {
       const { data } = await $api.post<ApiResponse<PlanResponse>>(BASE, { leaseType });
       return data.data;
+    },
+
+    /**
+     * 진행 상태를 처음으로 돌린다.
+     *
+     * 입력값은 남고 관문·할 일만 되감긴다. 되돌릴 수 없으므로 화면에서 한 번
+     * 더 묻고 부른다.
+     */
+    async reset(planId: number) {
+      await $api.post<ApiResponse<unknown>>(`${BASE}/${planId}/reset`);
     },
 
     /** 저장해 둔 입력을 되읽는다. 2루가 희망 보증금을 여기서 가져간다. */
