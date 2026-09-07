@@ -30,7 +30,8 @@ pnpm dev                   # http://localhost:3000
 app/
   app.vue                  진입점 (지우고 여기서부터 시작)
   assets/css/main.css      Tailwind 진입 CSS
-public/                    그대로 서빙되는 정적 파일
+public/                    그대로 서빙되는 정적 파일 (앱 아이콘 포함)
+app/assets/brand/          아이콘 원본. scripts/icons.sh 가 여기서 뽑는다
 nuxt.config.ts             Tailwind Vite 플러그인, ESLint 모듈, runtimeConfig
 eslint.config.mjs          .nuxt 가 만들어 준 설정을 감싼다
 nginx.conf                 SPA 정적 서빙 (없는 경로 → index.html)
