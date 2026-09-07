@@ -19,12 +19,12 @@ export const SETTLE_TOPICS: SettleTopic[] = [
   { code: 'asset-review', title: '사후자산심사', ready: true },
   { code: 'moving-support', title: '중개보수·이사비 지원', ready: true },
   { code: 'checkin', title: '월간 정착 체크인', ready: true },
-  { code: 'rate-cut', title: '금리인하요구권', ready: false },
-  { code: 'education', title: '교육과 예방', ready: false },
-  { code: 'tax-deduction', title: '연말정산 소득공제', ready: false },
-  { code: 'renewal', title: '갱신 판정', ready: false },
-  { code: 'move-out', title: '퇴거 준비', ready: false },
-  { code: 'deposit-unreturned', title: '보증금 미반환 대응', ready: false },
+  { code: 'rate-cut', title: '금리인하요구권', ready: true },
+  { code: 'education', title: '교육과 예방', ready: true },
+  { code: 'tax-deduction', title: '연말정산 소득공제', ready: true },
+  { code: 'renewal', title: '갱신 판정', ready: true },
+  { code: 'move-out', title: '퇴거 준비', ready: true },
+  { code: 'deposit-unreturned', title: '보증금 미반환 대응', ready: true },
 ];
 
 export function settlePath(code: string, planId: number) {

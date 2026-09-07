@@ -92,8 +92,7 @@ onMounted(async () => {
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-6">
-      <!-- 홈(4루) 화면이 아직 없다. 생기면 여기서 잇는다. -->
-      <AppButton variant="strong" @click="navigateTo(`/property/${planId}`)">
+      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">
         보증료 지원 신청하러 (홈)
       </AppButton>
     </footer>
