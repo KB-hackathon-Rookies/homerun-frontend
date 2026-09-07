@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { usePlanApi, type DiagnosisStep, type DiagnosisStepPatch } from '~/api/plan';
+import type { DiagnosisStep, DiagnosisStepPatch } from '~/api/plan';
+import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -11,6 +12,9 @@ import { messageFrom } from '~/utils/error';
  * 단계마다 바로 저장한다. 백엔드가 부분 저장을 받고(`.../input/steps/{code}`)
  * 다음 단계와 새 `revision` 을 돌려준다. 그 값을 다음 저장에 그대로 실어야
  * 다른 기기가 먼저 고친 걸 서버가 알아챈다.
+ *
+ * 시작값은 서버에서 읽어야 한다. `prep` 이 계획을 만들면서 이미 한 번
+ * 저장하기 때문에, 0 에서 시작하면 첫 답부터 어긋난다.
  *
  * 플랜 번호는 주소에 있다. 새로고침해도 이어서 할 수 있어야 한다. 남의 플랜을
  * 넣어도 백엔드가 소유자를 확인해서 막는다.
@@ -107,7 +111,7 @@ const planId = Number(route.params.planId);
 
 const index = ref(0);
 const answers = ref<Record<string, string>>({});
-const revision = ref(0);
+const { load, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
 
@@ -125,20 +129,15 @@ const notice = computed(
   () => question.value.choices.find((c) => c.value === answer.value)?.warn ?? question.value.note,
 );
 
+onMounted(load);
+
 async function next() {
   if (!answer.value || pending.value) return;
-  const { saveStep } = usePlanApi();
 
   pending.value = true;
   error.value = '';
   try {
-    const result = await saveStep(
-      planId,
-      question.value.step,
-      revision.value,
-      question.value.toPatch(answer.value),
-    );
-    revision.value = result.revision;
+    await saveStep(question.value.step, question.value.toPatch(answer.value));
 
     if (isLast.value) {
       await navigateTo(`/diagnosis/${planId}/finance`);

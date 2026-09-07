@@ -58,7 +58,17 @@ export interface DiagnosisStepPatch {
   financialDataConfirmed?: boolean;
   hopeDeposit?: number;
   regionId?: number;
+  /**
+   * 값을 모른다고 표시할 항목.
+   *
+   * 백엔드는 단계마다 "값이 있거나 모름으로 표시됐거나" 를 요구한다. 우리가
+   * 묻지 않는 항목은 비워 두는 게 아니라 모름이라고 말해야 넘어간다.
+   */
+  unknownFields?: PlanInputUnknownField[];
 }
+
+/** 모름으로 표시할 수 있는 항목. 지금 쓰는 것만 적었다. */
+export type PlanInputUnknownField = 'AVAILABLE_CASH';
 
 export interface DiagnosisStepResult {
   nextStep: DiagnosisStep | null;

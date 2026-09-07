@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
-import { usePlanApi, type DiagnosisStep, type DiagnosisStepPatch } from '~/api/plan';
+import type { DiagnosisStep, DiagnosisStepPatch } from '~/api/plan';
 import { useRegionApi, type RegionOption } from '~/api/region';
+import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
@@ -23,7 +24,7 @@ const STEPS = ['CONFIRM', 'MANUAL', 'DEPOSIT', 'REGION'] as const;
 type Step = (typeof STEPS)[number];
 
 const step = ref<Step>('CONFIRM');
-const revision = ref(0);
+const { load, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
 
@@ -43,6 +44,9 @@ const onlyDigits = (value: string) => Number(value.replace(/\D/g, '')) || 0;
 const toWon = (value: string) => onlyDigits(value) * 10_000;
 
 onMounted(async () => {
+  // 문진에서 이어 오므로 서버가 들고 있는 판이 이미 여러 번 올라가 있다.
+  await load();
+
   const { financialSummary } = useOpenBankingApi();
   const { jeonseOptions } = useRegionApi();
 
@@ -77,9 +81,7 @@ const depositNotice = computed(() =>
 );
 
 async function save(code: DiagnosisStep, patch: DiagnosisStepPatch) {
-  const { saveStep } = usePlanApi();
-  const result = await saveStep(planId, code, revision.value, patch);
-  revision.value = result.revision;
+  await saveStep(code, patch);
 }
 
 async function next() {
@@ -99,6 +101,7 @@ async function next() {
         incomeSource: 'OPEN_BANKING',
         assetSource: 'OPEN_BANKING',
         financialDataConfirmed: true,
+        unknownFields: ['AVAILABLE_CASH'],
       });
       step.value = 'DEPOSIT';
       return;
@@ -111,6 +114,7 @@ async function next() {
         incomeSource: 'MANUAL',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
+        unknownFields: ['AVAILABLE_CASH'],
       });
       step.value = 'DEPOSIT';
       return;
