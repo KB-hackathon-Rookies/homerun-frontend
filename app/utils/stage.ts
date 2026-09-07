@@ -58,6 +58,6 @@ export function resumePath(stage: PlanStage, planId: number) {
     case 'THIRD':
       return `/contract/${planId}/schedule`;
     case 'HOME':
-      return `/contract/${planId}/after-settlement`;
+      return `/settle/${planId}`;
   }
 }
