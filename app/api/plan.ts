@@ -17,6 +17,8 @@ export interface PlanResponse {
   leaseType: LeaseType;
   stage: string;
   status: string;
+  /** 이 계획을 판정할 때 쓰는 규칙 버전. 지침이 개정되면 올라간다. */
+  ruleVersion: string | null;
 }
 
 /** 문진이 채우는 값만 추렸다. 입력값에는 이보다 훨씬 많은 필드가 있다. */
@@ -76,6 +78,12 @@ export interface PlanInput {
   netAssets: number | null;
   /** 부모와 주민등록상 시·군이 다른가. 마이의 가구 항목이 이걸 뒤집어 보여준다. */
   livesApartFromParents: boolean | null;
+  /** 1루 완료에 필요한 값들. 하나라도 비면 판정을 시작할 수 없다. */
+  isHomeless: boolean | null;
+  householderStatus: HouseholderStatus | null;
+  employmentType: EmploymentType | null;
+  companySize: CompanySize | null;
+  employmentMonths: number | null;
   /** 오픈뱅킹에서 읽어온 값인가, 사용자가 적은 값인가. */
   incomeSource: FinancialValueSource | null;
   /** 조회값을 사용자가 확인했는가. 확인 전에는 판정에 쓰지 않는다. */
@@ -105,6 +113,11 @@ export function usePlanApi() {
      * 입력값은 남고 관문·할 일만 되감긴다. 되돌릴 수 없으므로 화면에서 한 번
      * 더 묻고 부른다.
      */
+    async get(planId: number) {
+      const { data } = await $api.get<ApiResponse<PlanResponse>>(`${BASE}/${planId}`);
+      return data.data;
+    },
+
     async reset(planId: number) {
       await $api.post<ApiResponse<unknown>>(`${BASE}/${planId}/reset`);
     },
