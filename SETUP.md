@@ -2,10 +2,10 @@
 
 ## 필요한 것
 
-| | 버전 | 비고 |
-|---|---|---|
-| Node.js | 22.19+ 또는 24.11+ | Nuxt 4.5 요구사항 |
-| pnpm | 11.x | `corepack enable` 하면 자동으로 맞춰진다 |
+|         | 버전               | 비고                                     |
+| ------- | ------------------ | ---------------------------------------- |
+| Node.js | 22.19+ 또는 24.11+ | Nuxt 4.5 요구사항                        |
+| pnpm    | 11.x               | `corepack enable` 하면 자동으로 맞춰진다 |
 
 pnpm 을 따로 설치할 필요는 없다. `package.json` 의 `packageManager` 필드에 버전이
 박혀 있어서, corepack 이 그 버전을 알아서 받아 쓴다.
@@ -37,11 +37,11 @@ pnpm install
 
 설치되는 훅:
 
-| 훅 | 하는 일 | 걸리는 시간 |
-|---|---|---|
-| pre-commit | `pnpm lint` | 몇 초 |
-| commit-msg | commitlint — 커밋 메시지 형식 | 즉시 |
-| pre-push | `pnpm lint && pnpm typecheck` | 수십 초 |
+| 훅         | 하는 일                       | 걸리는 시간 |
+| ---------- | ----------------------------- | ----------- |
+| pre-commit | `pnpm lint`                   | 몇 초       |
+| commit-msg | commitlint — 커밋 메시지 형식 | 즉시        |
+| pre-push   | `pnpm lint && pnpm typecheck` | 수십 초     |
 
 ## 3. 실행
 
@@ -64,8 +64,12 @@ docker build -t homerun-frontend:local .
 docker run --rm -p 3000:3000 homerun-frontend:local
 ```
 
-`nuxt build` 결과물인 `.output` 은 자기 의존성을 전부 품고 있어서, 런타임 이미지에
-`node_modules` 를 다시 넣지 않는다. 그래서 이미지가 작다.
+SSR 을 껐기 때문에 런타임에 Node 가 필요 없다. `pnpm generate` 가 앱 셸과 자산을
+`.output/public` 에 떨구고, nginx 가 그것만 서빙한다.
+
+라우팅은 브라우저가 한다. 서버에는 `/settle/1/checkin` 같은 파일이 없으므로 없는
+경로를 전부 `index.html` 로 넘긴다(`nginx.conf`). 다른 정적 호스팅에 올릴 때도 이
+폴백 설정이 필요하다.
 
 ## 자주 막히는 곳
 
@@ -76,6 +80,7 @@ docker run --rm -p 3000:3000 homerun-frontend:local
 같은 원인이다. `.nuxt/` 가 있어야 한다. `tsconfig.json` 은 `.nuxt` 안의 설정을 참조만 한다.
 
 **pre-commit 에서 lint 에 걸림**
+
 ```bash
 pnpm lint:fix && git add -A
 ```
@@ -85,6 +90,7 @@ pnpm lint:fix && git add -A
 타입 목록은 `commitlint.config.js` 에 있다. `pnpm commit` 으로 고르는 게 안전하다.
 
 **포트 충돌**
+
 ```bash
 pnpm dev --port 3001
 ```
