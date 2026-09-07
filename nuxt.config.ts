@@ -73,6 +73,18 @@ export default defineNuxtConfig({
     // 새 버전이 나와도 말없이 바꾸지 않는다. 쓰던 화면이 갑자기 갈아엎히면 곤란하다.
     registerType: 'prompt',
 
+    /*
+     * 워커를 직접 쓴다.
+     *
+     * 브라우저는 범위마다 워커를 **하나만** 등록한다. 푸시용 워커를 따로 두면
+     * 둘 중 하나가 밀려나 캐싱이나 알림 중 하나가 죽는다. 그래서 굽는 일과
+     * 알림 받는 일을 한 파일에서 한다(`app/sw.ts`).
+     */
+    strategies: 'injectManifest',
+    // 이 경로는 Nuxt 소스 폴더(`app/`) 기준이다. 그래서 `app/sw.ts` 를 가리킨다.
+    srcDir: '.',
+    filename: 'sw.ts',
+
     manifest: {
       name: '홈런 — 청년 첫 독립 코치',
       short_name: '홈런',
@@ -93,21 +105,16 @@ export default defineNuxtConfig({
       ],
     },
 
-    workbox: {
+    injectManifest: {
       /*
        * 구울 목록. 앱 셸(`index.html`)이 여기 들어와야 폴백이 성립한다.
        *
-       * 기본값은 이 목록을 거의 비운 채 폴백만 걸어 두어서, 그대로 켜면 굽지도
-       * 않은 주소로 모든 이동을 넘기다 깨진다.
+       * 폴백과 캐시 정리는 워커 안에서 직접 부른다 — `injectManifest` 는 굽는
+       * 목록만 끼워 넣고 나머지는 우리가 쓴 코드를 그대로 쓴다.
        */
       globPatterns: ['**/*.{js,css,html,png,svg,ico,webmanifest,woff2}'],
-
-      // 라우팅은 브라우저가 한다. 서버에 없는 주소는 전부 앱 셸이 받는다.
-      navigateFallback: '/',
-      // 백엔드로 가는 요청까지 앱 셸로 돌리면 안 된다.
-      navigateFallbackDenylist: [/^\/api\//],
-
-      cleanupOutdatedCaches: true,
+      // Firebase 를 품은 워커라 기본 한도(2MB)를 넘는다.
+      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
     },
 
     client: {
@@ -125,6 +132,25 @@ export default defineNuxtConfig({
   // Vite 플러그인 하나와 CSS 의 @import "tailwindcss" 가 전부다.
   vite: {
     plugins: [tailwindcss()],
+
+    /*
+     * 서비스워커에도 Firebase 설정을 넣어야 한다.
+     *
+     * 워커는 `useRuntimeConfig()` 를 못 쓴다 — Nuxt 앱 바깥에서 도는 별개
+     * 스크립트다. 그런데 백그라운드 알림은 앱이 떠 있지 않을 때 오므로,
+     * 워커가 자기 힘으로 Firebase 를 붙일 수 있어야 한다. 그래서 빌드할 때
+     * 값을 박아 넣는다.
+     */
+    define: {
+      __FIREBASE_CONFIG__: JSON.stringify({
+        apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY ?? '',
+        authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? '',
+        projectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID ?? '',
+        storageBucket: process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? '',
+        messagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '',
+        appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID ?? '',
+      }),
+    },
   },
 
   typescript: {
@@ -137,6 +163,22 @@ export default defineNuxtConfig({
     public: {
       // 백엔드 주소. .env 의 NUXT_PUBLIC_API_BASE 로 덮어쓴다.
       apiBase: 'http://localhost:8080',
+
+      /*
+       * Firebase 웹 앱 설정. 전부 `.env` 의 NUXT_PUBLIC_FIREBASE_* 로 덮어쓴다.
+       *
+       * 비밀이 아니다 — 이 값들은 원래 브라우저에 실려야 동작한다. 푸시를
+       * **보내는** 권한은 서비스 계정에 있고 그건 백엔드에만 있다.
+       */
+      firebase: {
+        apiKey: '',
+        authDomain: '',
+        projectId: '',
+        storageBucket: '',
+        messagingSenderId: '',
+        appId: '',
+        vapidKey: '',
+      },
     },
   },
 });

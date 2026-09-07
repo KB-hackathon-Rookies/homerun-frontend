@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useContractApi, type ContractEntry, type ContractSchedule } from '~/api/contract';
 import { dday, formatLongDate, formatShortDate } from '~/utils/date';
+import { usePush } from '~/composables/usePush';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -14,6 +15,8 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+const push = usePush();
 
 const entry = ref<ContractEntry | null>(null);
 const schedule = ref<ContractSchedule | null>(null);
@@ -57,6 +60,14 @@ async function save() {
   try {
     await useContractApi().saveBalanceDate(planId, entry.value, balanceDate.value);
     await load();
+    /*
+     * 마감이 실제로 생긴 순간이다. 여기서 묻는다.
+     *
+     * 첫 화면에서 물으면 대부분 거절하고, 한 번 거절하면 브라우저 설정에
+     * 들어가야 되돌릴 수 있다. 잔금일은 하루만 밀려도 되돌릴 수 없어서
+     * 알림이 실제로 쓸모 있어지는 이 자리에서 묻는 게 맞다.
+     */
+    await push.enable();
   } catch (cause) {
     error.value = messageFrom(cause, '일정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
