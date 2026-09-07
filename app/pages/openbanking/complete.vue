@@ -3,8 +3,6 @@
  * 오픈뱅킹 연동 완료.
  *
  * 가입 완료 화면과 같은 틀이다. 문구와 다음 순서만 다르다.
- *
- * 메인 화면은 아직 없다. 만들어지면 아래 이동 경로만 바꾸면 된다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -38,7 +36,7 @@ const greeting = computed(() =>
     </div>
 
     <footer class="flex shrink-0 px-4 pb-6">
-      <AppButton variant="strong" @click="navigateTo('/', { replace: true })">
+      <AppButton variant="strong" @click="navigateTo('/home', { replace: true })">
         메인 화면으로 이동
       </AppButton>
     </footer>
