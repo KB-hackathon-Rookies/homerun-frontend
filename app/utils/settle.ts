@@ -16,9 +16,9 @@ export interface SettleTopic {
 export const SETTLE_TOPICS: SettleTopic[] = [
   { code: 'return-guarantee', title: '반환보증 가입', ready: true },
   { code: 'fee-support', title: '보증료 지원 신청', ready: true },
-  { code: 'asset-review', title: '사후자산심사', ready: false },
-  { code: 'moving-support', title: '중개보수·이사비 지원', ready: false },
-  { code: 'checkin', title: '월간 정착 체크인', ready: false },
+  { code: 'asset-review', title: '사후자산심사', ready: true },
+  { code: 'moving-support', title: '중개보수·이사비 지원', ready: true },
+  { code: 'checkin', title: '월간 정착 체크인', ready: true },
   { code: 'rate-cut', title: '금리인하요구권', ready: false },
   { code: 'education', title: '교육과 예방', ready: false },
   { code: 'tax-deduction', title: '연말정산 소득공제', ready: false },

@@ -70,6 +70,9 @@ export interface PlanInput {
   planId: number;
   hopeDeposit: number | null;
   regionId: number | null;
+  /** 4루가 주거비 비중(RIR)을 계산할 때 분모로 쓴다. */
+  monthlyIncome: number | null;
+  maintenanceFee: number | null;
   revision: number;
 }
 
