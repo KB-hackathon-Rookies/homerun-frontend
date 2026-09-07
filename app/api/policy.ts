@@ -83,6 +83,15 @@ export interface JeonsePolicyVerdicts {
   cards: LoanCard[];
 }
 
+/** 새로 우대금리 대상이 된 조건 하나. `rateBonus` 단위는 %p — 기준금리에서 이만큼 뺀다. */
+export interface PreferentialRateChange {
+  code: string;
+  label: string;
+  rateBonus: number;
+  requiredText: string | null;
+  sourceUrl: string | null;
+}
+
 export function usePolicyApi() {
   const { $api } = useNuxtApp();
 
@@ -100,6 +109,40 @@ export function usePolicyApi() {
         propertyId === undefined ? undefined : { params: { propertyId } },
       );
       return data.data;
+    },
+
+    /**
+     * 담보별 반환보증 가입 가능성을 판정한다.
+     *
+     * 전세대출 판정과 달리 **집 기준**이다 — 공시가격이 있어야 판정이 나오므로
+     * 매물 번호가 필수다.
+     */
+    async evaluateReturnGuarantees(planId: number, propertyId: number) {
+      const { data } = await $api.post<ApiResponse<JeonsePolicyVerdicts>>(
+        `${BASE}/${planId}/policies/jeonse/properties/${propertyId}/return-guarantees/evaluate`,
+      );
+      return data.data;
+    },
+
+    /**
+     * 보증료 지원 자격을 판정한다.
+     *
+     * PASS 가 지원 확정이 아니다. 지자체 예산이 소진되면 자격이 있어도 못 받는다 —
+     * 화면에서 그 말을 지우지 않는다.
+     */
+    async evaluateGuaranteeFeeSupport(planId: number) {
+      const { data } = await $api.post<ApiResponse<JeonsePolicyVerdicts>>(
+        `${BASE}/${planId}/policies/jeonse/guarantee-fee-support/evaluate`,
+      );
+      return data.data;
+    },
+
+    /** 직전 입력 대비 새로 우대금리 대상이 된 조건. 없으면 빈 배열이다. */
+    async preferentialRateChanges(planId: number) {
+      const { data } = await $api.get<
+        ApiResponse<{ planId: number; changes: PreferentialRateChange[] }>
+      >(`${BASE}/${planId}/policies/jeonse/preferential-rate-changes`);
+      return data.data.changes;
     },
   };
 }

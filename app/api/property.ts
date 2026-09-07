@@ -84,10 +84,34 @@ export interface PropertyAnalysis {
   workflow: PropertyWorkflow;
 }
 
+/** 2루 끝에 고른 매물과 그 매물로 받기로 한 대출 조건. */
+export interface PropertyDecision {
+  decisionId: number;
+  decisionRevision: number;
+  property: PropertyCandidate;
+  consultation: {
+    consultationId: number;
+    bankName: string;
+    loanProduct: string;
+    collateralMethod: string;
+    approvedLimit: number | null;
+    quotedRate: number | null;
+  } | null;
+  decidedAt: string;
+}
+
 export function usePropertyApi() {
   const { $api } = useNuxtApp();
 
   return {
+    /** 확정한 매물·대출 조건. 4루는 이걸 기준으로 담보와 상품을 말한다. */
+    async decision(planId: number) {
+      const { data } = await $api.get<ApiResponse<PropertyDecision>>(
+        `${properties(planId)}/decision`,
+      );
+      return data.data;
+    },
+
     async candidates(planId: number) {
       const { data } = await $api.get<ApiResponse<PropertyCandidate[]>>(properties(planId));
       return data.data;
