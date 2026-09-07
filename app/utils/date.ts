@@ -6,7 +6,13 @@
  */
 const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
 
-const asDate = (value: string) => new Date(`${value}T00:00:00`);
+/**
+ * 백엔드가 날짜(`2026-11-20`)와 시각(`2026-11-20T09:00:00Z`)을 둘 다 준다.
+ *
+ * 날짜만 오면 그날 자정으로 읽고, 시각이 붙어 있으면 그대로 넘긴다 — 시각에
+ * `T00:00:00` 을 덧붙이면 `Invalid Date` 가 되어 "NaN. NaN. NaN." 이 찍힌다.
+ */
+const asDate = (value: string) => new Date(value.includes('T') ? value : `${value}T00:00:00`);
 
 /** "11.20 목" */
 export function formatShortDate(value: string) {
