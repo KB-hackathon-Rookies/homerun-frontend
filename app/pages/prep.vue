@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePlanApi, type LeaseType } from '~/api/plan';
+import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -81,6 +82,8 @@ async function submit() {
   error.value = '';
   try {
     const plan = await create(leaseType.value as LeaseType);
+    // 홈이 이 번호로 대시보드를 읽는다. 계획 목록 API 가 없어 여기서 적어 둔다.
+    currentPlan.set(plan.id);
     await saveInput(plan.id, {
       livesApartFromParents: situation.value === 'RENTING',
       ...(skipsDeposit.value ? {} : { currentDeposit: depositAmount.value }),

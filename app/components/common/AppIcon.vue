@@ -22,7 +22,10 @@ export type IconName =
   | 'document'
   | 'building'
   | 'shield'
-  | 'bell';
+  | 'bell'
+  | 'search'
+  | 'persons'
+  | 'bolt';
 
 const { name } = defineProps<{ name: IconName }>();
 
@@ -39,6 +42,10 @@ const PATHS: Record<IconName, string> = {
   building: 'M4 21V6l7-3v18M11 21V9l9 3v9M7 9h1m-1 3h1m-1 3h1m7 0h1m-1 3h1',
   shield: 'M12 3.5 20 6v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6zm-3 8.5 2.5 2.5L16 10',
   bell: 'M6 9a6 6 0 1 1 12 0v5l2 3H4l2-3zm4 11h4',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 4 4',
+  persons:
+    'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6 9a6 6 0 0 1 12 0m1.5-15.7a3.5 3.5 0 0 1 0 6.9M17 20h4a5 5 0 0 0-3-4.6',
+  bolt: 'M13 3 5 13.5h6L11 21l8-10.5h-6z',
 };
 </script>
 
