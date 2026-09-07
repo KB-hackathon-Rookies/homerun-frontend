@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
+import { useResultGuard } from '~/composables/useResultGuard';
 
 /**
  * 1-3 매칭 확인.
@@ -13,7 +14,17 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const { pending, error, cards, basisOf } = useJeonsePolicies(planId);
+const { pending, error, cards, results, basisOf } = useJeonsePolicies(planId);
+
+/*
+ * 판정이 다 떨어졌으면 여기서 멈추지 않고 왜 막혔는지 말해 주는 화면으로
+ * 보낸다. 결과가 나온 뒤에만 보므로 평소 흐름은 그대로다.
+ */
+const { ruleChanged, eligibilityEnding, inspect } = useResultGuard(planId);
+
+watch(pending, (loading) => {
+  if (!loading && !error.value) inspect(results.value);
+});
 </script>
 
 <template>
@@ -25,6 +36,18 @@ const { pending, error, cards, basisOf } = useJeonsePolicies(planId);
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
+
+      <StatusNotice v-if="ruleChanged" @open="navigateTo(`/status/${planId}/rule-changed`)">
+        지침이 개정돼 다시 판정해야 하는 정책이 있어요
+      </StatusNotice>
+
+      <StatusNotice
+        v-if="eligibilityEnding"
+        tone="danger"
+        @open="navigateTo(`/status/${planId}/eligibility-ending`)"
+      >
+        자격 기한이 다가온 조건이 있어요
+      </StatusNotice>
 
       <MatchPolicyCard v-for="card in cards" :key="card.code" :card="card" :basis="basisOf(card)" />
     </div>
