@@ -15,7 +15,7 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
 
-const { property, fullAddress } = useProperty(planId, propertyId);
+const { property, fullAddress, error: propertyError } = useProperty(planId, propertyId);
 const verdicts = ref<PropertyPolicyVerdict[]>([]);
 const pending = ref(true);
 const error = ref('');
@@ -53,15 +53,20 @@ onMounted(async () => {
     <StageBar title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <!--
+        주소는 판정과 따로 온다. 판정을 못 받아도 어느 집 이야기인지는
+        보여야 한다 — 다시 시도할지 뒤로 갈지를 그걸 보고 정한다.
+      -->
+      <AppCard v-if="property">
+        <p class="text-label2 text-ink-muted font-medium">검색한 주소</p>
+        <p class="text-body2 text-ink-hero mt-2.5 font-bold">{{ fullAddress }}</p>
+      </AppCard>
+      <p v-else-if="propertyError" class="text-label2 text-danger">{{ propertyError }}</p>
+
       <p v-if="pending" class="text-label2 text-ink-muted">진단 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
       <template v-else>
-        <AppCard v-if="property">
-          <p class="text-label2 text-ink-muted font-medium">검색한 주소</p>
-          <p class="text-body2 text-ink-hero mt-2.5 font-bold">{{ fullAddress }}</p>
-        </AppCard>
-
         <AppCard class="flex flex-col gap-2.5">
           <div class="flex items-center justify-between gap-2">
             <h2 class="text-option text-ink-hero">자동조회 판정</h2>
