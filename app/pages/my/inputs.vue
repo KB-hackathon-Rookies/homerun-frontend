@@ -67,6 +67,7 @@ async function save() {
       netAssets: toNumber(netAssets.value),
       incomeSource: 'MANUAL',
       assetSource: 'MANUAL',
+      unknownFields: ['AVAILABLE_CASH'],
     });
     saved.value = true;
   } catch (cause) {
