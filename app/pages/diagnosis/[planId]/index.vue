@@ -24,8 +24,8 @@ definePageMeta({ middleware: 'auth' });
 interface Choice {
   value: string;
   label: string;
-  /** 고르면 띄울 안내. 아직 못 하는 것을 미리 알린다. */
-  warn?: string;
+  /** 아직 못 도와주는 경로. 고르면 준비 중 안내를 딤으로 띄운다. */
+  blocked?: boolean;
 }
 
 interface Question {
@@ -37,6 +37,17 @@ interface Question {
   /** 고른 값을 요청 본문으로 바꾼다. */
   toPatch: (value: string) => DiagnosisStepPatch;
 }
+
+/**
+ * 준비 중 경로 안내.
+ *
+ * 기혼·유주택·무직은 아직 진단 경로가 없다. 시안(1루 7)은 이 셋을 카드 밑
+ * 문구가 아니라 딤 안내로 묶어 보여준다 — 고르는 순간 흐름을 멈추고 알린다.
+ */
+const BLOCKED_NOTICE = {
+  title: '아직 준비 중이에요',
+  body: '지금은 미혼·무주택·재직 중인 청년의 전세 경로만 도와드릴 수 있어요. 기혼, 유주택, 무직 경로는 곧 열려요',
+};
 
 const QUESTIONS: Question[] = [
   {
@@ -53,7 +64,7 @@ const QUESTIONS: Question[] = [
     step: 'HOMELESS',
     title: '본인 명의로 소유한 주택이 있나요?',
     choices: [
-      { value: 'OWNED', label: '있습니다' },
+      { value: 'OWNED', label: '있습니다', blocked: true },
       { value: 'NONE', label: '없습니다' },
     ],
     note: '함께 사는 가족(부모님 등)의 주택 소유 여부는 상관없습니다 — 독립 후 본인 명의 기준입니다',
@@ -63,7 +74,7 @@ const QUESTIONS: Question[] = [
     step: 'MARITAL_STATUS',
     title: '혼인 여부를 알려주세요',
     choices: [
-      { value: 'MARRIED', label: '기혼', warn: '기혼 가구 진단은 아직 준비 중이에요.' },
+      { value: 'MARRIED', label: '기혼', blocked: true },
       { value: 'SINGLE', label: '미혼' },
     ],
     toPatch: (value) => ({ maritalStatus: value as never }),
@@ -77,7 +88,7 @@ const QUESTIONS: Question[] = [
       { value: 'DAILY_WORKER', label: '일용직' },
       { value: 'INTERN', label: '인턴' },
       { value: 'FREELANCER', label: '프리랜서' },
-      { value: 'UNEMPLOYED', label: '무직', warn: '무직 상태 진단은 아직 준비 중이에요.' },
+      { value: 'UNEMPLOYED', label: '무직', blocked: true },
     ],
     toPatch: (value) => ({ employmentType: value as never }),
   },
@@ -124,15 +135,27 @@ const answer = computed({
 });
 const isLast = computed(() => index.value === QUESTIONS.length - 1);
 
-/** 고른 항목에 안내가 붙어 있으면 그것을, 없으면 단계 설명을 보여준다. */
-const notice = computed(
-  () => question.value.choices.find((c) => c.value === answer.value)?.warn ?? question.value.note,
+/** 단계마다 늘 보이는 설명. */
+const notice = computed(() => question.value.note);
+
+/**
+ * 준비 중 경로를 골랐다. 딤 안내를 띄운다.
+ *
+ * 닫으면 그 답을 지운다 — 실수로 눌렀을 수 있으니 다른 답을 다시 고를 수
+ * 있어야 하고, 지우지 않으면 다음 버튼이 막힌 답으로 열려 버린다.
+ */
+const blocked = computed(() =>
+  question.value.choices.find((c) => c.value === answer.value && c.blocked),
 );
+
+function dismissBlocked() {
+  answers.value[question.value.step] = '';
+}
 
 onMounted(load);
 
 async function next() {
-  if (!answer.value || pending.value) return;
+  if (!answer.value || pending.value || blocked.value) return;
 
   pending.value = true;
   error.value = '';
@@ -181,5 +204,22 @@ function back() {
         {{ pending ? '저장 중…' : isLast ? '스펙 확인하러 가기' : '다음' }}
       </AppButton>
     </footer>
+
+    <!--
+      준비 중 경로 안내(1루 7). 기혼·유주택·무직을 고르면 흐름을 멈추고 딤으로
+      알린다. 바깥이나 처음으로 돌아가기로 닫는다.
+    -->
+    <DimOverlay v-if="blocked" @close="dismissBlocked">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <h2 class="text-headline1 text-ink-hero">{{ BLOCKED_NOTICE.title }}</h2>
+        <p class="text-caption2 text-ink-hero-body">{{ BLOCKED_NOTICE.body }}</p>
+
+        <div class="mt-3 flex w-full flex-col gap-2">
+          <!-- 알림 신청을 받아 둘 API 가 아직 없다. 자리는 두되 눌리지 않게 한다. -->
+          <AppButton variant="strong" disabled>열리면 알림 받기</AppButton>
+          <AppButton variant="white" @click="navigateTo('/')">처음으로 돌아가기</AppButton>
+        </div>
+      </div>
+    </DimOverlay>
   </PhoneFrame>
 </template>
