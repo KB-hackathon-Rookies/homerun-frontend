@@ -1,0 +1,104 @@
+<script setup lang="ts">
+import { usePropertyApi } from '~/api/property';
+import { monthlyInterestOf } from '~/components/settle/rir';
+import {
+  HOMETAX_URL,
+  TAX_CONDITIONS,
+  TAX_DOCUMENTS,
+  estimateRefund,
+} from '~/components/settle/tax';
+import { formatKoreanMoney } from '~/utils/money';
+
+/**
+ * 홈 4-8 · 연말정산 소득공제.
+ *
+ * 매년 1월. 주택임차차입금 원리금상환액 소득공제로 낸 이자의 일부를
+ * 돌려받는다.
+ *
+ * 예상 환급액은 확정한 대출 조건에서 센다. 세율은 사회초년생 구간을 가정한
+ * 값이라 정확한 금액이 아니다 — 그 말을 화면에 남긴다.
+ */
+definePageMeta({ middleware: 'auth' });
+
+const route = useRoute();
+const planId = Number(route.params.planId);
+
+const principal = ref<number | null>(null);
+const rate = ref<number | null>(null);
+
+const yearlyInterest = computed(() => {
+  const monthly = monthlyInterestOf(principal.value, rate.value);
+  return monthly === null ? null : monthly * 12;
+});
+
+const estimate = computed(() => estimateRefund(yearlyInterest.value));
+
+onMounted(() => {
+  usePropertyApi()
+    .decision(planId)
+    .then((found) => {
+      principal.value = found.consultation?.approvedLimit ?? null;
+      rate.value = found.consultation?.quotedRate ?? null;
+    })
+    .catch(() => {});
+});
+</script>
+
+<template>
+  <PhoneFrame>
+    <StageBar title="연말정산 소득공제" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+
+    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
+      <CoachTip>
+        매년 1월이야. 주택임차차입금 원리금상환액 소득공제로 낸 이자를 일부 돌려받을 수 있어
+      </CoachTip>
+
+      <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4.5">
+        <p class="text-caption-tight text-on-brand font-normal">예상 환급액</p>
+        <p class="text-title3 text-on-brand">
+          {{ estimate ? `약 ${formatKoreanMoney(estimate.refund)}` : '—' }}
+        </p>
+        <p class="text-step text-on-brand font-normal">
+          <template v-if="estimate">
+            연 이자 {{ formatKoreanMoney(yearlyInterest) }} × 40% =
+            {{ formatKoreanMoney(estimate.deductible) }} 공제 → 세율 16.5% 가정
+          </template>
+          <template v-else>확정한 대출 조건이 있어야 셀 수 있어요</template>
+        </p>
+      </div>
+
+      <h2 class="text-card-title text-ink-hero font-bold">공제 기준</h2>
+
+      <AppCard class="flex flex-col gap-1.5">
+        <div v-for="row in TAX_CONDITIONS" :key="row.label" class="flex gap-2">
+          <span class="text-caption-tight text-ink-hero-body w-20 shrink-0 font-normal">
+            {{ row.label }}
+          </span>
+          <span class="text-caption-tight text-ink-hero flex-1 font-semibold">{{ row.value }}</span>
+        </div>
+      </AppCard>
+
+      <h2 class="text-card-title text-ink-hero font-bold">준비 서류</h2>
+
+      <div class="bg-surface-brand rounded-chip flex flex-col gap-0.5 p-3">
+        <p v-for="line in TAX_DOCUMENTS" :key="line" class="text-micro text-ink-hero-body">
+          {{ line }}
+        </p>
+      </div>
+
+      <p class="bg-caution rounded-chip text-step p-2.5 text-white">
+        놓쳤어도 최대 5년치 경정청구로 소급할 수 있어요
+      </p>
+
+      <DetailLink @open="navigateTo(`/settle/${planId}/tax-deduction-detail`)">
+        연말정산 소득공제 상세보기
+      </DetailLink>
+    </div>
+
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-6">
+      <AppButton variant="strong" @click="navigateTo(HOMETAX_URL, { external: true })">
+        홈택스 간소화 열기
+      </AppButton>
+    </footer>
+  </PhoneFrame>
+</template>
