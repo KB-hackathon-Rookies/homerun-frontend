@@ -56,6 +56,7 @@
   --color-ink-subtle: rgb(55 56 60 / 0.28); /* 비활성, 캡션 */
   --color-ink-placeholder: #9d9d9d;
   --color-ink-disabled: #8e8e93;
+  --color-ink-meta: #999ead; /* 더보기, 카드 아래 출처 */
 
   /* 완료 화면 전용 계열 */
   --color-ink-hero: #1c212b;
@@ -87,6 +88,19 @@
   --color-badge-warning: #fff6eb;
   --color-badge-danger: #fff0f0;
   --color-warning-strong: #ff9200; /* 진행 바 비활성 */
+  --color-danger-deep: #d94040; /* 알림 개수 배지 */
+
+  /* ---------------------------------------------------------------
+   * 색 · 파란 면 위
+   *
+   * 홈 진행 카드는 바탕이 파랑이다. 그 위 글자와 선은 흰색에 투명도를 줘서
+   * 카드 색을 그대로 비친다. 회색으로 바꾸면 카드 위에서 탁해진다.
+   * --------------------------------------------------------------- */
+  --color-on-brand: #ffffff;
+  --color-on-brand-body: rgb(255 255 255 / 0.85);
+  --color-on-brand-dim: rgb(255 255 255 / 0.7); /* 아직 안 온 단계 */
+  --color-on-brand-line: rgb(255 255 255 / 0.3); /* 안 지난 이음선 */
+  --color-on-brand-fill: rgb(255 255 255 / 0.24); /* 안 지난 단계 원 */
 
   /* ---------------------------------------------------------------
    * 타이포
@@ -167,6 +181,43 @@
   --text-micro--line-height: 1.455;
   --text-micro--font-weight: 400;
 
+  /* 메인 계열. 홈·마이는 행간이 다른 화면보다 좁다. */
+  --text-hero: 1.375rem; /* 22 · 워드마크, 인사말 */
+  --text-hero--line-height: 1.228;
+  --text-hero--font-weight: 700;
+
+  --text-section: 1rem; /* 16 · 섹션 제목 */
+  --text-section--line-height: 1.188;
+  --text-section--font-weight: 600;
+
+  --text-stage: 0.9375rem; /* 15 · 진행 카드 제목 */
+  --text-stage--line-height: 1.2;
+  --text-stage--font-weight: 600;
+
+  --text-card-title: 0.875rem; /* 14 · 이슈 제목, 이어서 진행하기 */
+  --text-card-title--line-height: 1.215;
+  --text-card-title--font-weight: 600;
+
+  --text-numeral: 0.8125rem; /* 13 · 단계 원 안 숫자 */
+  --text-numeral--line-height: 1.231;
+  --text-numeral--font-weight: 700;
+
+  --text-caption-tight: 0.75rem; /* 12 · 부제, 도구 이름, 더보기 */
+  --text-caption-tight--line-height: 1.25;
+  --text-caption-tight--font-weight: 400;
+
+  --text-step: 0.6875rem; /* 11 · 단계 이름, 카드 출처 */
+  --text-step--line-height: 1.182;
+  --text-step--font-weight: 600;
+
+  --text-chip: 0.625rem; /* 10 · 분류 칩 */
+  --text-chip--line-height: 1.2;
+  --text-chip--font-weight: 600;
+
+  --text-badge: 0.5625rem; /* 9 · 알림 개수 */
+  --text-badge--line-height: 1.223;
+  --text-badge--font-weight: 700;
+
   --text-option: 1rem; /* 16 · 선택지 제목, 문진 CTA */
   --text-option--line-height: 1.188;
   --text-option--font-weight: 700;
@@ -178,6 +229,9 @@
   --radius-button: 14px;
   --radius-screen: 24px;
   --radius-chip: 8px;
+  --radius-chip-sm: 6px;
+  --radius-cta: 10px;
+  --radius-card: 16px;
   --radius-pill: 999px;
 
   /* ---------------------------------------------------------------
@@ -200,6 +254,12 @@
   --spacing-gutter-tight: 16px; /* 오픈뱅킹 화면은 좌우 16 이다 */
   --spacing-pill: 41px;
   --spacing-hero: 133px; /* 완료 화면 캐릭터 자리 */
+  --spacing-topbar-tall: 60px; /* 홈 상단 바. 뒤로가기가 없어 조금 높다 */
+  --spacing-tabbar: 74px;
+  --spacing-fab: 56px;
+  --spacing-step-circle: 28px; /* 홈 진행 카드 · 단계 원 */
+  --spacing-badge: 14px; /* 알림 개수 원 */
+  --spacing-row: 52px; /* 마이 한 줄 */
 }
 
 /*

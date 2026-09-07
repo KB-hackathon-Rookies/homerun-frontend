@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { currentPlan } from '~/utils/currentPlan';
+
 /**
  * AU-01 스플래시.
  *
@@ -8,11 +10,17 @@ const DURATION_MS = 1600;
 
 const auth = useAuthStore();
 
+/** 진행 중인 계획이 있으면 온보딩을 다시 보여줄 이유가 없다. 홈으로 보낸다. */
+function destination() {
+  if (!auth.isAuthenticated) return '/welcome';
+  return currentPlan.get() ? '/home' : '/onboarding';
+}
+
 onMounted(() => {
   auth.restore();
 
   const timer = setTimeout(() => {
-    navigateTo(auth.isAuthenticated ? '/onboarding' : '/welcome', { replace: true });
+    navigateTo(destination(), { replace: true });
   }, DURATION_MS);
 
   onUnmounted(() => clearTimeout(timer));
