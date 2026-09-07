@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { useNotificationApi } from '~/api/notification';
+import { usePush } from '~/composables/usePush';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 import { displayStage, resumePath } from '~/utils/stage';
@@ -67,6 +68,17 @@ const cardDescription = computed(() => {
   return `${task.deadlineLabel ?? task.taskName} ${dday} · ${base}`;
 });
 
+const push = usePush();
+
+/** 읽지 않은 알림 개수. 화면을 보는 중에 새 알림이 오면 다시 센다. */
+async function countUnread() {
+  try {
+    unread.value = (await useNotificationApi().list(true)).length;
+  } catch {
+    // 개수를 못 세도 화면은 그대로다. 배지를 안 그리면 된다.
+  }
+}
+
 const TOOLS: { label: string; to: string | null }[] = [
   { label: '계약 체크', to: null },
   { label: '용어사전', to: null },
@@ -96,10 +108,16 @@ onMounted(async () => {
   }
 
   // 알림 개수도 마찬가지다. 없으면 배지를 안 그리면 된다.
-  useNotificationApi()
-    .list(true)
-    .then((list) => (unread.value = list.length))
-    .catch(() => {});
+  countUnread();
+
+  /*
+   * 토큰은 브라우저가 갱신하거나 폐기한다. 등록해 둔 것이 죽어 있으면 알림이
+   * 조용히 안 온다 — 앱을 열 때마다 다시 보낸다.
+   */
+  push.resync();
+
+  // 앱을 보고 있을 때는 OS 알림이 뜨지 않는다. 종 개수라도 바로 늘려 준다.
+  push.onForeground(countUnread);
 
   planId.value = currentPlan.get();
   if (!planId.value) {

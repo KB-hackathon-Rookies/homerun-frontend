@@ -8,6 +8,14 @@
 #
 # 새 의존성이 스크립트를 요구하면 pnpm 이 이름을 알려 준다.
 # 무엇을 하는 스크립트인지 확인한 뒤 `pnpm approve-builds <이름>` 으로 추가한다.
+# 아래 둘은 Firebase 를 들이면서 딸려 온 것이고, 확인해 보니 우리에게 필요 없다.
+#   @firebase/util — FIREBASE_WEBAPP_CONFIG 환경변수를 읽어 설정 파일을 써 준다.
+#                    Firebase 호스팅에 올릴 때 쓰는 자동 설정인데, 우리는 그 변수를
+#                    두지 않고 설정을 직접 넘긴다.
+#   protobufjs     — 스크립트가 versionScheme 이 있을 때만 동작하는데 배포판에는
+#                    그 값이 없다. 실행해도 바로 끝난다.
 allowBuilds:
+  '@firebase/util': false
   esbuild: true
+  protobufjs: false
   unrs-resolver: true

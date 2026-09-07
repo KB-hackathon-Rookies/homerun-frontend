@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePlanApi } from '~/api/plan';
 import { useAgreementApi, type AgreementItem } from '~/api/terms-status';
+import { usePush } from '~/composables/usePush';
 import { currentPlan } from '~/utils/currentPlan';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
@@ -24,7 +25,23 @@ const busy = ref(false);
 const error = ref('');
 const done = ref('');
 
-const NOTIFICATIONS = ['마감 알림', '정책 소식', '방해 금지 시간', '알림 전체'];
+const push = usePush();
+
+/**
+ * 알림 상태 한 줄.
+ *
+ * 브라우저가 한 번 거절하면 우리가 다시 물을 수 없다 — 설정에서 직접
+ * 풀어야 한다. 그 사실을 값으로 적어 준다.
+ */
+const pushLabel = computed(() => {
+  if (push.permission.value === 'unsupported') return '이 브라우저는 못 받아요';
+  if (push.permission.value === 'granted') return '받는 중';
+  if (push.permission.value === 'denied') return '차단됨 · 브라우저 설정에서';
+  return '꺼짐';
+});
+
+/** 알림 종류별 설정은 저장할 API 가 없다. 자리만 둔다. */
+const PENDING_NOTIFICATIONS = ['정책 소식', '방해 금지 시간'];
 
 const agreedCount = computed(() => agreements.value.filter((item) => item.agreed).length);
 const latestAgreedAt = computed(() => {
@@ -68,15 +85,24 @@ onMounted(() => {
     <StatusBar title="설정" @back="navigateTo('/my')" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <!-- 알림 설정을 저장할 API 가 없다. 켜고 끈 값을 어디에도 남길 수 없다. -->
       <SectionCard title="알림">
+        <!--
+          마감 알림만 실제로 켜고 끈다. 종류별 설정은 저장할 API 가 없어
+          자리만 둔다.
+        -->
         <RowChevron
-          v-for="(item, index) in NOTIFICATIONS"
+          label="마감 알림"
+          :value="pushLabel"
+          :disabled="push.permission.value === 'denied' || push.permission.value === 'unsupported'"
+          @select="push.permission.value === 'granted' ? push.disable() : push.enable()"
+        />
+        <RowChevron
+          v-for="(item, index) in PENDING_NOTIFICATIONS"
           :key="item"
           :label="item"
           value="준비 중"
           disabled
-          :last="index === NOTIFICATIONS.length - 1"
+          :last="index === PENDING_NOTIFICATIONS.length - 1"
         />
       </SectionCard>
 

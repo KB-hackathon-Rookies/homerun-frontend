@@ -25,6 +25,8 @@ const { shouldOffer, isIos, install, dismiss } = useInstallPrompt();
     <div class="flex flex-col gap-1">
       <p class="text-label2 text-ink-body">· 주소창 없이 앱처럼 열려요</p>
       <p class="text-label2 text-ink-body">· 인터넷이 끊겨도 화면은 열려요</p>
+      <!-- iOS 는 홈 화면에 추가해야만 푸시가 온다. 그 사람에게만 말한다. -->
+      <p v-if="isIos" class="text-label2 text-ink-body">· 잔금일 알림을 받을 수 있어요</p>
     </div>
 
     <!--
