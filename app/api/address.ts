@@ -29,16 +29,31 @@ export interface AddressSearch {
   addresses: AddressResult[];
 }
 
+/**
+ * 이 엔드포인트만 공통 봉투가 없다.
+ *
+ * 다른 컨트롤러는 전부 `ApiResponse` 로 감싸는데 `AddressController.search` 는
+ * `AddressSearchResponse` 를 그대로 내보낸다(백엔드 #323). 벗기려 들면
+ * `undefined` 가 되고, 화면에서는 검색 실패로 보인다 — 결과가 1,500건 와도
+ * 마찬가지다.
+ *
+ * 봉투가 생기는 날 한쪽만 고치면 다시 깨지므로, 그때까지 둘 다 받는다.
+ */
+function unwrap(body: ApiResponse<AddressSearch> | AddressSearch): AddressSearch {
+  return 'addresses' in body ? body : body.data;
+}
+
 export function useAddressApi() {
   const { $api } = useNuxtApp();
 
   return {
     /** 두 글자 이상이어야 백엔드가 받는다. */
     async search(keyword: string) {
-      const { data } = await $api.get<ApiResponse<AddressSearch>>(`${BASE}/search`, {
-        params: { keyword },
-      });
-      return data.data;
+      const { data } = await $api.get<ApiResponse<AddressSearch> | AddressSearch>(
+        `${BASE}/search`,
+        { params: { keyword } },
+      );
+      return unwrap(data);
     },
   };
 }
