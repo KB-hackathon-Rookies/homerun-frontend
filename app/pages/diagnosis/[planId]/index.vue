@@ -188,6 +188,10 @@ function back() {
     <StageBar title="사용자 정보 입력" base="1루" @back="back" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
+      <CoachTip
+        >왜 묻는지 알려줄게. 이 정보로 네가 받을 수 있는 대출·정책을 골라주려는 거야</CoachTip
+      >
+
       <QuestionCard :question="question.title">
         <PillGroup v-model="answer" :options="question.choices" />
       </QuestionCard>

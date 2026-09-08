@@ -35,6 +35,8 @@ const checked = ref<Record<string, boolean>>({});
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <CoachTip>은행 가기 전 사전상담이야. 보증기관이 보증서를 내줘야 대출이 실행돼</CoachTip>
+
       <div class="bg-surface-brand rounded-field flex flex-col gap-1.5 p-4">
         <p class="text-label2 text-ink-hero font-bold">코치 팁</p>
         <p class="text-label2 text-ink-hero-body leading-5">

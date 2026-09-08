@@ -58,6 +58,8 @@ const PARTS: Part[] = [
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 pt-5 pb-6">
+      <CoachTip>등기부등본은 을구의 근저당·가압류를 봐야 해. 발급부터 같이 안내해줄게</CoachTip>
+
       <div class="bg-surface-info rounded-field flex flex-col gap-1.5 p-3.5 text-center">
         <p class="text-caption1 text-primary-strong">코치 팁</p>
         <p class="text-body2 text-ink-hero font-bold">등기부등본(등기사항 전부증명서)이란?</p>

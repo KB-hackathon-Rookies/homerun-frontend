@@ -32,6 +32,11 @@ watch(pending, (loading) => {
     <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-5 py-4">
+      <CoachTip
+        >네 조건에 맞는 정책을 자동으로 매칭했어. 왜 되는지·안 되는지 근거도 같이 볼 수
+        있어</CoachTip
+      >
+
       <h2 class="text-headline1 text-ink-hero">조건에 맞는 대출을 모두 확인했어요</h2>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>

@@ -99,6 +99,8 @@ async function save() {
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <CoachTip>상담 결과를 남겨줘. 거절돼도 다른 은행·상품으로 다시 도전할 수 있어</CoachTip>
+
       <div class="flex items-center gap-2">
         <h2 class="text-option text-ink-hero">{{ bank }}</h2>
         <span v-if="banks.length > 1" class="text-caption2 text-ink-hero-body">
