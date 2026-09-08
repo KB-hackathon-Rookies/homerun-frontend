@@ -17,11 +17,14 @@ const {
   // 'off' 로 채우면 브라우저 자동완성 동작이 바뀌므로 undefined 그대로 둔다 —
   // 이때만 Vue 가 속성 자체를 렌더링하지 않는다.
   autocomplete = undefined,
+  readonly = false,
 } = defineProps<{
   label: string;
   type?: 'text' | 'email' | 'password' | 'tel';
   placeholder?: string;
   autocomplete?: string;
+  /** 직접 칠 수 없는 입력. 값을 시트나 검색으로 고르는 자리에 쓴다. */
+  readonly?: boolean;
 }>();
 
 const model = defineModel<string>({ default: '' });
@@ -52,7 +55,9 @@ const hasAction = computed(() => !!slots.action);
           :type="inputType"
           :placeholder="placeholder"
           :autocomplete="autocomplete"
+          :readonly="readonly"
           class="text-input text-ink placeholder:text-ink-placeholder w-full bg-transparent outline-none"
+          :class="readonly ? 'cursor-pointer' : ''"
         />
 
         <button

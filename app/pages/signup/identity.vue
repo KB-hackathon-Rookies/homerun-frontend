@@ -72,6 +72,9 @@ const notice = ref('');
 
 const regionOptions = ref<RegionOption[]>([]);
 
+/** AU-05a. 생년월일은 연령 판정의 기준값이라 자유 입력 대신 골라서 받는다. */
+const pickingBirthDate = ref(false);
+
 const phoneSent = ref(false);
 const error = ref('');
 const pending = ref(false);
@@ -220,7 +223,13 @@ async function submit() {
 
       <div class="flex flex-col gap-3.5">
         <AppInput v-model="name" label="이름" placeholder="이름" autocomplete="name" />
-        <AppInput v-model="birthDate" label="생년월일" placeholder="YYYY.MM.DD" />
+        <AppInput
+          v-model="birthDate"
+          label="생년월일"
+          placeholder="생년월일을 선택해주세요"
+          readonly
+          @click="pickingBirthDate = true"
+        />
 
         <AppInput
           v-model="phone"
@@ -314,6 +323,12 @@ async function submit() {
           </p>
         </div>
       </div>
+
+      <BirthDateSheet
+        v-if="pickingBirthDate"
+        v-model="birthDate"
+        @close="pickingBirthDate = false"
+      />
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
