@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { usePolicyApi } from '~/api/policy';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
+import { useGuaranteeApi, type GuaranteeAgency } from '~/api/guarantee';
+import { useSettlementApi, type ReturnGuaranteeGuide } from '~/api/settlement';
 import {
   JOIN_ROUTES,
   RETURN_GUARANTEE_COLLATERALS,
@@ -25,11 +27,21 @@ const planId = Number(route.params.planId);
 const decision = ref<PropertyDecision | null>(null);
 /** 내 집 기준으로 어느 기관에 들 수 있는지. 판정을 못 받아도 표는 남는다. */
 const joinable = ref<string[] | null>(null);
+const guide = ref<ReturnGuaranteeGuide | null>(null);
+const agencies = ref<GuaranteeAgency[]>([]);
 
 const collateral = computed(() => decision.value?.consultation?.collateralMethod ?? null);
 const included = computed(() => !!collateral.value && includedInCollateral(collateral.value));
 
 onMounted(async () => {
+  useSettlementApi()
+    .returnGuarantee(planId)
+    .then((found) => (guide.value = found))
+    .catch(() => {});
+  useGuaranteeApi()
+    .agencies()
+    .then((found) => (agencies.value = found))
+    .catch(() => {});
   try {
     decision.value = await usePropertyApi().decision(planId);
   } catch {
@@ -73,7 +85,7 @@ onMounted(async () => {
           내 담보 · {{ collateralLabel(collateral) }}
         </p>
         <p class="text-section text-on-brand font-bold">
-          {{ included ? '반환보증 이미 포함' : '반환보증 따로 가입 필요' }}
+          {{ guide ? guide.summary : included ? '반환보증 이미 포함' : '반환보증 따로 가입 필요' }}
         </p>
         <p class="text-step text-on-brand font-normal">
           {{
@@ -104,6 +116,14 @@ onMounted(async () => {
         >
           내 집 기준으로는 {{ joinable.join(' · ') }}에 들 수 있어요
         </p>
+      </AppCard>
+
+      <AppCard v-if="agencies.length" class="flex flex-col gap-3">
+        <div v-for="agency in agencies" :key="agency.code" class="flex flex-col gap-0.5">
+          <p class="text-row text-ink-hero">{{ agency.name }}</p>
+          <p class="text-caption2 text-ink-hero-body">{{ agency.limitBasis }}</p>
+          <p v-if="agency.note" class="text-micro text-ink-muted">{{ agency.note }}</p>
+        </div>
       </AppCard>
 
       <div class="bg-surface-brand rounded-field flex flex-col gap-1 p-3.5">

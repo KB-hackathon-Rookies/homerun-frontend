@@ -30,8 +30,8 @@ const status = computed(() => {
 /** 확인 방법이 적힌 조건만 링크를 걸 수 있다. 근거가 없으면 링크를 만들지 않는다. */
 const withSource = computed(() => conditions.value.filter((condition) => condition.sourceUrl));
 
-onMounted(() => {
-  planId.value = currentPlan.get();
+onMounted(async () => {
+  planId.value = await currentPlan.resolve();
 
   useOpenBankingConnectionApi()
     .status()

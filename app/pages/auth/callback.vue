@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthApi } from '~/api/auth';
+import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 
 /**

@@ -3,6 +3,7 @@ import type { Base } from '~/components/common/StepIndicator.vue';
 import type { MatchRow } from '~/components/onboarding/MatchCard.vue';
 import type { SettleRow } from '~/components/onboarding/SettleCard.vue';
 import type { Task } from '~/components/onboarding/TaskCard.vue';
+import { useAuthStore } from '~/stores/auth';
 
 /**
  * OB-01 ~ OB-04 온보딩.

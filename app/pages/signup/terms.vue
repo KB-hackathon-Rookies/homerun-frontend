@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { Term } from '~/components/common/TermsAgreement.vue';
+import { useRequiredTerms } from '~/composables/useRequiredTerms';
+import { useTerms } from '~/composables/useTerms';
+import { useAuthStore } from '~/stores/auth';
+import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
 /**

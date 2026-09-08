@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { socialLoginUrl } from '~/api/auth';
+import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 

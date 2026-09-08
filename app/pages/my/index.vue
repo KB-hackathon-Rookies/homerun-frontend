@@ -3,6 +3,7 @@ import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { usePlanApi } from '~/api/plan';
 import { usePropertyApi } from '~/api/property';
 import { useRegionApi } from '~/api/region';
+import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 import { STAGE_CHIP, displayStage } from '~/utils/stage';
@@ -52,7 +53,7 @@ const materials = computed(() => [
 onMounted(async () => {
   if (!auth.user) auth.fetchMe().catch(() => {});
 
-  planId.value = currentPlan.get();
+  planId.value = await currentPlan.resolve();
   if (!planId.value) {
     pending.value = false;
     return;

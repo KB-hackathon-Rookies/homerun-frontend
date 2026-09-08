@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePropertyApi } from '~/api/property';
+import { useSettlementApi, type PostAssetReview } from '~/api/settlement';
 import { MISSED_ASSETS } from '~/components/settle/aftercare';
 
 /**
@@ -15,16 +15,16 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const product = ref<string | null>(null);
+const guide = ref<PostAssetReview | null>(null);
 const checked = ref<Record<string, boolean>>({});
 
 /** 기금대출(버팀목)만 대상이다. 못 읽었으면 단정하지 않는다. */
-const applies = computed(() => (product.value === null ? null : product.value !== 'BANK_LOAN'));
+const applies = computed(() => guide.value?.applicable ?? null);
 
 onMounted(() => {
-  usePropertyApi()
-    .decision(planId)
-    .then((found) => (product.value = found.consultation?.loanProduct ?? null))
+  useSettlementApi()
+    .postAssetReview(planId)
+    .then((found) => (guide.value = found))
     .catch(() => {});
 });
 </script>
@@ -54,7 +54,11 @@ onMounted(() => {
 
       <h2 class="text-card-title text-ink-hero font-bold">빠뜨리기 쉬운 항목</h2>
 
-      <CheckItem v-for="asset in MISSED_ASSETS" :key="asset" v-model="checked[asset]">
+      <CheckItem
+        v-for="asset in guide?.easyToMiss.length ? guide.easyToMiss : MISSED_ASSETS"
+        :key="asset"
+        v-model="checked[asset]"
+      >
         {{ asset }}
       </CheckItem>
 

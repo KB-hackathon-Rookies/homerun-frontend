@@ -94,7 +94,7 @@ async function save() {
 }
 
 onMounted(async () => {
-  planId.value = currentPlan.get();
+  planId.value = await currentPlan.resolve();
   if (!planId.value) {
     pending.value = false;
     return;

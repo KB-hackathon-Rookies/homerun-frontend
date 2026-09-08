@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
+import { useSettlementApi, type SettlementDashboard } from '~/api/settlement';
 import { PRODUCT_LABEL } from '~/components/contract/labels';
 import type { BadgeTone } from '~/components/settle/StatusBadge.vue';
 import { messageFrom } from '~/utils/error';
@@ -21,16 +22,12 @@ const planId = Number(route.params.planId);
 
 const dashboard = ref<Dashboard | null>(null);
 const decision = ref<PropertyDecision | null>(null);
+const settlement = ref<SettlementDashboard | null>(null);
 const pending = ref(true);
 const error = ref('');
 
-/** 목표 이사일이 지난 만큼이 정착 기간이다. 아직 안 왔으면 세지 않는다. */
-const settledDays = computed(() => {
-  const moveDate = dashboard.value?.targetMoveDate;
-  if (!moveDate) return null;
-  const days = Math.floor((Date.now() - new Date(moveDate).getTime()) / 86_400_000);
-  return days > 0 ? days : null;
-});
+/** 실제 전입 완료일을 기준으로 백엔드가 계산한 정착 기간이다. */
+const settledDays = computed(() => settlement.value?.daysSinceIndependence ?? null);
 
 const productLabel = computed(() => {
   const product = decision.value?.consultation?.loanProduct;
@@ -64,7 +61,10 @@ const TOOLS = ['계약 체크', '용어사전', '금융 가이드'];
 
 onMounted(async () => {
   try {
-    dashboard.value = await useDashboardApi().get(planId);
+    [dashboard.value, settlement.value] = await Promise.all([
+      useDashboardApi().get(planId),
+      useSettlementApi().dashboard(planId),
+    ]);
   } catch (cause) {
     error.value = messageFrom(cause, '정착 현황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -90,14 +90,16 @@ onMounted(async () => {
       <template v-else>
         <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4">
           <p class="text-caption-tight text-on-brand font-semibold">
-            정착 관리 중{{ settledDays ? ` · D+${settledDays}일` : '' }}
+            정착 관리 중{{ settledDays !== null ? ` · D+${settledDays}일` : '' }}
           </p>
           <p class="text-metric text-on-brand">
             {{ productLabel ? `${productLabel} 대출 실행 완료` : '입주를 마쳤어요' }}
           </p>
           <p class="text-caption-tight text-on-brand font-normal">
             {{
-              todos.length ? `${todos[0]!.title}이 남아있어요` : '이번 달 챙길 것을 확인해보세요'
+              todos.length
+                ? `${todos[0]!.title}이 남아있어요`
+                : `정착 진행률 ${settlement?.progressPercent ?? 0}%`
             }}
           </p>
         </div>

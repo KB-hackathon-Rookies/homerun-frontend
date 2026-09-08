@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Term } from '~/components/common/TermsAgreement.vue';
+import { useTerms } from '~/composables/useTerms';
 
 /**
  * 오픈뱅킹 약관 동의.

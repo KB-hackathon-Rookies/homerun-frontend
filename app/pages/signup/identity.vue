@@ -3,6 +3,10 @@ import { useAddressApi, type AddressResult } from '~/api/address';
 import { useAuthApi } from '~/api/auth';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import type { Term } from '~/components/common/TermsAgreement.vue';
+import { useRequiredTerms } from '~/composables/useRequiredTerms';
+import { useTerms } from '~/composables/useTerms';
+import { useAuthStore } from '~/stores/auth';
+import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
 /**

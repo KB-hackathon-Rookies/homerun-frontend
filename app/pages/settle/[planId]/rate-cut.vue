@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePolicyApi, type PreferentialRateChange } from '~/api/policy';
 import { usePropertyApi } from '~/api/property';
+import { useSettlementApi, type RateCutRight } from '~/api/settlement';
 
 /**
  * 홈 4-6 · 금리인하요구권.
@@ -19,8 +20,9 @@ const planId = Number(route.params.planId);
 const product = ref<string | null>(null);
 /** 새로 채운 우대금리 조건. 기금대출 쪽의 대안이다. */
 const changes = ref<PreferentialRateChange[]>([]);
+const guide = ref<RateCutRight | null>(null);
 
-const eligible = computed(() => (product.value === null ? null : product.value === 'BANK_LOAN'));
+const eligible = computed(() => guide.value?.applicable ?? null);
 
 const TRIGGERS = [
   '취업 (무직에서 재직으로)',
@@ -38,6 +40,11 @@ onMounted(() => {
   usePropertyApi()
     .decision(planId)
     .then((found) => (product.value = found.consultation?.loanProduct ?? null))
+    .catch(() => {});
+
+  useSettlementApi()
+    .rateCutRight(planId)
+    .then((found) => (guide.value = found))
     .catch(() => {});
 
   usePolicyApi()
