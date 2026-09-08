@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
+import { KB_LAND_URL } from '~/components/property/links';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -25,6 +26,26 @@ const error = ref('');
 
 const ALPHABET = 'ABCDEFGHIJ';
 const labelOf = (index: number) => `${ALPHABET[index] ?? index + 1}매물`;
+
+/**
+ * 한 계획에 담을 수 있는 매물 수.
+ *
+ * 시안 `2루 8 · 매물 목록 (5개 · 등록 마감)` 이 다섯 번째 카드에서 등록 버튼을
+ * 잠근다. 잠그지 않으면 여섯 번째 등록 화면까지 들어가 주소를 다 고른 뒤
+ * 서버에서 거절당한다 — 되돌릴 수 없는 헛수고다.
+ */
+const MAX_PROPERTIES = 5;
+
+const full = computed(() => properties.value.length >= MAX_PROPERTIES);
+
+/**
+ * 상담까지 끝난 매물. 신호등 BLUE 가 "상담 완료" 다.
+ *
+ * 시안 `2루 13 · 매물 목록 (상담 완료)` 은 이때 하단에 `다음` 을 하나 더 세워
+ * 최종 확정으로 보낸다. 목록에서 나갈 길이 등록뿐이면 상담을 다 끝낸 사람이
+ * 카드를 다시 열어 들어가야 한다.
+ */
+const settled = computed(() => properties.value.find((item) => item.trafficLight === 'BLUE'));
 
 onMounted(async () => {
   try {
@@ -66,6 +87,15 @@ onMounted(async () => {
         <p class="text-body3 text-ink-hero-body font-bold">
           KB 부동산에서 마음에 드는 매물을 찾아 등록하면 여기에 카드로 쌓여요
         </p>
+
+        <!-- 어디서 찾는지를 글자로만 적으면 2루가 첫 화면에서 멈춘다. 나갈 길을 준다. -->
+        <button
+          type="button"
+          class="text-label2 text-primary-strong font-bold"
+          @click="navigateTo(KB_LAND_URL, { external: true })"
+        >
+          KB부동산에서 매물 찾기 ↗
+        </button>
       </div>
 
       <button
@@ -83,9 +113,26 @@ onMounted(async () => {
       </button>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/property/${planId}/new`)">
+    <footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
+      <!-- 잠긴 버튼만 두면 왜 안 눌리는지 모른다. 이유를 버튼 위에 적는다. -->
+      <p v-if="full" class="text-caption2 text-ink-muted text-center">
+        매물은 최대 {{ MAX_PROPERTIES }}개까지 등록할 수 있어요
+      </p>
+
+      <AppButton
+        :variant="settled ? 'white' : 'strong'"
+        :disabled="full"
+        @click="navigateTo(`/property/${planId}/new`)"
+      >
         + 매물 등록하기
+      </AppButton>
+
+      <AppButton
+        v-if="settled"
+        variant="strong"
+        @click="navigateTo(`/property/${planId}/${settled.propertyId}/confirm`)"
+      >
+        다음 — 최종 확정
       </AppButton>
     </footer>
   </PhoneFrame>

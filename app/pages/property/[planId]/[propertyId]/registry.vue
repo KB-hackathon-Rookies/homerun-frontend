@@ -69,13 +69,11 @@ const PARTS = [
       </button>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-      >
-        발급 완료, 체크리스트로
-      </AppButton>
-    </footer>
+    <StepFooter
+      @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+      @next="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+    >
+      발급 완료, 체크리스트로
+    </StepFooter>
   </PhoneFrame>
 </template>

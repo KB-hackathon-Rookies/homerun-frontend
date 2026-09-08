@@ -2,7 +2,9 @@
 import { useAddressApi, type AddressResult } from '~/api/address';
 import { usePlanApi } from '~/api/plan';
 import { usePropertyApi } from '~/api/property';
+import { KB_LAND_URL } from '~/components/property/links';
 import { messageFrom } from '~/utils/error';
+import { formatKoreanMoney } from '~/utils/money';
 
 /**
  * 2루 매물 등록 — 도로명 주소 검색.
@@ -38,6 +40,23 @@ const toWon = (value: string) => (value.trim() ? onlyDigits(value) * 10_000 : nu
 
 /** 입력한 실보증금(원). 아직 안 적었으면 null. */
 const realDepositWon = computed(() => toWon(realDeposit.value));
+
+/**
+ * 어떤 매물을 찾아야 하는가. 시안이 KB부동산 링크 바로 위에 두는 줄이다.
+ *
+ * "마음에 드는 매물" 만 적어 두면 조건에 안 맞는 집을 골라 와서 등록한 뒤에야
+ * 걸린다. 전용면적·용도는 상품 조건이라 고정이고, 보증금만 1루에서 정한
+ * 희망예산을 끌어다 쓴다 — 못 읽었으면 그 칸만 뺀다.
+ */
+const searchConditions = computed(() =>
+  [
+    hopeDeposit.value === null ? '' : `보증금 ${formatKoreanMoney(hopeDeposit.value)} 이하`,
+    '전용 85㎡ 이하',
+    '다세대·연립·아파트·오피스텔(주거용)',
+  ]
+    .filter(Boolean)
+    .join(' · '),
+);
 
 /** 실보증금이 희망예산을 넘는가. 서버 판정과 별개로 등록 전에 먼저 알려준다. */
 const overBudget = computed(
@@ -108,9 +127,16 @@ async function start() {
         KB 부동산에서 찾은 매물의 도로명 주소를 검색해주세요
       </h2>
 
-      <AppCard>
-        <p class="text-body2 text-primary-strong font-bold">KB 부동산에서 매물 찾기</p>
-        <p class="text-label2 text-ink-muted mt-3">마음에 드는 매물을 먼저 찾아보세요</p>
+      <AppCard class="flex flex-col gap-3">
+        <p class="text-body2 text-ink-hero font-bold">1루 조건에 맞는 매물을 먼저 찾아보세요</p>
+        <p class="text-label2 text-ink-hero-body">{{ searchConditions }}</p>
+        <button
+          type="button"
+          class="text-label2 text-primary-strong self-start font-bold"
+          @click="navigateTo(KB_LAND_URL, { external: true })"
+        >
+          KB부동산에서 매물 찾기 ↗
+        </button>
       </AppCard>
 
       <form

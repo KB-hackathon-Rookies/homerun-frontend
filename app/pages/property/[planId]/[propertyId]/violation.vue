@@ -101,10 +101,12 @@ async function next() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="violation === null || pending || saving" @click="next">
-        {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
-      </AppButton>
-    </footer>
+    <StepFooter
+      :disabled="violation === null || pending || saving"
+      @back="navigateTo(`/property/${planId}/${propertyId}`)"
+      @next="next"
+    >
+      {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
+    </StepFooter>
   </PhoneFrame>
 </template>

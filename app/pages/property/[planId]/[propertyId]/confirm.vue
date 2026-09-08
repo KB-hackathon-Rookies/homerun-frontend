@@ -203,21 +203,25 @@ onMounted(async () => {
       <p class="text-caption2 text-ink-muted">{{ title }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
+    <StepFooter
+      :disabled="pending || saving || !settled"
+      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+      @next="proceed"
+    >
+      <template #notice>
+        <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
 
-      <AppButton variant="strong" :disabled="pending || saving || !settled" @click="proceed">
-        3루 진행 (부동산 계약)
-      </AppButton>
+        <!-- 막혔으면 되돌아갈 곳을 준다. 비활성 버튼만 두면 여기서 끝나 버린다. -->
+        <AppButton
+          v-if="!pending && !error && !settled"
+          variant="white"
+          @click="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
+        >
+          상담 결과 다시 입력하기
+        </AppButton>
+      </template>
 
-      <!-- 막혔으면 되돌아갈 곳을 준다. 비활성 버튼만 두면 여기서 끝나 버린다. -->
-      <AppButton
-        v-if="!pending && !error && !settled"
-        variant="white"
-        @click="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-      >
-        상담 결과 다시 입력하기
-      </AppButton>
-    </footer>
+      3루 진행 (부동산 계약)
+    </StepFooter>
   </PhoneFrame>
 </template>
