@@ -14,6 +14,17 @@ import { useNotificationApi } from '~/api/notification';
  */
 export type PushPermission = 'default' | 'granted' | 'denied' | 'unsupported';
 
+/**
+ * 다시 켜기 시도의 결과.
+ *
+ * - `unsupported` 이 브라우저는 웹 푸시를 못 받는다.
+ * - `blocked` 권한이 거부돼 있다 — 우리가 다시 물을 수 없으니 브라우저 설정으로 안내해야 한다.
+ * - `dismissed` 방금 물었는데 허락하지 않았다.
+ * - `enabled` 토큰을 재발급·재등록했다.
+ * - `error` 허락은 돼 있는데 토큰을 받지 못했다.
+ */
+export type ReactivateResult = 'unsupported' | 'blocked' | 'dismissed' | 'enabled' | 'error';
+
 export function usePush() {
   const config = useRuntimeConfig().public.firebase;
 
@@ -72,10 +83,36 @@ export function usePush() {
   }
 
   /**
+   * 토큰을 받아 백엔드에 등록한다. 권한이 이미 granted 라는 전제.
+   *
+   * 파이어베이스 12(모듈러 SDK)에는 onTokenRefresh 가 없다. 갱신은 getToken 이
+   * 알아서 하고, 우리는 앱을 열 때마다 다시 받아 재등록한다.
+   *
+   * 다만 서버가 등록을 폐기했거나 토큰이 죽었을 때 getToken 은 손에 쥔 값을
+   * 그대로 돌려줄 수 있다. 그때는 forceRefresh 로 먼저 지우고 새로 받는다.
+   */
+  async function register({ forceRefresh = false } = {}) {
+    const registration = await worker();
+    if (!registration) return false;
+
+    const { fcm, messaging } = await load();
+    if (forceRefresh) await fcm.deleteToken(messaging).catch(() => {});
+
+    const token = await fcm.getToken(messaging, {
+      vapidKey: config.vapidKey,
+      serviceWorkerRegistration: registration,
+    });
+    if (!token) return false;
+
+    await useNotificationApi().registerToken(token);
+    return true;
+  }
+
+  /**
    * 권한을 묻고 토큰을 등록한다.
    *
    * 이미 거절했으면 다시 묻지 않는다 — 브라우저가 어차피 창을 띄우지 않고,
-   * 물었다는 사실만 남는다.
+   * 물었다는 사실만 남는다. 거부 상태에서 다시 켜려면 reactivate() 를 쓴다.
    */
   async function enable() {
     if (busy.value || !(await supported())) return false;
@@ -85,19 +122,7 @@ export function usePush() {
       const granted = await Notification.requestPermission();
       permission.value = granted;
       if (granted !== 'granted') return false;
-
-      const registration = await worker();
-      if (!registration) return false;
-
-      const { fcm, messaging } = await load();
-      const token = await fcm.getToken(messaging, {
-        vapidKey: config.vapidKey,
-        serviceWorkerRegistration: registration,
-      });
-      if (!token) return false;
-
-      await useNotificationApi().registerToken(token);
-      return true;
+      return await register();
     } catch {
       return false;
     } finally {
@@ -118,6 +143,37 @@ export function usePush() {
     await enable();
   }
 
+  /**
+   * 알림을 다시 켜는 경로.
+   *
+   * 한 번 거부했거나 토큰이 만료·폐기된 뒤 사용자가 다시 켜려 할 때 부른다.
+   * 상태별로 갈린다 — 결과를 돌려주니 호출부가 그에 맞는 안내를 띄운다.
+   *
+   * - denied 는 우리가 되돌릴 수 없다. 다시 묻지 않고 `blocked` 로 알려
+   *   브라우저 설정으로 안내하게 한다.
+   * - default 면 처음처럼 물어 켠다.
+   * - granted 인데 알림이 조용하면 죽은 토큰이 원인이다. 지우고 새로 받아
+   *   재등록한다.
+   */
+  async function reactivate(): Promise<ReactivateResult> {
+    if (!(await supported())) return 'unsupported';
+
+    const current = Notification.permission;
+    permission.value = current;
+    if (current === 'denied') return 'blocked';
+    if (current === 'default') return (await enable()) ? 'enabled' : 'dismissed';
+
+    if (busy.value) return 'error';
+    busy.value = true;
+    try {
+      return (await register({ forceRefresh: true })) ? 'enabled' : 'error';
+    } catch {
+      return 'error';
+    } finally {
+      busy.value = false;
+    }
+  }
+
   /** 앱을 보고 있을 때는 OS 알림이 뜨지 않는다. 화면이 직접 받아 처리한다. */
   async function onForeground(handler: () => void) {
     if (!capable() || Notification.permission !== 'granted') return;
@@ -129,11 +185,12 @@ export function usePush() {
   async function disable() {
     if (!capable()) return;
     const { fcm, messaging } = await load();
-    await fcm.deleteToken(messaging);
+    // 등록된 토큰이 없으면 deleteToken 이 던진다. 이미 꺼진 셈이니 삼킨다.
+    await fcm.deleteToken(messaging).catch(() => {});
     refresh();
   }
 
   onMounted(refresh);
 
-  return { permission, busy, supported, enable, resync, disable, onForeground };
+  return { permission, busy, supported, enable, resync, reactivate, disable, onForeground };
 }
