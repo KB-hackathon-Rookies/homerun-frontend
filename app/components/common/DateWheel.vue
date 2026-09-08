@@ -63,12 +63,24 @@ watch([() => items.length, model], async () => {
 
 onBeforeUnmount(() => clearTimeout(settle));
 
-/** 가운데에서 몇 칸 떨어졌는지. 0 이 가장 진하고 멀수록 옅다. */
+/**
+ * 가운데에서 몇 칸 떨어졌는지. 0 이 가장 진하고 멀수록 옅다.
+ *
+ * 색은 투명도가 없는 것만 쓴다. 가운데 칸 뒤에는 회색 선택 띠가 깔려 있어서,
+ * 반투명한 글자색을 쓰면 띠가 비쳐 탁해진다.
+ */
 function toneOf(index: number) {
   const distance = Math.min(Math.abs(index - offset.value), radius);
   if (distance < 0.5) return 'text-headline2 text-ink';
-  if (distance < 1.5) return 'text-body2 text-ink-body';
-  return 'text-label2 text-ink-muted';
+  if (distance < 1.5) return 'text-body2 text-ink-disabled';
+  return 'text-label2 text-ink-placeholder';
+}
+
+/** 눌러서도 고를 수 있어야 한다. 손가락 커서를 띄워 놓고 안 눌리면 거짓말이다. */
+function pick(index: number) {
+  const element = track.value;
+  if (!element) return;
+  element.scrollTo({ top: index * row, behavior: 'smooth' });
 }
 </script>
 
@@ -91,6 +103,7 @@ function toneOf(index: number) {
       :style="{ height: `${row}px` }"
       role="option"
       :aria-selected="item === model"
+      @click="pick(index)"
     >
       {{ item }}{{ unit }}
     </div>

@@ -21,11 +21,16 @@ const emit = defineEmits<{ close: [] }>();
 const ROW = 40;
 const RADIUS = 2;
 
-/** 화면 정의서가 정한 범위. 넓히려면 여기만 고친다. */
+/**
+ * 고를 수 있는 해.
+ *
+ * 끝을 올해로 잡는다. 정의서에는 2010 으로 적혀 있는데 그대로 박아 두면 해가
+ * 바뀔 때마다 낡는다. 시작은 정의서의 1960 을 쓴다.
+ */
 const FIRST_YEAR = 1960;
-const LAST_YEAR = 2010;
+const lastYear = new Date().getFullYear();
 
-const years = Array.from({ length: LAST_YEAR - FIRST_YEAR + 1 }, (_, i) => FIRST_YEAR + i);
+const years = Array.from({ length: lastYear - FIRST_YEAR + 1 }, (_, i) => FIRST_YEAR + i);
 const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
 /** 들어온 값에서 숫자만 뽑는다. `1998. 05. 14` 도 `1998-05-14` 도 받는다. */
@@ -81,13 +86,19 @@ function confirm() {
       </header>
 
       <div class="relative" :style="{ height: `${ROW * (RADIUS * 2 + 1)}px` }">
-        <!-- 선택 자리. 휠 위에 얹기만 하고 누름은 통과시킨다. -->
+        <!--
+          선택 자리. 숫자 뒤에 깔린다.
+
+          절대배치는 일반 흐름보다 위에 그려지므로, 이것만 absolute 로 두면 불투명한
+          회색 띠가 가운데 숫자를 덮어 버린다. 휠 쪽에도 relative 를 줘서 나중에
+          오는 휠이 위로 오게 한다.
+        -->
         <div
           class="rounded-field bg-canvas pointer-events-none absolute inset-x-0"
           :style="{ top: `${ROW * RADIUS}px`, height: `${ROW}px` }"
         />
 
-        <div class="flex h-full">
+        <div class="relative flex h-full">
           <DateWheel
             v-model="year"
             :items="years"
