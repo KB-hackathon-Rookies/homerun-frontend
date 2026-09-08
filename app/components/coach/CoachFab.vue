@@ -19,12 +19,10 @@
  * 본문 흐름 안의 `sticky` 로 두지 않는 이유는, 시안의 이 버튼이 자리를 차지하지
  * 않고 내용 위에 떠 있기 때문이다. 흐름에 두면 스크롤 끝에서 빈 줄이 생긴다.
  *
- * ## 캐릭터 자리
+ * ## 캐릭터
  *
- * 시안은 원 안에 호랑이 캐릭터(`캐릭터.png`)를 넣는다. 그 이미지가 저장소에
- * 없어서, 없는 파일을 참조하는 대신 브랜드 마름모(`BrandMark`)를 세웠다.
- * 야구 다이아몬드이기도 해서 루를 도는 이 앱에서 뜻이 어긋나지 않는다.
- * 캐릭터 에셋이 들어오면 이 자리만 바꾸면 된다.
+ * 시안이 원 안에 넣는 호랑이가 AI 코치 백호다. 버튼에 `aria-label` 이 있으므로
+ * 이미지는 장식으로 둔다 — 둘 다 읽히면 스크린리더가 같은 말을 두 번 한다.
  */
 defineEmits<{ open: [] }>();
 </script>
@@ -38,7 +36,7 @@ defineEmits<{ open: [] }>();
         class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight bottom-fab-lift pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
         @click="$emit('open')"
       >
-        <BrandMark tilted :wordmark="false" />
+        <img src="/mascot-mark.png" alt="" class="size-9" />
       </button>
     </div>
   </div>
