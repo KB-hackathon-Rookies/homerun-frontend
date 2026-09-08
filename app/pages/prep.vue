@@ -1,20 +1,24 @@
 <script setup lang="ts">
+import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { usePlanApi, type LeaseType, type PlanResponse } from '~/api/plan';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
+import { parseManwon } from '~/utils/amount';
 
 /**
- * 독립 준비 문진 3단계.
+ * 독립 준비 문진(시안 벤치 1~4).
  *
- * 껍데기가 셋 다 같다 — 상단 바 · 카드 · 하단 버튼. 카드 안 질문만 다르다.
- * 그래서 파일을 셋으로 쪼개지 않고 한 화면에서 단계를 넘긴다. 답이 쌓여야
+ * 껍데기가 셋 다 같다 — 상단 바 · 진행 표시 · 질문 · 하단 버튼. 가운데 답할 것만
+ * 다르다. 그래서 파일을 셋으로 쪼개지 않고 한 화면에서 단계를 넘긴다. 답이 쌓여야
  * 하고 뒤로 가기도 자연스럽게 붙는다.
  *
- * 플랜은 임대차 유형(`leaseType`)이 생성 파라미터다. 이번 대회는 전세 전용이라
- * 월세는 선택지에서 빼고 전세(`JEONSE`)로 고정한다 — 월세 플랜이 만들어져 전세
- * 판정에서 400 이 나던 경로 자체를 없앤다. 나머지 답은 모아 두었다가 끝에서 함께 보낸다.
+ * 순서는 상황 → 전세·월세 → 보증금 이다. 보증금은 지금 월세에 살고 있는 사람에게만
+ * 묻는다 — 부모님과 사는 사람에게는 지금 걸린 보증금이 없다. 그래서 진행 표시의
+ * 단계 수도 답에 따라 셋에서 둘로 줄어든다.
  *
- * 처음 독립하는 사람에게는 지금 걸린 보증금이 없다. 그 경우 2단계를 건너뛴다.
+ * 플랜은 임대차 유형(`leaseType`)이 생성 파라미터다. 월세 경로는 아직 없어서
+ * 고르면 준비 중 안내를 띄우고 되돌린다 — 알약은 보여주되 월세 플랜은 끝내
+ * 만들어지지 않는다. 전세 판정에서 400 이 나던 경로는 그대로 막혀 있다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -33,15 +37,25 @@ const SITUATIONS = [
 
 type Situation = (typeof SITUATIONS)[number]['value'];
 
-/** 이번 대회는 전세 전용이라 임대차 유형을 전세로 고정한다. 월세는 노출하지 않는다. */
-const LEASE_TYPE: LeaseType = 'JEONSE';
+const LEASES: PillOption[] = [
+  { value: 'JEONSE', label: '전세' },
+  { value: 'WOLSE', label: '월세' },
+];
+
+const STEP_LABELS = ['독립 상황', '전세·월세', '보증금'] as const;
 
 const situation = ref<Situation | null>(null);
+const lease = ref<string | null>(null);
 const deposit = ref('');
 
 const step = ref(0);
 const pending = ref(false);
 const error = ref('');
+
+/** 월세 준비 중 안내. 알약을 고르면 열린다. */
+const wolseNotice = ref(false);
+/** 알림 신청. 받아 둘 데가 아직 없어서 이 화면 안에서만 산다 — 아래 주석 참고. */
+const notified = ref(false);
 
 /**
  * 이 화면에서 만든 계획.
@@ -54,18 +68,23 @@ const error = ref('');
 const created = ref<PlanResponse | null>(null);
 
 /** 처음 독립하면 보증금 질문이 의미가 없다. */
-const skipsDeposit = computed(() => situation.value === 'FIRST');
-const lastStep = computed(() => (skipsDeposit.value ? 1 : 2));
+const asksDeposit = computed(() => situation.value === 'RENTING');
+/*
+ * 아직 안 골랐으면 셋 다 보여준다(시안 벤치 1). 처음 독립하는 사람만 보증금을
+ * 건너뛰므로, 그걸 고른 순간 둘로 줄어든다.
+ */
+const steps = computed(() => (situation.value === 'FIRST' ? STEP_LABELS.slice(0, 2) : STEP_LABELS));
+const lastStep = computed(() => steps.value.length - 1);
 
-const canProceed = computed(() => {
-  // 형식이 틀린 보증금은 채워진 것이 아니다. 그대로 두면 0원으로 저장된다.
-  if (!skipsDeposit.value && parsedDeposit.value.error) return false;
-  if (step.value === 0) return !!situation.value;
-  if (step.value === 1 && !skipsDeposit.value) return !!deposit.value;
-  return true;
-});
+const TITLES = [
+  '어떤 상황에서 독립을 준비하고 있나요?',
+  '전세로 진행하시나요, 월세로 진행하시나요?',
+  '현재 월세 보증금이 얼마인가요?',
+] as const;
 
-/** 숫자만 남긴다. "3,000" 처럼 쳐도 받는다. */
+/** `noUncheckedIndexedAccess` 때문에 색인 접근이 undefined 를 물고 온다. 여기서 털어낸다. */
+const title = computed(() => TITLES[step.value] ?? '');
+
 /**
  * 검사한 뒤에 단위를 바꾼다. 숫자가 아닌 글자를 지워서 값을 만들면 `abc` 가 0원이 되고
  * `-100` 이 100만 원으로 뒤집힌다.
@@ -73,10 +92,29 @@ const canProceed = computed(() => {
 const parsedDeposit = computed(() => parseManwon(deposit.value));
 const depositAmount = computed(() => parsedDeposit.value.value ?? 0);
 
+const canProceed = computed(() => {
+  if (step.value === 0) return !!situation.value;
+  // 월세를 고른 채로는 넘어가지 않는다. 준비 중 안내가 전세로 되돌릴 때까지 막는다.
+  if (step.value === 1) return lease.value === 'JEONSE';
+  // 형식이 틀린 보증금은 채워진 것이 아니다. 그대로 두면 0원으로 저장된다.
+  return !!deposit.value && !parsedDeposit.value.error;
+});
+
+function chooseLease(value: string | null) {
+  lease.value = value;
+  if (value === 'WOLSE') wolseNotice.value = true;
+}
+
+/** 준비 중 안내에서 전세로 되돌린다. */
+function fallBackToJeonse() {
+  lease.value = 'JEONSE';
+  wolseNotice.value = false;
+}
+
 async function next() {
   if (!canProceed.value || pending.value) return;
   if (step.value < lastStep.value) {
-    step.value += skipsDeposit.value && step.value === 0 ? 2 : 1;
+    step.value += 1;
     return;
   }
   await submit();
@@ -87,7 +125,7 @@ function back() {
     navigateTo('/');
     return;
   }
-  step.value -= skipsDeposit.value && step.value === 2 ? 2 : 1;
+  step.value -= 1;
 }
 
 async function submit() {
@@ -96,8 +134,10 @@ async function submit() {
   pending.value = true;
   error.value = '';
   try {
+    // 여기까지 오면 전세다. 월세는 앞 단계에서 막힌다.
+    const leaseType: LeaseType = 'JEONSE';
     // 앞선 시도에서 이미 만들었으면 그걸 쓴다. 재시도가 계획을 새로 만들지 않게 한다.
-    const plan = (created.value ??= await create(LEASE_TYPE));
+    const plan = (created.value ??= await create(leaseType));
     // 홈이 이 번호로 대시보드를 읽는다. 캐시로 적어 두고, 없으면 서버에서 되살린다.
     currentPlan.set(plan.id);
 
@@ -124,7 +164,7 @@ async function submit() {
     await saveInput(plan.id, {
       livesApartFromParents: situation.value === 'RENTING',
       ...(birthDate ? { birthDate } : {}),
-      ...(skipsDeposit.value ? {} : { currentDeposit: depositAmount.value }),
+      ...(asksDeposit.value ? { currentDeposit: depositAmount.value } : {}),
     });
 
     /*
@@ -146,19 +186,18 @@ async function submit() {
 
 <template>
   <PhoneFrame>
-    <div class="h-statusbar shrink-0" />
+    <div class="h-statusbar bg-surface shrink-0" />
+    <BrandBar bordered />
 
-    <header
-      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
-    >
-      <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
-        <AppIcon name="chevron-left" class="size-icon" />
-      </button>
-      <h1 class="text-headline2 text-ink-hero">독립 준비</h1>
-    </header>
+    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <SubStep :steps="steps" :current="step" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
-      <QuestionCard v-if="step === 0" question="어떤 상황에서 독립을 준비하고 있나요?">
+      <div class="flex flex-col gap-4">
+        <p class="text-overline text-ink-label">독립 준비</p>
+        <h1 class="text-question text-ink-card">{{ title }}</h1>
+      </div>
+
+      <div v-if="step === 0" class="flex flex-col gap-3">
         <ChoiceOption
           v-for="option in SITUATIONS"
           :key="option.value"
@@ -167,41 +206,71 @@ async function submit() {
           :selected="situation === option.value"
           @click="situation = option.value"
         />
-      </QuestionCard>
+      </div>
 
-      <QuestionCard v-else-if="step === 1" question="현재 월세 보증금이 얼마인가요?">
-        <AppInput
-          v-model="deposit"
-          label="보증금"
-          type="tel"
-          placeholder="숫자만 입력해주세요"
-          :error="parsedDeposit.error ?? ''"
+      <template v-else-if="step === 1">
+        <PillGroup
+          :model-value="lease"
+          :options="LEASES"
+          variant="block"
+          @update:model-value="chooseLease"
         />
-      </QuestionCard>
 
-      <template v-else>
-        <QuestionCard question="전세로 진행할게요">
-          <p class="text-label2 text-ink-hero-body">
-            지금은 전세 계약을 기준으로 안내해드려요. 월세는 아직 준비 중이라, 전세로 이어서
-            도와드릴게요.
-          </p>
-        </QuestionCard>
-
-        <div class="bg-surface border-line rounded-field border p-4">
-          <p class="text-caption2 text-ink-hero-body">
+        <div class="bg-canvas-soft rounded-field p-4">
+          <p class="text-caption2 text-ink-card-body">
             이미 진행 중인 계약이 있다면 목록으로 보여드리고, 새로 시작하시는 거라면 바로 1루로
             안내해드려요
           </p>
         </div>
       </template>
 
+      <AppInput
+        v-else
+        v-model="deposit"
+        label="현재 보증금"
+        type="tel"
+        placeholder="금액을 입력해 주세요"
+        :error="parsedDeposit.error ?? ''"
+      />
+
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 gap-2.5 border-t">
+      <!-- 첫 단계에는 돌아갈 앞 질문이 없다. 나가려면 상단 바의 홈을 쓴다. -->
+      <div v-if="step > 0" class="w-29 shrink-0">
+        <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
+      </div>
       <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
         {{ pending ? '저장 중…' : '다음' }}
       </AppButton>
     </footer>
+
+    <DimOverlay v-if="wolseNotice" placement="center" @close="wolseNotice = false">
+      <img
+        src="/tiger-trouble.png"
+        alt=""
+        width="160"
+        height="130"
+        class="h-modal-art w-40 object-contain"
+      />
+      <h2 class="text-question text-ink-card">월세 경로는 준비 중이에요</h2>
+      <p class="text-note-body text-ink-card-body text-center">
+        지금은 전세 경로만 도와드릴 수 있어요.<br />
+        청년월세 특별지원과 세액공제 안내는 곧 열려요
+      </p>
+
+      <!--
+        알림 신청을 받아 둘 데가 아직 없다. 눌린 것을 이 화면에서만 기억하고,
+        새로고침하면 사라진다. 신청 API 가 생기면 여기서 부르고 이 상태를 걷어낸다.
+      -->
+      <AppButton variant="strong" :disabled="notified" @click="notified = true">
+        {{ notified ? '알림을 신청했어요' : '열리면 알림 받기' }}
+      </AppButton>
+
+      <button type="button" class="text-label2 text-ink-label" @click="fallBackToJeonse">
+        전세로 진행하기
+      </button>
+    </DimOverlay>
   </PhoneFrame>
 </template>
