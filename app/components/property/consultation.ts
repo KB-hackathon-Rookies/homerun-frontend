@@ -19,10 +19,17 @@ export const RESULT_OPTIONS: { value: ConsultationResult; label: string }[] = [
   { value: 'NOT_HEARD', label: '못 들었어요' },
 ];
 
+/**
+ * 은행 상품은 `일반 전세대출` 이라 부른다.
+ *
+ * 시안(2루 11 · 상담 결과 입력)도, 매물 상세·상품 상세도 이 이름으로 적는다.
+ * 여기만 "은행 상품" 이면 상담에서 고른 것과 확정 화면에 적히는 이름이 달라
+ * 다른 상품을 고른 것처럼 읽힌다.
+ */
 export const PRODUCT_OPTIONS: { value: ConsultedProduct; label: string }[] = [
   { value: 'YOUTH_BEOTIMMOK', label: '청년 버팀목' },
   { value: 'GENERAL_BEOTIMMOK', label: '일반 버팀목' },
-  { value: 'BANK_LOAN', label: '은행 상품' },
+  { value: 'BANK_LOAN', label: '일반 전세대출' },
   { value: 'UNKNOWN', label: '모름' },
 ];
 
@@ -46,6 +53,10 @@ export const COLLATERAL_OPTIONS: { value: CollateralMethod; label: string }[] = 
  * 백엔드는 `bankName` 을 자유 문자열로 받는다. 공시 금리 API 에도 은행 이름이
  * 있지만 그건 "평균금리를 공시한 은행" 이라 전세대출 취급은행과 다르다.
  * 시안 목록을 그대로 쓰고, 취급은행 목록 API 가 생기면 여기를 갈아 끼운다.
+ *
+ * 맨 뒤의 `기타` 가 목록의 몫을 다한다. 목록에 없는 은행을 다녀온 사람은 고를
+ * 칸이 없어 상담 결과를 아예 못 남긴다 — 은행을 세 곳 돌고 온 사람에게 그건
+ * 다시 다녀오라는 말이 된다.
  */
 export const BANKS = [
   '우리은행',
@@ -55,6 +66,7 @@ export const BANKS = [
   '신한은행',
   'IM뱅크',
   'BNK부산은행',
+  '기타',
 ];
 
 /**

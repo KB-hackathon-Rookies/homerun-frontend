@@ -270,10 +270,12 @@ onMounted(async () => {
       </div>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="propertyPending" @click="navigateTo(cta.to)">
-        {{ cta.label }}
-      </AppButton>
-    </footer>
+    <StepFooter
+      :disabled="propertyPending"
+      @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+      @next="navigateTo(cta.to)"
+    >
+      {{ cta.label }}
+    </StepFooter>
   </PhoneFrame>
 </template>

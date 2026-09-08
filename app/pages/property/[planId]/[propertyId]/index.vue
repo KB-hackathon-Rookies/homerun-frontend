@@ -101,14 +101,12 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="pending || !!error"
-        @click="navigateTo(`/property/${planId}/${propertyId}/${nextStep}`)"
-      >
-        {{ nextLabel }}
-      </AppButton>
-    </footer>
+    <StepFooter
+      :disabled="pending || !!error"
+      @back="navigateTo(`/property/${planId}`)"
+      @next="navigateTo(`/property/${planId}/${propertyId}/${nextStep}`)"
+    >
+      {{ nextLabel }}
+    </StepFooter>
   </PhoneFrame>
 </template>

@@ -69,10 +69,12 @@ const start = () =>
       </p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!chosen.length" @click="start">
-        {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
-      </AppButton>
-    </footer>
+    <StepFooter
+      :disabled="!chosen.length"
+      @back="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
+      @next="start"
+    >
+      {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
+    </StepFooter>
   </PhoneFrame>
 </template>

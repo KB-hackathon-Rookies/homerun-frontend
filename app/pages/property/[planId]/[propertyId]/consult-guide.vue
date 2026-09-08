@@ -69,13 +69,11 @@ const checked = ref<Record<string, boolean>>({});
       </div>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        @click="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-      >
-        상담 결과 입력하기
-      </AppButton>
-    </footer>
+    <StepFooter
+      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+      @next="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
+    >
+      상담 결과 입력하기
+    </StepFooter>
   </PhoneFrame>
 </template>

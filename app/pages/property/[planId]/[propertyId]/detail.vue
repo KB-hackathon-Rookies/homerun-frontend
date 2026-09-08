@@ -111,10 +111,11 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/property/${planId}/${propertyId}/registry`)">
-        등기부등본 확인하러 가기
-      </AppButton>
-    </footer>
+    <StepFooter
+      @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+      @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+    >
+      등기부등본 확인하러 가기
+    </StepFooter>
   </PhoneFrame>
 </template>
