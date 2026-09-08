@@ -403,10 +403,17 @@ function back() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
-        {{ pending ? '저장 중…' : isLast ? '스펙 매칭 확인하러 가기' : '다음' }}
-      </AppButton>
+    <!-- 시안(1루 3)은 이전·다음을 하단 CTA 줄에 나란히 둔다. -->
+    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
+      </div>
+
+      <div class="flex-1">
+        <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
+          {{ pending ? '저장 중…' : isLast ? '매칭 확인' : '다음' }}
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

@@ -14,6 +14,48 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 
 const { pending, error, cards } = useJeonsePolicies(planId);
+
+/**
+ * 1루 안착 축하(시안 1루 6).
+ *
+ * 스펙이 다 나온 순간이 1루를 밟은 순간이다. 시안은 여기서 딤을 덮고 다음
+ * 목적지(2루 · 검증)를 알려준다.
+ *
+ * 한 번 보고 나면 다시 띄우지 않는다. 매물 화면에 갔다 돌아올 때마다 축하가
+ * 다시 뜨면 축하가 아니라 방해다. 계획마다 따로 기억하고, 탭을 닫으면 잊는다 —
+ * 서버에 남길 만한 값이 아니다.
+ */
+const CELEBRATED_KEY = `homerun:first-base-settled:${planId}`;
+
+const celebrating = ref(false);
+
+function dismissCelebration() {
+  celebrating.value = false;
+  try {
+    sessionStorage.setItem(CELEBRATED_KEY, '1');
+  } catch {
+    // 시크릿 모드 등으로 저장이 막혀도 축하를 닫는 것 자체는 되어야 한다.
+  }
+}
+
+onMounted(() => {
+  let seen = false;
+  try {
+    seen = sessionStorage.getItem(CELEBRATED_KEY) === '1';
+  } catch {
+    // 읽지 못하면 처음 보는 것으로 친다.
+  }
+  if (seen) return;
+
+  // 카드가 실제로 나온 뒤에만 축하한다. 판정이 비면 축하할 일이 아니다.
+  // 조회는 이 화면이 붙은 뒤에 끝나므로 immediate 는 쓰지 않는다 — 즉시 실행하면
+  // stop 이 아직 없는 채로 불린다.
+  const stop = watch([pending, cards], ([loading, list]) => {
+    if (loading) return;
+    if (list.length) celebrating.value = true;
+    stop();
+  });
+});
 </script>
 
 <template>
@@ -46,14 +88,40 @@ const { pending, error, cards } = useJeonsePolicies(planId);
       </AppCard>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="pending || !cards.length"
-        @click="navigateTo(`/property/${planId}`)"
-      >
-        매물 찾으러 가기
-      </AppButton>
+    <!-- 시안(1루 5)은 이전·2루로를 하단 CTA 줄에 나란히 둔다. -->
+    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/result/${planId}/match`)">이전</AppButton>
+      </div>
+
+      <div class="flex-1">
+        <AppButton
+          variant="strong"
+          :disabled="pending || !cards.length"
+          @click="navigateTo(`/property/${planId}`)"
+        >
+          매물 찾으러 가기
+        </AppButton>
+      </div>
     </footer>
+
+    <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
+    <DimOverlay v-if="celebrating" @close="dismissCelebration">
+      <div class="flex flex-col items-center gap-2 text-center">
+        <p class="text-caption1 text-primary-strong">1루 안착!</p>
+        <h2 class="text-headline1 text-ink-hero">받을 수 있는 대출, 다 찾았어</h2>
+        <p class="text-caption2 text-ink-hero-body">
+          네 조건으로 가능한 대출과 한도가 나왔어. 이제 이 스펙에 맞는 집을 찾으러 가자
+        </p>
+
+        <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
+          ⚾ 다음은 2루 · 검증
+        </p>
+
+        <div class="mt-3 w-full">
+          <AppButton variant="strong" @click="dismissCelebration">스펙 확인하기</AppButton>
+        </div>
+      </div>
+    </DimOverlay>
   </PhoneFrame>
 </template>

@@ -75,14 +75,21 @@ watch(pending, (loading) => {
       <MatchPolicyCard v-for="card in cards" :key="card.code" :card="card" :basis="basisOf(card)" />
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="pending || !cards.length"
-        @click="navigateTo(`/result/${planId}/spec`)"
-      >
-        내 스펙 확인하러 가기
-      </AppButton>
+    <!-- 시안(1루 4)은 이전·내 스펙 보기를 하단 CTA 줄에 나란히 둔다. -->
+    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/diagnosis/${planId}`)">이전</AppButton>
+      </div>
+
+      <div class="flex-1">
+        <AppButton
+          variant="strong"
+          :disabled="pending || !cards.length"
+          @click="navigateTo(`/result/${planId}/spec`)"
+        >
+          내 스펙 보기
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

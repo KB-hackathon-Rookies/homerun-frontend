@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DiagnosisStep, DiagnosisStepPatch, EmploymentType, PlanInput } from '~/api/plan';
+import type { DiagnosisStep, DiagnosisStepPatch, PlanInput } from '~/api/plan';
 import { usePlanApi } from '~/api/plan';
 import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
@@ -127,14 +127,6 @@ const { revision, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
 
-/**
- * 급여근로자인가. 백엔드 분기(`DiagnosisInputStep.isSalaried`)와 같은 기준이다.
- * 프리랜서·무직은 회사규모·재직기간을 묻지 않고 바로 재무 단계(재무는 다음 화면)로 간다.
- */
-const SALARIED: EmploymentType[] = ['FULL_TIME', 'CONTRACT', 'INTERN', 'DAILY_WORKER'];
-const isSalaried = (value: string | null): boolean =>
-  !!value && SALARIED.includes(value as EmploymentType);
-
 /** STEP 이름으로 질문 위치를 찾는다. 이 화면에 없으면(재무 이후) -1. */
 const stepIndex = (step: string | null) => QUESTIONS.findIndex((q) => q.step === step);
 
@@ -144,18 +136,6 @@ const answer = computed({
   set: (value: string | null) => {
     if (value) answers.value[question.value.step] = value;
   },
-});
-/**
- * 이 화면의 마지막 질문인가.
- *
- * 재직기간이 마지막이지만, 프리랜서·무직은 고용형태에서 회사규모·재직기간을
- * 건너뛰고 바로 재무 화면으로 넘어가므로 그때는 고용형태가 마지막이다.
- */
-const isLast = computed(() => {
-  const step = question.value.step;
-  if (step === 'EMPLOYMENT_PERIOD') return true;
-  if (step === 'EMPLOYMENT_TYPE') return !!answer.value && !isSalaried(answer.value);
-  return false;
 });
 
 /** 단계마다 늘 보이는 설명. */
@@ -267,10 +247,21 @@ function back() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!answer || pending" @click="next">
-        {{ pending ? '저장 중…' : isLast ? '스펙 확인하러 가기' : '다음' }}
-      </AppButton>
+    <!--
+      시안(1루 1·2)은 이전·다음을 하단 CTA 줄에 나란히 둔다. 헤더 셰브론만 두면
+      엄지가 닿는 자리에 되돌아갈 길이 없다. 첫 질문은 되돌아갈 앞 단계가 이
+      화면에 없어서 시안대로 다음만 세운다.
+    -->
+    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div v-if="index > 0" class="w-28 shrink-0">
+        <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
+      </div>
+
+      <div class="flex-1">
+        <AppButton variant="strong" :disabled="!answer || pending" @click="next">
+          {{ pending ? '저장 중…' : '다음' }}
+        </AppButton>
+      </div>
     </footer>
 
     <!--
