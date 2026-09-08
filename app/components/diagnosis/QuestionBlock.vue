@@ -30,14 +30,7 @@ defineEmits<{ info: [] }>();
     <div class="flex w-full items-center gap-1.5">
       <h2 class="text-numeric text-ink-card flex-1">{{ question }}</h2>
 
-      <button
-        type="button"
-        class="border-ink-chevron text-badge text-ink-label flex size-3.5 shrink-0 items-center justify-center rounded-full border"
-        aria-label="이 질문을 왜 묻는지 보기"
-        @click="$emit('info')"
-      >
-        i
-      </button>
+      <InfoDot @click="$emit('info')" />
     </div>
 
     <slot />

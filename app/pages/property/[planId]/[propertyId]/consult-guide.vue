@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루-5 은행 사전상담 안내.
@@ -39,20 +40,12 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.guaranteeAgency]" title="은행 사전상담"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)">
+  <StageShell :coach-sheets="[COACH_TIME.guaranteeAgency]" brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>은행 가기 전 사전상담이야. 보증기관이 보증서를 내줘야 대출이 실행돼</CoachTip>
-
-      <div class="bg-surface-brand rounded-field flex flex-col gap-1.5 p-4">
-        <p class="text-label2 text-ink-hero font-bold">코치 팁</p>
-        <p class="text-label2 text-ink-hero-body leading-5">
-          매물에 이상이 없다면, 이제 은행에 방문해 실제 대출이 가능한지 사전 상담을 진행하세요.
-          은행은 3곳 이상 돌아보는 게 좋아요.
-        </p>
-      </div>
+      <p class="text-caption1 text-ink-label font-medium">2루 · 은행 상담</p>
+      <h1 class="text-question text-ink-card">은행 사전상담</h1>
 
       <div class="bg-surface-info rounded-chip flex flex-col gap-1 p-3">
         <p class="text-caption1 text-primary-strong">은행 창구에서</p>

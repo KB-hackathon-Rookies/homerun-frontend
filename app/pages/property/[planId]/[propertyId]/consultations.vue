@@ -14,6 +14,7 @@ import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루-4d 은행 상담 카드 리스트.
@@ -128,11 +129,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.bankConsult]" title="은행 상담"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)">
+  <StageShell :coach-sheets="[COACH_TIME.bankConsult]" brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <p class="text-caption1 text-ink-label font-medium">2루 · 은행 상담</p>
+      <h1 class="text-question text-ink-card">은행 상담</h1>
       <AppCard v-if="property" class="flex flex-col gap-2">
         <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid" class="self-start">
           {{ property.trafficLightLabel ?? '확인 중' }}

@@ -6,6 +6,7 @@ import { KB_LAND_URL } from '~/components/property/links';
 import { parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import type { CoachSheet } from '~/components/coach/sheet';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -152,18 +153,49 @@ async function start() {
     saving.value = false;
   }
 }
+/**
+ * 코치 TIME 을 문항별로 연다.
+ *
+ * 시안은 이 화면에 모달을 둘 둔다 — `매물 고를 때 미리 거르기` 와 `임대인 협조`.
+ * 각 줄의 ⓘ 가 제 것만 열고, 오른쪽 아래 FAB 은 둘 다 편다. 하나로 합쳐 열면
+ * 방금 누른 줄의 답이 어디 있는지 찾아야 한다.
+ */
+const ALL_SHEETS = [COACH_TIME.propertyFilter, COACH_TIME.landlordConsent];
+
+const sheets = ref<CoachSheet[]>(ALL_SHEETS);
+const coachOpen = ref(false);
+
+function openCoach(sheet: CoachSheet) {
+  sheets.value = [sheet];
+  coachOpen.value = true;
+}
+
+// 닫히면 다시 둘 다로 되돌린다. FAB 은 화면 전체를 묻는 자리다.
+watch(coachOpen, (open) => {
+  if (!open) sheets.value = ALL_SHEETS;
+});
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]" title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)">
-
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="sheets"
+    title="매물 등록"
+    base="2루"
+    @back="navigateTo(`/property/${planId}`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <h2 class="text-headline1 text-ink-hero">
         KB 부동산에서 찾은 매물의 도로명 주소를 검색해주세요
       </h2>
 
       <AppCard class="flex flex-col gap-3">
-        <p class="text-body2 text-ink-hero font-bold">1루 조건에 맞는 매물을 먼저 찾아보세요</p>
+        <div class="flex items-center gap-1.5">
+          <p class="text-body2 text-primary-strong flex-1 font-bold">
+            1루 조건에 맞는 매물을 먼저 찾아보세요
+          </p>
+          <InfoDot @click="openCoach(COACH_TIME.propertyFilter)" />
+        </div>
         <p class="text-label2 text-ink-hero-body">{{ searchConditions }}</p>
         <button
           type="button"
@@ -237,22 +269,27 @@ async function start() {
         계약하고 나서 알면 계약금이 걸린 채로 막히기 때문이다.
       -->
       <AppCard class="flex flex-col gap-3">
-        <p class="text-body3 text-ink-hero font-bold">임대인에게 전세대출 협조를 확인하셨나요?</p>
+        <div class="flex items-center gap-1.5">
+          <p class="text-body3 text-ink-card flex-1 font-bold">
+            임대인에게 전세대출 협조를 확인하셨나요?
+          </p>
+          <InfoDot @click="openCoach(COACH_TIME.landlordConsent)" />
+        </div>
         <PillGroup v-model="consent" :options="CONSENT_OPTIONS" />
         <p v-if="consentNotice" class="text-caption2 text-ink-hero-body">{{ consentNotice }}</p>
       </AppCard>
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="!chosen || realDepositWon === null || saving"
-        @click="start"
-      >
-        {{ saving ? '등록 중…' : '이 매물로 진단 시작하기' }}
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton
+          variant="strong"
+          :disabled="!chosen || realDepositWon === null || saving"
+          @click="start"
+        >
+          {{ saving ? '등록 중…' : '이 매물로 진단 시작하기' }}
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

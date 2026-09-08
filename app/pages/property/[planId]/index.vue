@@ -3,6 +3,7 @@ import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
 import { messageFrom } from '~/utils/error';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루 매물 목록.
@@ -73,25 +74,45 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.preContract]" title="매물" base="2루" @back="navigateTo(`/result/${planId}/spec`)">
+  <StageShell :coach-sheets="[COACH_TIME.preContract]" brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
+
+      <div class="flex w-full items-center gap-2">
+        <h1 class="text-question text-ink-card flex-1">매물 목록</h1>
+        <span class="text-label2 text-ink-label">{{ properties.length }}/{{ MAX_PROPERTIES }}</span>
+      </div>
+
+      <!--
+        신호등 네 색의 뜻을 목록 머리에 한 줄로 적는다(시안 `687:14221`). 카드마다
+        글자가 붙어 있긴 하지만, 색이 무슨 순서인지는 여기서만 알 수 있다.
+      -->
+      <p v-if="properties.length" class="text-micro text-ink-label">
+        🔴 불가 · 🟡 등기부 확인 필요 · 🟢 은행 상담 가능 · 🔵 상담 완료
+      </p>
+
       <p v-if="pending" class="text-label2 text-ink-muted">매물을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
       <div
         v-else-if="!properties.length"
-        class="border-line rounded-field flex flex-col items-center gap-3 border px-4 pt-9 pb-10 text-center"
+        class="bg-surface border-line rounded-field flex flex-col items-center gap-3 border px-4 pt-9 pb-10 text-center"
       >
-        <h2 class="text-headline1 text-ink-strong">아직 등록한 매물이 없어요</h2>
-        <p class="text-body3 text-ink-hero-body font-bold">
+        <h2 class="text-section text-ink-strong font-bold">아직 등록한 매물이 없어요</h2>
+        <!--
+          시안은 이 줄을 노란색(#fbd773)으로 칠했다. 흰 바탕에 노란 14px 은 읽히지
+          않아서 본문색으로 둔다 — 색만 바꿔도 뜻이 달라지지 않는 자리다.
+        -->
+        <p class="text-body3 text-ink-card-body font-bold">
           KB 부동산에서 마음에 드는 매물을 찾아 등록하면 여기에 카드로 쌓여요
         </p>
 
         <!-- 어디서 찾는지를 글자로만 적으면 2루가 첫 화면에서 멈춘다. 나갈 길을 준다. -->
         <button
           type="button"
-          class="text-label2 text-primary-strong font-bold"
+          class="bg-kb text-kb-ink rounded-field text-body3 w-full px-4 py-2.5 font-bold"
           @click="navigateTo(KB_LAND_URL, { external: true })"
         >
           KB부동산에서 매물 찾기 ↗
@@ -123,28 +144,30 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
-      <!-- 잠긴 버튼만 두면 왜 안 눌리는지 모른다. 이유를 버튼 위에 적는다. -->
-      <p v-if="full" class="text-caption2 text-ink-muted text-center">
-        매물은 최대 {{ MAX_PROPERTIES }}개까지 등록할 수 있어요
-      </p>
-
-      <AppButton
-        :variant="settled ? 'white' : 'strong'"
-        :disabled="full"
-        @click="navigateTo(`/property/${planId}/new`)"
+      <footer
+        class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 flex-col gap-2.5 border-t"
       >
-        + 매물 등록하기
-      </AppButton>
+        <!-- 잠긴 버튼만 두면 왜 안 눌리는지 모른다. 이유를 버튼 위에 적는다. -->
+        <p v-if="full" class="text-caption2 text-ink-muted text-center">
+          매물은 최대 {{ MAX_PROPERTIES }}개까지 등록할 수 있어요
+        </p>
 
-      <AppButton
-        v-if="settled"
-        variant="strong"
-        @click="navigateTo(`/property/${planId}/${settled.propertyId}/confirm`)"
-      >
-        다음 — 최종 확정
-      </AppButton>
-    </footer>
-</template>
+        <AppButton
+          :variant="settled ? 'white' : 'strong'"
+          :disabled="full"
+          @click="navigateTo(`/property/${planId}/new`)"
+        >
+          + 매물 등록하기
+        </AppButton>
+
+        <AppButton
+          v-if="settled"
+          variant="strong"
+          @click="navigateTo(`/property/${planId}/${settled.propertyId}/confirm`)"
+        >
+          다음 — 최종 확정
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

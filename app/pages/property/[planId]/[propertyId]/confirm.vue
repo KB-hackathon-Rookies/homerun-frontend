@@ -13,6 +13,7 @@ import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루-7 최종 확정.
@@ -123,7 +124,7 @@ async function proceed() {
     if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
     await useSecondBaseApi().complete(planId, decision.decisionRevision, plan.ruleVersion);
 
-    // 서버가 완료를 받아준 뒤에만 축하한다. 3루로는 사용자가 눌러서 넘어간다.
+    // 서버가 완료를 받아준 뒤에만 축하한다. 축하를 닫으면 3루로 넘어간다.
     arrived.value = true;
   } catch (cause) {
     saveError.value = messageFrom(cause, '확정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
@@ -144,14 +145,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.depositOrder]" title="이걸로 진행할게요"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)">
+  <StageShell :coach-sheets="[COACH_TIME.depositOrder]" brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
-      <CoachTip
-        >계약금은 대출 신청 전에 내는 거야. 순서가 바뀌면 곤란해지니 지금 확인해두자</CoachTip
-      >
+      <p class="text-caption1 text-ink-label font-medium">2루 · 최종 확정</p>
+      <h1 class="text-question text-ink-card">부동산에 들고 갈 매물</h1>
 
       <div v-if="settled" class="bg-surface-info rounded-field flex flex-col gap-1 p-4">
         <p class="text-body3 text-primary-strong font-bold">축하해!</p>
@@ -233,28 +232,29 @@ onMounted(async () => {
         </AppButton>
       </template>
 
-      3루 진행 (부동산 계약)
+      부동산 가기
     </StepFooter>
 
     <!--
-      2루 안착. 닫으면 확정 화면에 그대로 남는다 — 축하를 놓쳤다고 3루로
-      못 가는 건 아니어야 한다.
+      2루 안착. 시안(`687:16198`)에는 버튼이 없고 "화면을 터치하면 계속돼" 다 —
+      닫는 동작이 곧 3루로 가는 동작이라 여기서 넘긴다.
     -->
-    <DimOverlay v-if="arrived" @close="arrived = false">
-      <div class="flex flex-col items-center gap-2.5 text-center">
-        <p class="text-caption1 text-primary-strong">2루 안착!</p>
-        <h2 class="text-headline1 text-ink-hero">이 리스트 들고 부동산 가자</h2>
-        <p class="text-label2 text-ink-hero-body">
-          매물 진단부터 은행 사전상담까지 끝났어. 부동산에서 집을 정하면 3루가 시작돼
-        </p>
-        <p class="bg-surface-info rounded-pill text-caption2 text-primary-strong px-3.5 py-2">
-          ⚾ 다음은 3루 · 실행
-        </p>
-      </div>
-
-      <AppButton variant="strong" class="mt-5" @click="navigateTo(`/contract/${planId}/visit`)">
-        부동산 가기
-      </AppButton>
+    <DimOverlay v-if="arrived" placement="center" @close="navigateTo(`/contract/${planId}/visit`)">
+      <!--
+        시안(`687:16198`)은 깃발 든 호랑이를 쓰는데 그 에셋이 아직 없다. 축하
+        자리라 뜻이 가장 가까운 `tiger/done.png` 로 둔다.
+      -->
+      <img src="/tiger/done.png" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
+      <p class="text-heading text-primary-strong">2루 안착!</p>
+      <h2 class="text-body-strong text-ink-strong">이 리스트 들고 부동산 가자</h2>
+      <p class="text-note-body text-ink-card-body text-center">
+        매물 진단부터 은행 사전상담까지 끝났어. 부동산에서 집을 정하면 3루가 시작돼
+      </p>
+      <p class="bg-surface-info rounded-pill text-caption2 text-primary-strong px-3.5 py-2">
+        ⚾ 다음은 3루 · 실행
+      </p>
+      <!-- 시안은 버튼 없이 "화면을 터치하면 계속돼" 다. 닫으면 확정 화면이 그대로 남는다. -->
+      <p class="text-micro text-ink-muted pt-1">화면을 터치하면 계속돼</p>
     </DimOverlay>
   </StageShell>
 </template>
