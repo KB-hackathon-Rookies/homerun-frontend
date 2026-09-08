@@ -90,7 +90,10 @@ const cta = computed(() => {
     return { label: '이 매물로 3루 진행', to: `/property/${planId}/${propertyId}/confirm` };
   }
   if (!canConsult.value) {
-    return { label: '등기부 확인하러 가기', to: `/property/${planId}/${propertyId}/registry-check` };
+    return {
+      label: '등기부 확인하러 가기',
+      to: `/property/${planId}/${propertyId}/registry-check`,
+    };
   }
   return {
     label: consultations.value.length ? '+ 상담 카드 추가' : '+ 첫 상담 카드 추가하기',
@@ -116,7 +119,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.bankConsult]">
     <StageBar
       title="은행 상담"
       base="2루"
@@ -269,8 +272,6 @@ onMounted(async () => {
           {{ note }}
         </p>
       </div>
-
-      <CoachTime :sheets="[COACH_TIME.bankConsult]" />
     </div>
 
     <StepFooter

@@ -25,32 +25,32 @@ const { pending, error, cards } = useJeonsePolicies(planId);
  * 근거인 것처럼 읽게 되므로, 금액이 아니라 규칙만 남긴다.
  */
 const COACH = {
-  subtitle: '내 스펙 계산 근거',
+  title: '내 스펙 계산 근거',
   intro: '카드에 나온 숫자가 어디서 나왔는지 알려줄게. 한도, 금리, 필요한 돈 순서로 계산했어',
   qa: [
     {
-      title: '한도 계산',
-      body: '청년 버팀목은 보증금 × 80% 와 상품한도 1억 5,000만원 중 작은 값이야. 일반 버팀목은 수도권 상품한도 1억 2,000만원을 적용해. 서울시 이자지원은 보증금 × 90% 와 상품한도 2억원 중 작은 값이고 하나은행 전용이야',
+      q: '한도 계산',
+      a: '청년 버팀목은 보증금 × 80% 와 상품한도 1억 5,000만원 중 작은 값이야. 일반 버팀목은 수도권 상품한도 1억 2,000만원을 적용해. 서울시 이자지원은 보증금 × 90% 와 상품한도 2억원 중 작은 값이고 하나은행 전용이야',
     },
     {
-      title: '금리 계산',
-      body: '청년 버팀목은 기본 2.5%에서 중소기업 재직 우대 0.3%p 같은 우대를 빼. 일반 버팀목은 소득·보증금 구간에 따라 연 2.5~3.5%. 서울시는 COFIX 에 가산금리를 더하고 이자지원 2.0%를 뺀 변동금리야',
+      q: '금리 계산',
+      a: '청년 버팀목은 기본 2.5%에서 중소기업 재직 우대 0.3%p 같은 우대를 빼. 일반 버팀목은 소득·보증금 구간에 따라 연 2.5~3.5%. 서울시는 COFIX 에 가산금리를 더하고 이자지원 2.0%를 뺀 변동금리야',
     },
     {
-      title: '필요한 돈과 차액',
-      body: '보증금에서 대출금을 뺀 게 필요한 돈이야. 여기에 중개보수·인지세·보증료·이사비 같은 부대비용을 더한 총 필요액과 내 돈을 견줘서 차액이 나와',
+      q: '필요한 돈과 차액',
+      a: '보증금에서 대출금을 뺀 게 필요한 돈이야. 여기에 중개보수·인지세·보증료·이사비 같은 부대비용을 더한 총 필요액과 내 돈을 견줘서 차액이 나와',
     },
     {
-      title: '여기 나온 한도는 상품 기준 최대치야',
-      body: '실제로는 은행이 더 낮게 안내할 수 있어. 은행이 한도를 다 내주면 연체·사고 시 영업점이 책임지기 때문이야. 2루 은행 상담 결과가 입력되면 이 카드 값은 은행이 안내한 한도로 덮어써져',
+      q: '여기 나온 한도는 상품 기준 최대치야',
+      a: '실제로는 은행이 더 낮게 안내할 수 있어. 은행이 한도를 다 내주면 연체·사고 시 영업점이 책임지기 때문이야. 2루 은행 상담 결과가 입력되면 이 카드 값은 은행이 안내한 한도로 덮어써져',
     },
     {
-      title: '담보 방식에 따라 한도가 달라',
-      body: '버팀목은 보증금의 80% 고정이지만 은행 대출은 담보에 따라 달라. 담보는 은행이 정하니 2루 은행 상담에서 정확한 금액이 나와',
+      q: '담보 방식에 따라 한도가 달라',
+      a: '버팀목은 보증금의 80% 고정이지만 은행 대출은 담보에 따라 달라. 담보는 은행이 정하니 2루 은행 상담에서 정확한 금액이 나와',
     },
   ],
   /** 시안 `더 알아보기` 칩. 실제로 있는 모듈만 건다. */
-  links: [{ label: '안심계약 3·3·3 법칙', to: '/coach/safe-contract-333' }],
+  related: [{ id: 'safe-contract-333', label: '안심계약 3·3·3 법칙' }],
 };
 
 const coachOpen = ref(false);
@@ -99,11 +99,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[COACH]">
     <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 시안의 FAB 과 같은 역할이다. -->
+      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
       <button type="button" class="w-full text-left" @click="coachOpen = true">
         <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
           >네 스펙은 입력값으로 계산한 거야. 어떤 규칙으로 나온 숫자인지 계산 근거를
@@ -150,45 +150,6 @@ onMounted(() => {
         </AppButton>
       </div>
     </footer>
-
-    <!-- 코치 TIME(시안 1루 5 모달). -->
-    <DimOverlay v-if="coachOpen" @close="coachOpen = false">
-      <div class="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
-        <div class="flex flex-col gap-1">
-          <p class="text-caption1 text-primary-strong">⚾ 코치 TIME</p>
-          <h2 class="text-headline1 text-ink-hero">{{ COACH.subtitle }}</h2>
-        </div>
-
-        <p class="text-caption2 text-ink-hero-body">{{ COACH.intro }}</p>
-
-        <div
-          v-for="item in COACH.qa"
-          :key="item.title"
-          class="bg-canvas rounded-field flex flex-col gap-1 p-3.5"
-        >
-          <p class="text-label2 text-ink-hero font-bold">{{ item.title }}</p>
-          <p class="text-caption2 text-ink-hero-body">{{ item.body }}</p>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-caption1 text-ink-muted">더 알아보기</p>
-          <div class="flex flex-wrap gap-2">
-            <NuxtLink
-              v-for="link in COACH.links"
-              :key="link.to"
-              :to="link.to"
-              class="border-line rounded-chip text-caption2 text-ink-hero border px-3 py-1.5"
-            >
-              {{ link.label }}
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-4">
-        <AppButton variant="strong" @click="coachOpen = false">확인했어요</AppButton>
-      </div>
-    </DimOverlay>
 
     <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">

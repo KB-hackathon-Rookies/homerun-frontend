@@ -11,23 +11,11 @@
  *
  * `related` 는 코치 모듈로 가는 칩이다. 시안 칩 중 모듈이 실제로 있는 것만
  * 남겼다. 없는 곳으로 보내는 칩은 없느니만 못하다.
+ *
+ * 시트의 형태는 1루와 함께 쓰므로 `~/components/coach/sheet` 에 있다. 여기에는
+ * 2루가 무슨 말을 하는지만 둔다.
  */
-
-/** 사전 문답 한 쌍. 시안의 `qa` 블록이다. */
-export interface CoachQa {
-  q: string;
-  a: string;
-}
-
-export interface CoachTimeSheet {
-  /** 시트 머리의 제목. "코치 TIME" 아래에 붙는다. */
-  title: string;
-  /** 코치가 먼저 건네는 말. 반말인 것은 코치가 옆에서 거드는 자리라서다. */
-  intro: string;
-  qa: CoachQa[];
-  /** 더 알아보기 칩 → `/coach/{id}`. */
-  related?: { id: string; label: string }[];
-}
+import type { CoachSheet } from '~/components/coach/sheet';
 
 export const COACH_TIME = {
   /** 2루 1 · 매물 등록 */
@@ -295,4 +283,4 @@ export const COACH_TIME = {
     ],
     related: [{ id: 'contract-terms', label: '계약서와 특약' }],
   },
-} satisfies Record<string, CoachTimeSheet>;
+} satisfies Record<string, CoachSheet>;

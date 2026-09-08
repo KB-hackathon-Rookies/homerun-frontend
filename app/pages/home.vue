@@ -166,7 +166,8 @@ async function recoverPlan() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-stage="dashboard?.currentStage">
+    <!-- 대시보드는 경로로 루를 알 수 없다. 계획이 오면 그 단계를 코치 FAB 에 넘긴다. -->
     <div class="h-statusbar bg-surface shrink-0" />
 
     <header class="h-topbar-tall px-gutter bg-surface flex shrink-0 items-center justify-between">

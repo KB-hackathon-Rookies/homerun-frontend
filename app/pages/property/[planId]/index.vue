@@ -73,7 +73,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.preContract]">
     <StageBar title="매물" base="2루" @back="navigateTo(`/result/${planId}/spec`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
@@ -112,8 +112,6 @@ onMounted(async () => {
           :verdicts="verdicts[property.propertyId] ?? []"
         />
       </button>
-
-      <CoachTime :sheets="[COACH_TIME.preContract]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DiagnosisStep, DiagnosisStepPatch, PlanInput } from '~/api/plan';
 import { usePlanApi } from '~/api/plan';
+import type { CoachSheet } from '~/components/coach/sheet';
 import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
 
@@ -164,57 +165,49 @@ function dismissBlocked() {
  *
  * 내용은 시안 문구 그대로다. 지어내지 않는다.
  */
-interface CoachSheet {
-  subtitle: string;
-  intro: string;
-  qa: { title: string; body: string }[];
-  /** 시안 `더 알아보기` 칩. 실제로 있는 모듈만 건다. */
-  links: { label: string; to: string }[];
-}
-
 const BASIC_COACH: CoachSheet = {
-  subtitle: '기본 정보, 왜 묻는지 알려줄게',
+  title: '기본 정보, 왜 묻는지 알려줄게',
   intro:
     '전세자금대출이 뭐냐면, 전세보증금 일부를 빌려주는 거야. 우선 네가 전세자금대출을 어느 정도 받을 수 있는지 판단해 보려고 해. 세대주·주택 여부, 근로 형태, 쓸 수 있는 보증금을 적어주면 받을 수 있는 대출 안에서 매물 스펙을 뽑아줄게!',
   qa: [
     {
-      title: '세대주 여부',
-      body: '부모님 집에 살아서 세대주가 아니어도 괜찮아. 예비 세대주로 신청할 수 있어. 대출 실행일부터 1개월 안에 전입신고해서 세대주가 되면 돼',
+      q: '세대주 여부',
+      a: '부모님 집에 살아서 세대주가 아니어도 괜찮아. 예비 세대주로 신청할 수 있어. 대출 실행일부터 1개월 안에 전입신고해서 세대주가 되면 돼',
     },
     {
-      title: '무주택 여부',
-      body: '지금 함께 사는 가족(부모님 등)의 주택은 상관없어. 독립 후 본인 명의 기준이야. 있으면 아직 준비 중인 서비스라 여기서 마무리돼',
+      q: '무주택 여부',
+      a: '지금 함께 사는 가족(부모님 등)의 주택은 상관없어. 독립 후 본인 명의 기준이야. 있으면 아직 준비 중인 서비스라 여기서 마무리돼',
     },
     {
-      title: '혼인 여부',
-      body: '지금은 미혼 경로만 열려 있어. 기혼이면 준비 중 안내로 마무리돼',
+      q: '혼인 여부',
+      a: '지금은 미혼 경로만 열려 있어. 기혼이면 준비 중 안내로 마무리돼',
     },
   ],
-  links: [
-    { label: '안심계약 3·3·3 법칙', to: '/coach/safe-contract-333' },
-    { label: '2026년 달라진 것', to: '/coach/changes-2026' },
+  related: [
+    { id: 'safe-contract-333', label: '안심계약 3·3·3 법칙' },
+    { id: 'changes-2026', label: '2026년 달라진 것' },
   ],
 };
 
 const COMPANY_COACH: CoachSheet = {
-  subtitle: '회사 정보, 왜 묻는지 알려줄게',
+  title: '회사 정보, 왜 묻는지 알려줄게',
   intro:
     '고용 형태와 회사 규모, 재직 기간은 대출 조건과 우대금리를 정하는 데 써. 중소기업 정규직이면 청년 버팀목 우대금리 0.3%p를 받을 수 있어',
   qa: [
     {
-      title: '재직 1년 미만이면',
-      body: '소득이 최근 급여를 12배해서 환산돼. 상여금이 빠져서 실제 연봉보다 적게 잡힐 수 있어',
+      q: '재직 1년 미만이면',
+      a: '소득이 최근 급여를 12배해서 환산돼. 상여금이 빠져서 실제 연봉보다 적게 잡힐 수 있어',
     },
     {
-      title: '서류가 하나 늘어',
-      body: '급여통장 사본 또는 거래내역서가 추가로 필요해. 은행 앱에서 바로 발급돼',
+      q: '서류가 하나 늘어',
+      a: '급여통장 사본 또는 거래내역서가 추가로 필요해. 은행 앱에서 바로 발급돼',
     },
     {
-      title: '수습 중이어도 돼',
-      body: '버팀목은 재직기간 조건이 없어. 다만 1개월 이상 재직해서 온전한 한 달치 소득은 있어야 해',
+      q: '수습 중이어도 돼',
+      a: '버팀목은 재직기간 조건이 없어. 다만 1개월 이상 재직해서 온전한 한 달치 소득은 있어야 해',
     },
   ],
-  links: [{ label: '2026년 달라진 것', to: '/coach/changes-2026' }],
+  related: [{ id: 'changes-2026', label: '2026년 달라진 것' }],
 };
 
 /** 시안이 회사 정보로 묶은 질문들. 나머지는 기본 정보다. */
@@ -299,13 +292,13 @@ function back() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[coach]">
     <StageBar title="사용자 정보 입력" base="1루" @back="back" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 시안의 FAB 과 같은 역할이다. -->
+      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
       <button type="button" class="w-full text-left" @click="coachOpen = true">
-        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기">{{ coach.subtitle }}</CoachTip>
+        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기">{{ coach.title }}</CoachTip>
       </button>
 
       <QuestionCard :question="question.title">
@@ -335,45 +328,6 @@ function back() {
         </AppButton>
       </div>
     </footer>
-
-    <!-- 코치 TIME(시안 1루 1·2 모달). -->
-    <DimOverlay v-if="coachOpen" @close="coachOpen = false">
-      <div class="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
-        <div class="flex flex-col gap-1">
-          <p class="text-caption1 text-primary-strong">⚾ 코치 TIME</p>
-          <h2 class="text-headline1 text-ink-hero">{{ coach.subtitle }}</h2>
-        </div>
-
-        <p class="text-caption2 text-ink-hero-body">{{ coach.intro }}</p>
-
-        <div
-          v-for="item in coach.qa"
-          :key="item.title"
-          class="bg-canvas rounded-field flex flex-col gap-1 p-3.5"
-        >
-          <p class="text-label2 text-ink-hero font-bold">{{ item.title }}</p>
-          <p class="text-caption2 text-ink-hero-body">{{ item.body }}</p>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-caption1 text-ink-muted">더 알아보기</p>
-          <div class="flex flex-wrap gap-2">
-            <NuxtLink
-              v-for="link in coach.links"
-              :key="link.to"
-              :to="link.to"
-              class="border-line rounded-chip text-caption2 text-ink-hero border px-3 py-1.5"
-            >
-              {{ link.label }}
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-4">
-        <AppButton variant="strong" @click="coachOpen = false">확인했어요</AppButton>
-      </div>
-    </DimOverlay>
 
     <!--
       준비 중 경로 안내(1루 7). 기혼·유주택·무직을 고르면 흐름을 멈추고 딤으로

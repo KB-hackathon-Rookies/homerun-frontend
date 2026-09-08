@@ -123,7 +123,7 @@ async function save() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.registryChecklist]">
     <StageBar
       title="등기부 체크리스트"
       base="2루"
@@ -175,8 +175,6 @@ async function save() {
       </AppCard>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
-      <CoachTime :sheets="[COACH_TIME.registryChecklist]" />
     </div>
 
     <StepFooter

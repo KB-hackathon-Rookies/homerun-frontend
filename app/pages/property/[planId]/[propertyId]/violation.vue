@@ -51,7 +51,7 @@ async function next() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.buildingLedger]">
     <StageBar
       title="매물 등록"
       base="2루"
@@ -100,8 +100,6 @@ async function next() {
       </div>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
-      <CoachTime :sheets="[COACH_TIME.buildingLedger]" />
     </div>
 
     <StepFooter
