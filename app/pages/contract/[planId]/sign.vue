@@ -111,7 +111,7 @@ async function proceed() {
           <input
             v-model="seniorDebt"
             inputmode="numeric"
-            placeholder="모르면 비워두세요"
+            placeholder="없으면 0을 입력하세요"
             class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
           />
         </div>
@@ -121,7 +121,7 @@ async function proceed() {
           <input
             v-model="mortgageCount"
             inputmode="numeric"
-            placeholder="모르면 비워두세요"
+            placeholder="없으면 0을 입력하세요"
             class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
           />
         </div>
