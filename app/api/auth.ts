@@ -32,6 +32,21 @@ export interface EmailVerificationResponse {
   expiresInSeconds: number;
 }
 
+/**
+ * 소셜 신규 회원이 가입 트랙에서 채우는 값.
+ *
+ * 이메일 가입(`signup`)과 달리 이메일·비밀번호가 없다. 신원은 제공자가 이미 확인했고,
+ * 휴대전화만 우리가 다시 확인한다.
+ */
+export interface SocialSignupPayload {
+  name: string;
+  birthDate: string;
+  phone: string;
+  phoneVerificationToken: string;
+  regionId: number;
+  detailAddress?: string;
+}
+
 /** 로그인·갱신 요청은 401 을 받아도 토큰 갱신을 부르면 안 된다. 무한히 돈다. */
 const NO_REFRESH = { skipAuth: true, skipAuthRefresh: true } as const;
 
@@ -100,6 +115,35 @@ export function useAuthApi() {
         `${EMAIL}/signup`,
         payload,
         NO_REFRESH,
+      );
+      return data.data;
+    },
+
+    /**
+     * 리프레시 쿠키로 액세스 토큰을 받는다.
+     *
+     * 소셜 콜백은 쿠키만 심고 프론트로 돌려보낸다. 액세스 토큰을 주소창에 실으면
+     * 브라우저 기록과 리퍼러에 남아서다.
+     */
+    async refresh() {
+      const { data } = await $api.post<ApiResponse<LoginResponse>>(
+        `${BASE}/refresh`,
+        null,
+        NO_REFRESH,
+      );
+      return data.data;
+    },
+
+    /**
+     * 소셜 회원가입 완료.
+     *
+     * 계정은 콜백에서 이미 만들어졌다. 여기서 채우는 건 제공자가 주지 않는 값 —
+     * 생년월일·휴대전화·지역이다. 이게 채워져야 백엔드가 가입 완료로 본다.
+     */
+    async socialSignup(payload: SocialSignupPayload) {
+      const { data } = await $api.post<ApiResponse<MemberResponse>>(
+        `${BASE}/social/signup`,
+        payload,
       );
       return data.data;
     },
