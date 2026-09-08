@@ -48,7 +48,41 @@ const saving = ref(false);
 const error = ref('');
 
 const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
-const canSave = computed(() => result.value && product.value && collateral.value);
+
+/**
+ * 적어 넣은 금리. 비워 두면 `null` — 못 들었다는 뜻이다.
+ *
+ * 숫자가 아니면 `null` 이 아니라 "잘못 적었다" 로 본다. `Number('이 삼')` 은
+ * `NaN` 이고 직렬화되면 `null` 로 넘어가서, 사용자는 금리를 적었다고 생각하는데
+ * 서버에는 안 들어간다. 그 값이 나중에 2루 완료를 막는다.
+ */
+const rateText = computed(() => rate.value.trim());
+const rateInvalid = computed(
+  () => rateText.value !== '' && !Number.isFinite(Number(rateText.value)),
+);
+const quotedRate = computed(() =>
+  rateText.value === '' || rateInvalid.value ? null : Number(rateText.value),
+);
+
+const canSave = computed(
+  () => result.value && product.value && collateral.value && !rateInvalid.value,
+);
+
+/**
+ * 지금 적은 값 중 2루를 닫기에 모자란 것.
+ *
+ * 저장을 막지는 않는다 — 못 들은 것은 못 들은 대로 남겨야 나중에 조건이 다르다고
+ * 할 때 어디가 어긋났는지 짚을 수 있다. 다만 이대로면 확정 화면에서 못 고른다는
+ * 것을 지금 알려준다.
+ */
+const incompleteTerms = computed(() => {
+  const missing: string[] = [];
+  if (product.value === 'UNKNOWN') missing.push('상품');
+  if (collateral.value === 'UNKNOWN') missing.push('담보');
+  if (limitNotHeard.value || !limit.value.trim()) missing.push('승인한도');
+  if (quotedRate.value === null) missing.push('금리');
+  return missing;
+});
 
 /** 상담한 날. 화면에서 묻지 않아 오늘로 본다. */
 const today = () => new Date().toISOString().slice(0, 10);
@@ -66,7 +100,7 @@ async function save() {
       collateralMethod: collateral.value!,
       approvedLimit:
         limitNotHeard.value || !limit.value.trim() ? null : onlyDigits(limit.value) * 10_000,
-      quotedRate: rate.value.trim() ? Number(rate.value) : null,
+      quotedRate: quotedRate.value,
       consultedAt: today(),
     });
 
@@ -162,7 +196,23 @@ async function save() {
           placeholder="2.2 — 못 들었으면 비워두세요"
           class="border-line rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-12 px-3.5 outline-none"
         />
+        <p v-if="rateInvalid" class="text-caption2 text-danger">
+          숫자로 적어주세요. 못 들었으면 비워두면 돼요
+        </p>
       </AppCard>
+
+      <!--
+        네 값을 다 채우지 않아도 저장은 된다 — 안 들은 걸 지어내면 안 되니까.
+        다만 2루를 닫으려면 한 은행에서 넷을 다 들어야 해서, 지금 무엇이 비는지
+        여기서 미리 알려준다. 확정 화면에서 처음 알면 은행을 다시 가야 한다.
+      -->
+      <p
+        v-if="result === 'POSSIBLE' && incompleteTerms.length"
+        class="bg-surface-brand rounded-chip text-caption2 text-ink-hero-body p-3"
+      >
+        {{ incompleteTerms.join(' · ') }} 을(를) 못 들으면 이 상담으로는 2루를 닫을 수 없어요. 저장은
+        되니 나중에 확인해서 다시 남겨도 괜찮아요
+      </p>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>

@@ -1,4 +1,9 @@
-import type { CollateralMethod, ConsultedProduct, ConsultationResult } from '~/api/consultation';
+import type {
+  CollateralMethod,
+  Consultation,
+  ConsultedProduct,
+  ConsultationResult,
+} from '~/api/consultation';
 
 /**
  * 상담 결과 화면이 쓰는 말.
@@ -51,6 +56,39 @@ export const BANKS = [
   'IM뱅크',
   'BNK부산은행',
 ];
+
+/**
+ * 2루를 닫을 수 있는 상담인가.
+ *
+ * 서버(`second-base/complete`)는 상품·담보·승인한도·금리를 **모두 확인한** 상담만
+ * 최종 조건으로 받는다. "가능" 만 보고 고르면 확정(`decision`)은 지나가고 완료에서
+ * 409 로 막혀, 확정은 이미 기록됐는데 계획은 2루에 갇힌다.
+ *
+ * 그래서 고르는 쪽이 서버와 같은 조건으로 걸러야 한다. 상담을 저장할 때는
+ * "못 들었어요" 를 그대로 받는 게 맞고(안 들은 걸 지어내면 안 된다), 그중
+ * 무엇으로 2루를 닫을지는 여기서 가른다 — 저장 규칙과 확정 규칙은 다른 문제다.
+ */
+export const isFinalTerms = (item: Consultation) =>
+  item.resultStatus === 'POSSIBLE' &&
+  item.loanProduct !== 'UNKNOWN' &&
+  item.collateralMethod !== 'UNKNOWN' &&
+  item.approvedLimit !== null &&
+  item.quotedRate !== null;
+
+/**
+ * 이 상담이 2루를 닫기에 무엇이 모자란가. 화면에 그대로 나열한다.
+ *
+ * "조건이 부족해요" 만 띄우면 은행을 다시 가야 하는지 입력만 고치면 되는지
+ * 모른다. 빠진 항목 이름을 그대로 보여줘야 무엇을 물어보고 와야 하는지 안다.
+ */
+export function missingFinalTerms(item: Consultation): string[] {
+  const missing: string[] = [];
+  if (item.loanProduct === 'UNKNOWN') missing.push('상품');
+  if (item.collateralMethod === 'UNKNOWN') missing.push('담보');
+  if (item.approvedLimit === null) missing.push('승인한도');
+  if (item.quotedRate === null) missing.push('금리');
+  return missing;
+}
 
 export { collateralLabel } from '~/utils/labels';
 
