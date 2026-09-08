@@ -173,6 +173,24 @@ export function usePropertyApi() {
       return data.data;
     },
 
+    /**
+     * STEP 2. 자동조회로 주택유형·전용면적을 못 채웠을 때 사람이 직접 입력한다.
+     * 저장하면 워크플로가 STEP 3(위반건축물)으로 넘어간다.
+     */
+    async saveBuilding(
+      planId: number,
+      propertyId: number,
+      expectedRevision: number,
+      houseType: string,
+      exclusiveArea: number,
+    ) {
+      const { data } = await $api.put<ApiResponse<{ workflow: PropertyWorkflow }>>(
+        `${properties(planId)}/${propertyId}/steps/building`,
+        { expectedRevision, houseType, exclusiveArea },
+      );
+      return data.data;
+    },
+
     /** STEP 3. 정부24 건축물대장을 사람이 직접 보고 온 결과다. */
     async saveViolation(
       planId: number,
