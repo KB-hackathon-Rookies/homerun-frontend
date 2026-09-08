@@ -35,13 +35,17 @@ onMounted(() => {
     <div class="pt-statusbar shrink-0" />
 
     <!--
-      화면 정의서 AU-01. 마름모 44 · 워드마크 · 하단 한 줄이 전부다.
+      화면 정의서 AU-01. 캐릭터 · 워드마크 · 하단 한 줄이 전부다.
+
+      정의서는 이 자리에 마름모만 그려 두었지만 그건 캐릭터가 없던 때의 자리표시다. 이 파일에도
+      "피그마의 intro.png 자리. 아직 에셋이 없어" 라고 적혀 있었다. 이제 AI 코치 백호가 들어와
+      있으므로 그것을 세운다.
 
       1초 남짓 보이고 사라지는 화면이라 읽을 것을 늘리지 않는다. 서비스 설명은 바로 다음
       웰컴(AU-02)이 맡는다.
     -->
     <div class="flex flex-1 flex-col items-center justify-center gap-4">
-      <span class="bg-primary size-11 rotate-45 rounded-sm" />
+      <img src="/mascot.png" alt="" class="h-40 w-auto" />
       <span class="font-logo text-title2 text-ink">홈런</span>
     </div>
 
