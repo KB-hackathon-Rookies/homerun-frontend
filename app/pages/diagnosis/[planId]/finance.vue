@@ -51,6 +51,8 @@ const income = ref('');
 const assets = ref('');
 /** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 시 확인 대상이라 실제 값을 받는다. */
 const availableCash = ref('');
+/** 기존 전세자금대출 유무(YES/NO). 정책 판정에 쓰이므로 임의로 채우지 않고 직접 받는다. */
+const existingJeonseLoan = ref<string | null>(null);
 const deposit = ref('');
 const regionId = ref<string | null>(null);
 
@@ -85,8 +87,12 @@ onMounted(async () => {
 
 const canProceed = computed(() => {
   if (step.value === 'CONFIRM') return !!useOpenBanking.value;
-  if (step.value === 'MANUAL') return !!income.value && !!assets.value && !!availableCash.value;
-  if (step.value === 'ASSETS') return !!assets.value && !!availableCash.value;
+  if (step.value === 'MANUAL')
+    return (
+      !!income.value && !!assets.value && !!availableCash.value && !!existingJeonseLoan.value
+    );
+  if (step.value === 'ASSETS')
+    return !!assets.value && !!availableCash.value && !!existingJeonseLoan.value;
   if (step.value === 'DEPOSIT') return !!deposit.value;
   return !!regionId.value;
 });
@@ -149,6 +155,7 @@ async function next() {
         monthlyIncome: toWon(income.value),
         netAssets: toWon(assets.value),
         availableCash: toWon(availableCash.value),
+        existingJeonseLoan: existingJeonseLoan.value === 'YES',
         incomeSource: 'MANUAL',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
@@ -164,6 +171,7 @@ async function next() {
         monthlyIncome: openBankingIncome.value ?? undefined,
         netAssets: toWon(assets.value),
         availableCash: toWon(availableCash.value),
+        existingJeonseLoan: existingJeonseLoan.value === 'YES',
         incomeSource: 'OPEN_BANKING',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
@@ -274,6 +282,16 @@ function back() {
           type="tel"
           placeholder="계약금·잔금에 보탤 자기자금"
         />
+        <div class="flex flex-col gap-2">
+          <span class="text-caption2 text-ink-hero-body">기존에 받은 전세자금대출이 있나요?</span>
+          <PillGroup
+            v-model="existingJeonseLoan"
+            :options="[
+              { value: 'YES', label: '있어요' },
+              { value: 'NO', label: '없어요' },
+            ]"
+          />
+        </div>
       </QuestionCard>
 
       <QuestionCard v-else-if="step === 'ASSETS'" question="보유한 순자산을 입력해주세요">
@@ -299,6 +317,16 @@ function back() {
           type="tel"
           placeholder="계약금·잔금에 보탤 자기자금"
         />
+        <div class="flex flex-col gap-2">
+          <span class="text-caption2 text-ink-hero-body">기존에 받은 전세자금대출이 있나요?</span>
+          <PillGroup
+            v-model="existingJeonseLoan"
+            :options="[
+              { value: 'YES', label: '있어요' },
+              { value: 'NO', label: '없어요' },
+            ]"
+          />
+        </div>
       </QuestionCard>
 
       <template v-else-if="step === 'DEPOSIT'">

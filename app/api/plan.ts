@@ -55,6 +55,8 @@ export interface DiagnosisStepPatch {
   netAssets?: number;
   /** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 시 확인 대상이라 실제 값을 받아야 한다. */
   availableCash?: number;
+  /** 기존 전세자금대출 유무. 정책 판정에서 대출 중복 여부를 가른다. */
+  existingJeonseLoan?: boolean;
   incomeSource?: FinancialValueSource;
   assetSource?: FinancialValueSource;
   financialDataConfirmed?: boolean;
