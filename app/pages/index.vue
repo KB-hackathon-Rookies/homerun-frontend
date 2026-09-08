@@ -35,20 +35,34 @@ onMounted(() => {
     <div class="pt-statusbar shrink-0" />
 
     <!--
-      화면 정의서 AU-01. 캐릭터 · 워드마크 · 하단 한 줄이 전부다.
+      화면 정의서 AU-01 (Figma 104:1652).
 
-      정의서는 이 자리에 마름모만 그려 두었지만 그건 캐릭터가 없던 때의 자리표시다. 이 파일에도
-      "피그마의 intro.png 자리. 아직 에셋이 없어" 라고 적혀 있었다. 이제 AI 코치 백호가 들어와
-      있으므로 그것을 세운다.
+      시안은 브랜드·제목·부제를 절대좌표로 놓고 그 아래 일러스트를 깔았다. 좌표를 그대로 옮기지
+      않고 흐름으로 쌓는다 — 글자가 한 줄 늘어도 겹치지 않는다.
 
-      1초 남짓 보이고 사라지는 화면이라 읽을 것을 늘리지 않는다. 서비스 설명은 바로 다음
-      웰컴(AU-02)이 맡는다.
+      일러스트는 853×1844 원본을 390×400 상자에 object-cover 로 넣는다. 시안의 비율이 그것이라
+      이미지를 미리 자르지 않는다. 자르는 일은 CSS 가 한다.
     -->
-    <div class="flex flex-1 flex-col items-center justify-center gap-4">
-      <img src="/mascot.png" alt="" class="h-40 w-auto" />
-      <span class="font-logo text-title2 text-ink">홈런</span>
+    <div class="flex flex-1 flex-col overflow-clip">
+      <div class="px-gutter flex flex-col pt-7">
+        <BrandMark tilted />
+
+        <h1 class="text-title1 text-ink-strong mt-3.5 whitespace-pre-line">
+          {{ '첫 독립,\n홈런이\n함께할게요' }}
+        </h1>
+
+        <p class="text-ink-placeholder mt-4 text-xl leading-tight font-bold whitespace-pre-line">
+          {{ '청년의 첫 독립을 위한\n맞춤 자립 코치, 홈런' }}
+        </p>
+      </div>
+
+      <div class="relative mt-4 aspect-[39/40] w-full shrink-0">
+        <img src="/intro.jpg" alt="" class="absolute inset-0 size-full object-cover" />
+      </div>
     </div>
 
-    <p class="text-caption1 text-ink-subtle pb-cta-pad shrink-0 text-center">첫 독립을 위한 준비</p>
+    <footer class="flex shrink-0 items-center justify-center pb-8">
+      <p class="text-caption1 text-ink-subtle">첫 독립을 위한 준비</p>
+    </footer>
   </PhoneFrame>
 </template>
