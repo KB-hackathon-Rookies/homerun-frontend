@@ -18,18 +18,31 @@ export const STAGE_CHIP: Record<PlanStage, string> = {
   HOME: '홈',
 };
 
-/** 칸 하나의 이름. 지났는지 · 지금인지에 따라 말이 바뀐다. */
-const NODE_LABEL: Record<PlanStage, { done: string; current: string; upcoming: string }> = {
-  BENCH: { done: '대기', current: '대기', upcoming: '대기' },
-  FIRST: { done: '1루 진단 완료', current: '1루 진단 중', upcoming: '1루 진단' },
-  SECOND: { done: '2루 탐색 완료', current: '2루 탐색 중', upcoming: '2루 탐색' },
-  THIRD: { done: '3루 완료', current: '3루 진행 중', upcoming: '3루 준비' },
-  HOME: { done: '홈', current: '홈', upcoming: '홈' },
+/**
+ * 칸 하나의 이름.
+ *
+ * 시안(메인 2~5)은 이름과 상태를 두 줄로 쌓는다 — "1루 진단" 아래 "완료".
+ * 아직 오지 않은 칸에는 상태 줄이 없다. 그래서 둘을 따로 둔다.
+ */
+const NODE_LABEL: Record<PlanStage, string> = {
+  BENCH: '대기',
+  FIRST: '1루 진단',
+  SECOND: '2루 검증',
+  THIRD: '3루 실행',
+  HOME: '홈 정착',
 };
 
 export type NodeState = 'done' | 'current' | 'upcoming';
 
-export const nodeLabel = (stage: PlanStage, state: NodeState) => NODE_LABEL[stage][state];
+/** 이름 아래 붙는 줄. 안 온 칸은 붙일 말이 없다. */
+const NODE_STATUS: Record<NodeState, string> = {
+  done: '완료',
+  current: '진행 중',
+  upcoming: '',
+};
+
+export const nodeLabel = (stage: PlanStage) => NODE_LABEL[stage];
+export const nodeStatus = (state: NodeState) => NODE_STATUS[state];
 
 /** BENCH 는 1루를 앞둔 상태다. 카드에서는 1루를 지금 칸으로 본다. */
 export const displayStage = (stage: PlanStage): PlanStage => (stage === 'BENCH' ? 'FIRST' : stage);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanStage } from '~/api/dashboard';
-import { STAGE_NODES, nodeLabel, nodeState } from '~/utils/stage';
+import { STAGE_NODES, nodeLabel, nodeState, nodeStatus } from '~/utils/stage';
 
 /**
  * 홈 진행 카드 안의 1루 → 홈 표시.
@@ -19,7 +19,8 @@ const nodes = computed(() =>
     return {
       stage,
       state,
-      label: nodeLabel(stage, state),
+      label: nodeLabel(stage),
+      status: nodeStatus(state),
       order: index + 1,
       last: index === STAGE_NODES.length - 1,
     };
@@ -39,17 +40,18 @@ const nodes = computed(() =>
           <span
             v-else
             class="text-numeral"
-            :class="node.state === 'current' ? 'text-primary-strong' : 'text-on-brand-dim'"
+            :class="node.state === 'current' ? 'text-primary-strong' : 'text-on-brand'"
           >
             {{ node.order }}
           </span>
         </span>
 
         <span
-          class="text-step whitespace-nowrap"
-          :class="node.state === 'upcoming' ? 'text-on-brand-dim' : 'text-on-brand'"
+          class="text-step text-center whitespace-nowrap"
+          :class="node.status ? 'text-on-brand' : 'text-on-brand-dim'"
         >
           {{ node.label }}
+          <template v-if="node.status"><br />{{ node.status }}</template>
         </span>
       </div>
 
