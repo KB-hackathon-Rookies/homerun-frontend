@@ -72,15 +72,24 @@ const propertyPending = computed(() => property.value === null && !propertyError
 const settled = computed(() => consultations.value.find(isFinalTerms));
 
 /**
- * "가능" 은 들었는데 조건이 덜 찬 상담.
+ * 이 상담들로는 2루를 못 닫는 이유. 카드마다 한 줄이다.
  *
- * 카드에는 "완료" 로 보이니까, 왜 3루로 못 넘어가는지 따로 말해주지 않으면
- * 화면이 이유 없이 막힌 것처럼 보인다.
+ * 전에는 "가능" 을 들은 상담만 셌다. 그래서 "서류를 봐야 안다" 나 "어렵다" 만
+ * 듣고 온 사람은 3루 버튼도 없고 이유도 없는 화면을 봤다 — 카드는 분명히
+ * 등록됐는데 왜 막혔는지 화면 어디에도 안 적혀 있었다.
+ *
+ * 들은 말이 무엇이든 2루가 안 닫히는 건 같다. 그러니 무엇을 들었는지도 같이
+ * 적는다. "어렵대요" 는 다시 물어볼 게 아니라 **다른 은행을 가야 한다**는
+ * 뜻이라, 모자란 항목을 나열하는 것과는 다음 할 일이 다르다.
  */
-const missingTerms = computed(() =>
+const blockers = computed(() =>
   consultations.value
-    .filter((item) => item.resultStatus === 'POSSIBLE' && !isFinalTerms(item))
-    .map((item) => `${item.bankName} — ${missingFinalTerms(item).join(' · ')} 미확인`),
+    .filter((item) => !isFinalTerms(item))
+    .map((item) =>
+      item.resultStatus === 'POSSIBLE'
+        ? `${item.bankName} — ${missingFinalTerms(item).join(' · ')} 미확인`
+        : `${item.bankName} — ${resultLabel(item.resultStatus)}`,
+    ),
 );
 
 /** 아래 버튼이 하는 일. 상태마다 갈 곳이 다르다. */
@@ -259,19 +268,34 @@ onMounted(async () => {
         </p>
       </div>
 
-      <!-- "가능" 인데 조건이 덜 찼을 때. 카드가 "완료" 로 보이니 이유를 적어준다. -->
+      <!-- 카드는 있는데 2루가 안 닫힐 때. 카드마다 무엇이 걸리는지 적어준다. -->
       <div
-        v-else-if="missingTerms.length"
+        v-else-if="blockers.length"
         class="bg-surface-brand rounded-field flex flex-col gap-1.5 p-3.5"
       >
         <p class="text-caption1 text-ink-hero font-bold">3루로 넘어가려면 조건이 더 필요해요</p>
         <p class="text-caption2 text-ink-hero-body">
           한 은행에서 상품 · 담보 · 승인한도 · 금리를 모두 들어야 2루를 닫을 수 있어요
         </p>
-        <p v-for="note in missingTerms" :key="note" class="text-caption2 text-ink-muted">
+        <p v-for="note in blockers" :key="note" class="text-caption2 text-ink-muted">
           {{ note }}
         </p>
       </div>
+
+      <!--
+        나갈 길.
+        하단 `이전` 은 등기부 체크리스트로 되돌아갈 뿐이라, 이 매물로는 상담이
+        안 되겠다 싶은 사람이 다른 매물을 보러 갈 경로가 화면에 없었다. 상담이
+        막히는 건 흔한 일이고, 그때 할 일은 이 화면을 붙들고 있는 게 아니라
+        다른 매물을 보는 것이다.
+      -->
+      <button
+        type="button"
+        class="border-line rounded-chip text-label2 text-ink-hero-body h-11 shrink-0 border font-semibold"
+        @click="navigateTo(`/property/${planId}`)"
+      >
+        매물 목록으로 · 다른 매물 보기
+      </button>
     </div>
 
     <StepFooter
