@@ -57,6 +57,13 @@ export interface DiagnosisStepPatch {
   availableCash?: number;
   /** 기존 전세자금대출 유무. 정책 판정에서 대출 중복 여부를 가른다. */
   existingJeonseLoan?: boolean;
+  /**
+   * 세대원의 기금대출과 배우자의 전세·주택담보대출까지 없는 것을 확인했는가.
+   *
+   * 버팀목 중복대출 금지는 본인 대출 하나로 판정할 수 없어, 이 확인이 없으면 판정이
+   * 추가확인으로 남는다. 사용자가 직접 체크한 진술이지 은행 검증이 아니고, 필수도 아니다.
+   */
+  prohibitedLoanConfirmed?: boolean;
   incomeSource?: FinancialValueSource;
   assetSource?: FinancialValueSource;
   financialDataConfirmed?: boolean;
