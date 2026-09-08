@@ -12,7 +12,9 @@ defineEmits<{ back: [] }>();
 </script>
 
 <template>
-  <div class="bg-canvas max-w-screen rounded-screen mx-auto flex min-h-dvh w-full flex-col">
+  <div
+    class="bg-canvas max-w-screen rounded-screen mx-auto flex h-dvh w-full flex-col overflow-hidden"
+  >
     <div class="bg-surface h-statusbar shrink-0" />
 
     <header class="bg-surface px-gutter-tight flex shrink-0 items-center gap-3 py-2.5">
@@ -27,7 +29,10 @@ defineEmits<{ back: [] }>();
       <h1 class="text-option text-ink-hero">{{ title }}</h1>
     </header>
 
-    <div class="flex flex-1 flex-col gap-3.5 px-gutter-tight py-4 pb-6">
+    <!-- 가운데만 스크롤. 스크롤바는 숨긴다. -->
+    <div
+      class="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto px-gutter-tight py-4 pb-6"
+    >
       <slot />
     </div>
 
