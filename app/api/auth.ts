@@ -11,6 +11,7 @@ import type { ApiResponse } from '~/types/api';
  */
 const BASE = '/api/v1/auth';
 const EMAIL = `${BASE}/email`;
+const PHONE = `${BASE}/phone`;
 
 export interface MemberResponse {
   id: number;
@@ -63,12 +64,37 @@ export function useAuthApi() {
       return data.data;
     },
 
-    /** 회원가입. 성공하면 곧바로 로그인 상태가 된다. */
+    /** 휴대전화 인증번호 발송. 성공해도 본문이 없다. */
+    async sendPhoneVerification(phone: string) {
+      await $api.post<ApiResponse<void>>(`${PHONE}/verification/send`, { phone }, NO_REFRESH);
+    },
+
+    /** 휴대전화 인증번호 확인. 여기서 받은 토큰이 있어야 가입할 수 있다. */
+    async confirmPhoneVerification(phone: string, code: string) {
+      const { data } = await $api.post<ApiResponse<EmailVerificationResponse>>(
+        `${PHONE}/verification/confirm`,
+        { phone, code },
+        NO_REFRESH,
+      );
+      return data.data;
+    },
+
+    /**
+     * 회원가입. 성공하면 곧바로 로그인 상태가 된다.
+     *
+     * 백엔드(`LocalSignupRequest`)는 이메일·휴대전화 인증 토큰을 모두 요구하고, 생년월일·
+     * 휴대전화·지역(regionId)·상세주소까지 한 번에 받아 원자적으로 가입한다.
+     */
     async signup(payload: {
       email: string;
       password: string;
-      nickname: string;
-      verificationToken: string;
+      name: string;
+      birthDate: string;
+      phone: string;
+      regionId: number;
+      detailAddress?: string;
+      emailVerificationToken: string;
+      phoneVerificationToken: string;
     }) {
       const { data } = await $api.post<ApiResponse<LoginResponse>>(
         `${EMAIL}/signup`,
