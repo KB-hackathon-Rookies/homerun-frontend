@@ -21,10 +21,15 @@ const slots = useSlots();
 <template>
   <button
     type="button"
-    class="rounded-chip flex items-center gap-2.5 text-left"
-    :class="
-      tone === 'filled' ? 'bg-surface-info p-2.5' : 'bg-surface border-line border px-3.5 py-3'
-    "
+    class="rounded-chip flex items-center gap-2.5 text-left transition-colors"
+    :class="[
+      tone === 'filled' ? 'p-2.5' : 'border px-3.5 py-3',
+      tone === 'filled'
+        ? 'bg-surface-info'
+        : model
+          ? 'bg-surface-muted border-line-soft'
+          : 'bg-surface border-line',
+    ]"
     :aria-pressed="model"
     @click="model = !model"
   >
@@ -37,12 +42,21 @@ const slots = useSlots();
 
     <span class="flex-1">
       <span
-        class="block"
-        :class="tone === 'filled' ? 'text-caption2 font-semibold' : 'text-label2'"
+        class="block transition-colors"
+        :class="[
+          tone === 'filled' ? 'text-caption2 font-semibold' : 'text-label2',
+          model ? 'text-ink-muted line-through' : '',
+        ]"
       >
         <slot />
       </span>
-      <span v-if="slots.note" class="text-micro text-ink-muted block"><slot name="note" /></span>
+      <span
+        v-if="slots.note"
+        class="text-micro text-ink-muted block"
+        :class="model ? 'line-through' : ''"
+      >
+        <slot name="note" />
+      </span>
     </span>
   </button>
 </template>
