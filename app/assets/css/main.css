@@ -103,6 +103,33 @@
   --color-surface-caution: #fff7db; /* 노란 주의 상자 */
   --color-surface-info-soft: rgb(240 245 255 / 0.5); /* 체크 줄 바탕 */
 
+  /*
+   * 코치 교육 카드. 세 장이 색만 다르다(시안 0-3 · 메인 1).
+   * 카드 바탕과 "코치 TIME" 배지가 한 쌍이라 짝지어 둔다.
+   */
+  --color-edu-contract: #e4eefb;
+  --color-edu-contract-badge: #3f6fb5;
+  --color-edu-fraud: #ece8f7;
+  --color-edu-fraud-badge: #6f5fb0;
+  --color-edu-change: #fdf1cf;
+  --color-edu-change-badge: #c1912f;
+  /* 소요 시간 배지. 카드 바탕 위에 얹혀서 흰색 반투명이다 */
+  --color-edu-time: rgb(255 255 255 / 0.7);
+  --color-edu-time-ink: #6a5a24;
+
+  --color-ink-card: #191f28; /* 교육 카드 제목, 목록 한 줄 제목 */
+  --color-ink-card-body: #4e5968; /* 교육 카드 설명 */
+
+  /* 코치 교육 허브(시안 메인 6~10) */
+  --color-canvas-soft: #f7fafc; /* 허브·목록 화면 바탕 */
+  --color-ink-label: #8b95a1; /* 그룹 라벨, 다 읽은 항목, 예정 번호 */
+  --color-ink-chevron: #b0b8c1; /* 목록 오른쪽 화살표 */
+  --color-line-list: #e5e8eb; /* 목록 카드 테두리 */
+  --color-surface-muted: #f2f4f6; /* 예정 번호 원. 행 구분선도 같은 값이다 */
+  --color-surface-active: #eef3ff; /* 진행 중 번호 원, 코치 말풍선, 항목 번호 */
+  --color-surface-note: #fff7e6; /* 🍯 꿀팁 카드 */
+  --color-ink-note: #8a6d1f; /* 꿀팁 카드 글자 */
+
   /* ---------------------------------------------------------------
    * 색 · 파란 면 위
    *
@@ -312,14 +339,10 @@
   --spacing-step-circle: 28px; /* 홈 진행 카드 · 단계 원 */
   --spacing-badge: 14px; /* 알림 개수 원 */
   --spacing-row: 52px; /* 마이 한 줄 */
+  --spacing-edu-card: 165px; /* 코치 교육 카드 한 장 */
 
-  /* ---------------------------------------------------------------
-   * 그림자
-   *
-   * 떠 있는 것 하나뿐이다. 코치 FAB 은 흰 원이라 회색 그림자로는 흰 카드
-   * 위에서 사라진다. 시안이 브랜드 파랑을 번지게 한 이유다.
-   * --------------------------------------------------------------- */
-  --shadow-fab: 0 4px 12px rgb(51 107 250 / 0.28);
+  /* 코치 FAB. 흰 버튼이 화면 위에 떠 보이게 하는 그림자 */
+  --shadow-fab: 0 4px 12px 0 rgb(51 107 250 / 0.28);
 }
 
 /*
