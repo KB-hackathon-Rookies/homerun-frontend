@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 
 import { useAuthApi, type MemberResponse } from '~/api/auth';
-import { useRequiredTerms } from '~/composables/useRequiredTerms';
 import { tokenStorage } from '~/plugins/api';
 
 /**
@@ -37,15 +36,11 @@ export const useAuthStore = defineStore('auth', {
       this.apply(await login(email, password));
 
       /*
-       * 동의 기록이 없으면 백엔드가 이후 요청을 전부 403 으로 막는다. 가입할
-       * 때 남기지 못한 계정이 있을 수 있어 로그인 때도 확인한다.
-       *
-       * 여기서 실패해도 로그인 자체는 유지한다. 막히는 건 다음 화면이고,
-       * 그때 서버 문구가 뜬다.
+       * 동의는 여기서 대신 남기지 않는다. 사용자가 무엇에 동의했는지 로그인
+       * 화면은 모르므로, 코드가 대신 전부 동의로 채우면 안 된다. 동의 기록이
+       * 없는 계정은 백엔드가 다음 요청을 403 으로 막고, 그때 서버 문구가 뜬다 —
+       * 동의는 사용자가 약관 화면에서 직접 남겨야 한다.
        */
-      await useRequiredTerms()
-        .ensure()
-        .catch(() => {});
     },
 
     async fetchMe() {
