@@ -94,20 +94,14 @@ export function useContractApi() {
       return data.data;
     },
 
-    /** 잔금 예정일만 고친다. 폼 전체를 덮어쓰므로 나머지는 초안 값을 그대로 실어 보낸다. */
-    async saveBalanceDate(planId: number, entry: ContractEntry, balanceDate: string) {
-      await $api.put<ApiResponse<unknown>>(contract(planId), {
-        propertyId: entry.propertyId,
-        leaseType: 'JEONSE',
-        deposit: entry.deposit,
-        monthlyRent: 0,
-        maintenanceFee: 0,
-        electronic: false,
-        balanceDate,
-        loanProductKind: entry.loanProductKind,
-        collateralMethod: entry.collateralMethod,
-        houseType: entry.houseType,
-      });
+    /**
+     * 잔금 예정일만 고친다.
+     *
+     * 전체 저장(PUT)은 폼에 없는 필드(계약일·확정일자·상담일 등)를 지운다. 잔금일만 바꿀 때는
+     * 부분 수정(PATCH)을 써서 나머지 계약 값을 서버가 보존하게 한다.
+     */
+    async saveBalanceDate(planId: number, balanceDate: string) {
+      await $api.patch<ApiResponse<unknown>>(`${contract(planId)}/balance-date`, { balanceDate });
     },
 
     /**
