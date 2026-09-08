@@ -57,7 +57,7 @@ function inline(source: string) {
     .replace(/\r?\n/g, '<br />')
     .replace(
       /[\u2460-\u2473]/g,
-      (ch) => `<span class="num-badge">${ch.charCodeAt(0) - 0x2460 + 1}</span>`,
+      (ch) => `<span class="num-marker">${ch.charCodeAt(0) - 0x2460 + 1}</span>`,
     );
 }
 
@@ -278,20 +278,10 @@ const rendered = computed(() => renderMarkdown(props.content));
   font-weight: 700;
 }
 
-/* 본문 속 동그라미 숫자(①②③…). 유니코드 글리프는 얇아 안 보여서, 브랜드색 원 배지로 그린다. */
-.markdown-content :deep(.num-badge) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  margin-right: 0.15rem;
-  border-radius: 9999px;
-  background: var(--color-primary-strong);
-  color: #fff;
-  font-size: 0.7rem;
+/* 본문 속 동그라미 숫자(①②③…). 유니코드 글리프는 얇아 안 보여서, 굵은 브랜드색 숫자로 글에 녹여 그린다. */
+.markdown-content :deep(.num-marker) {
+  color: var(--color-primary-strong);
   font-weight: 700;
-  line-height: 1;
-  vertical-align: -0.2em;
+  margin-right: 0.1rem;
 }
 </style>
