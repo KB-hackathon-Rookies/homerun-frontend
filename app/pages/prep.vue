@@ -58,13 +58,20 @@ const skipsDeposit = computed(() => situation.value === 'FIRST');
 const lastStep = computed(() => (skipsDeposit.value ? 1 : 2));
 
 const canProceed = computed(() => {
+  // 형식이 틀린 보증금은 채워진 것이 아니다. 그대로 두면 0원으로 저장된다.
+  if (!skipsDeposit.value && parsedDeposit.value.error) return false;
   if (step.value === 0) return !!situation.value;
   if (step.value === 1 && !skipsDeposit.value) return !!deposit.value;
   return true;
 });
 
 /** 숫자만 남긴다. "3,000" 처럼 쳐도 받는다. */
-const depositAmount = computed(() => Number(deposit.value.replace(/\D/g, '')) || 0);
+/**
+ * 검사한 뒤에 단위를 바꾼다. 숫자가 아닌 글자를 지워서 값을 만들면 `abc` 가 0원이 되고
+ * `-100` 이 100만 원으로 뒤집힌다.
+ */
+const parsedDeposit = computed(() => parseManwon(deposit.value));
+const depositAmount = computed(() => parsedDeposit.value.value ?? 0);
 
 async function next() {
   if (!canProceed.value || pending.value) return;
@@ -163,7 +170,13 @@ async function submit() {
       </QuestionCard>
 
       <QuestionCard v-else-if="step === 1" question="현재 월세 보증금이 얼마인가요?">
-        <AppInput v-model="deposit" label="보증금" type="tel" placeholder="숫자만 입력해주세요" />
+        <AppInput
+          v-model="deposit"
+          label="보증금"
+          type="tel"
+          placeholder="숫자만 입력해주세요"
+          :error="parsedDeposit.error ?? ''"
+        />
       </QuestionCard>
 
       <template v-else>

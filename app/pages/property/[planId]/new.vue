@@ -36,11 +36,14 @@ const hopeDeposit = ref<number | null>(null);
 /** 사용자가 이 매물에 실제로 걸린 보증금을 만 원 단위로 적는다. */
 const realDeposit = ref('');
 
-const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
-const toWon = (value: string) => (value.trim() ? onlyDigits(value) * 10_000 : null);
+/**
+ * 검사한 뒤에 단위를 바꾼다. 숫자가 아닌 글자를 지워서 값을 만들면 `abc` 가 0원이 되고
+ * `-100` 이 100만 원으로 뒤집힌다.
+ */
+const parsedRealDeposit = computed(() => parseManwon(realDeposit.value));
 
 /** 입력한 실보증금(원). 아직 안 적었으면 null. */
-const realDepositWon = computed(() => toWon(realDeposit.value));
+const realDepositWon = computed(() => parsedRealDeposit.value.value);
 
 /**
  * 어떤 매물을 찾아야 하는가. 시안이 KB부동산 링크 바로 위에 두는 줄이다.
@@ -216,6 +219,7 @@ async function start() {
         </p>
         <input
           v-model="realDeposit"
+          :error="parsedRealDeposit.error ?? ''"
           inputmode="numeric"
           placeholder="보증금 입력"
           class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"

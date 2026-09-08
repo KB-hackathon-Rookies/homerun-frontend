@@ -21,6 +21,7 @@ const {
   // 이때만 Vue 가 속성 자체를 렌더링하지 않는다.
   autocomplete = undefined,
   readonly = false,
+  error = '',
 } = defineProps<{
   label: string;
   type?: 'text' | 'email' | 'password' | 'tel';
@@ -28,12 +29,22 @@ const {
   autocomplete?: string;
   /** 직접 칠 수 없는 입력. 값을 시트나 검색으로 고르는 자리에 쓴다. */
   readonly?: boolean;
+  /**
+   * 이 입력이 무엇 때문에 거절됐는지. 비어 있으면 오류가 아니다.
+   *
+   * 화면 아래 한 줄로 몰아 보여주면 어느 칸을 고쳐야 하는지 알 수 없다. 그래서 칸에
+   * 직접 붙이고 `aria-describedby` 로 이어 스크린리더도 그 칸의 오류로 읽게 한다.
+   */
+  error?: string;
 }>();
 
 const model = defineModel<string>({ default: '' });
 const slots = useSlots();
 
 const field = ref<HTMLInputElement | null>(null);
+
+/** 오류 문구를 입력과 이어 주기 위한 id. 한 화면에 같은 라벨이 둘 있어도 안 겹친다. */
+const errorId = useId();
 
 /**
  * 지우기를 보일 것인가.
@@ -63,11 +74,14 @@ const hasAction = computed(() => !!slots.action);
 
     <div
       class="flex items-center"
-      :class="hasAction ? 'rounded-button border-line h-14 border' : ''"
+      :class="[
+        hasAction ? 'rounded-button h-14 border' : '',
+        hasAction ? (error ? 'border-danger' : 'border-line') : '',
+      ]"
     >
       <div
         class="bg-surface rounded-field h-field flex flex-1 items-center gap-2 px-4"
-        :class="hasAction ? '' : 'border-line border'"
+        :class="hasAction ? '' : error ? 'border-danger border' : 'border-line border'"
       >
         <input
           ref="field"
@@ -76,6 +90,8 @@ const hasAction = computed(() => !!slots.action);
           :placeholder="placeholder"
           :autocomplete="autocomplete"
           :readonly="readonly"
+          :aria-invalid="error ? 'true' : undefined"
+          :aria-describedby="error ? errorId : undefined"
           class="text-input text-ink placeholder:text-ink-placeholder w-full bg-transparent outline-none"
           :class="readonly ? 'cursor-pointer' : ''"
         />
@@ -119,6 +135,7 @@ const hasAction = computed(() => !!slots.action);
       <slot name="action" />
     </div>
 
-    <p v-if="$slots.hint" class="text-label2 text-ink-muted"><slot name="hint" /></p>
+    <p v-if="error" :id="errorId" class="text-label2 text-danger">{{ error }}</p>
+    <p v-else-if="$slots.hint" class="text-label2 text-ink-muted"><slot name="hint" /></p>
   </div>
 </template>

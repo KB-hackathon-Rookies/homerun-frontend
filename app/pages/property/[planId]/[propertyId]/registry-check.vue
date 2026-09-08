@@ -64,8 +64,14 @@ const pending = ref(true);
 const saving = ref(false);
 const error = ref('');
 
-const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
-const toWon = (value: string) => (value.trim() ? onlyDigits(value) * 10_000 : null);
+/**
+ * 검사한 뒤에 만 원을 원으로 바꾼다. 두 값 다 비워 두는 것(모름)은 허용한다.
+ *
+ * 전에는 숫자가 아닌 글자를 지워서 값을 만들었다. 채권최고액에 `abc` 를 치면 0원이 되어
+ * "확인했더니 근저당이 없다" 가 됐다. 매물 위험 판정의 근거라서 그대로 두면 안 된다.
+ */
+const parsedSeniorDebt = computed(() => parseManwon(seniorDebt.value));
+const parsedOfficialPrice = computed(() => parseManwon(officialPrice.value));
 
 /**
  * 공시가격을 어디서 보는지는 주택 유형이 정한다 — 빌라·아파트·연립은
@@ -88,7 +94,9 @@ onMounted(async () => {
     // STEP 4 는 워크플로가 REGISTRY 일 때만 저장된다. 아직 앞 STEP 이면(또는 이미 끝났으면)
     // 지금 단계 화면으로 돌려보내 막다른 저장을 막는다.
     if (workflow.currentStep !== 'REGISTRY') {
-      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), { replace: true });
+      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), {
+        replace: true,
+      });
       return;
     }
     revision.value = workflow.revision;
@@ -102,14 +110,14 @@ onMounted(async () => {
 async function save() {
   if (!answered.value || saving.value) return;
 
-  const price = toWon(officialPrice.value);
+  const price = parsedOfficialPrice.value.value;
   const patch: RegistryStepPatch = {
     ownerMatches: toFact(answers.value.ownerMatches ?? null),
     trustRegistered: toFact(answers.value.trustRegistered ?? null),
     leaseholdRegistered: toFact(answers.value.leaseholdRegistered ?? null),
     seizureOrDispositionRestricted: toFact(answers.value.seizureOrDispositionRestricted ?? null),
     auctionInProgress: toFact(answers.value.auctionInProgress ?? null),
-    seniorDebt: toWon(seniorDebt.value),
+    seniorDebt: parsedSeniorDebt.value.value,
     // 금액·기준연도·출처는 셋이 함께 가거나 셋 다 비어야 한다.
     officialPrice: price,
     officialPriceYear: price === null ? null : new Date().getFullYear(),
@@ -155,6 +163,9 @@ async function save() {
           placeholder="금액 입력 — 모르면 비워두세요"
           class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"
         />
+        <p v-if="parsedSeniorDebt.error" class="text-label2 text-danger">
+          {{ parsedSeniorDebt.error }}
+        </p>
       </AppCard>
 
       <AppCard class="flex flex-col gap-3">
@@ -166,6 +177,9 @@ async function save() {
           placeholder="공시가격 입력 — 모르면 비워두세요"
           class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"
         />
+        <p v-if="parsedOfficialPrice.error" class="text-label2 text-danger">
+          {{ parsedOfficialPrice.error }}
+        </p>
         <p class="text-micro text-ink-muted">
           빌라·아파트·연립: 부동산공시가격 알리미 / 오피스텔: 홈택스 기준시가
         </p>
@@ -185,7 +199,9 @@ async function save() {
     </div>
 
     <StepFooter
-      :disabled="!answered || pending || saving"
+      :disabled="
+        !answered || !!parsedSeniorDebt.error || !!parsedOfficialPrice.error || pending || saving
+      "
       @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
       @next="save"
     >

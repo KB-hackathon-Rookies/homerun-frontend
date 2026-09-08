@@ -18,7 +18,11 @@ const busy = ref(false);
 const error = ref('');
 
 const api = useSettlementApi();
-const toWon = (value: string) => Number(value.replace(/\D/g, '') || 0) * 10_000;
+/**
+ * 검사한 뒤에 단위를 바꾼다. 숫자가 아닌 글자를 지워서 값을 만들면 `abc` 가 0원이 되고
+ * `-100` 이 100만 원으로 뒤집힌다.
+ */
+const parsedAmount = computed(() => parseManwon(amount.value));
 
 async function load() {
   const result = await api.fixedExpenses(planId);
@@ -38,7 +42,7 @@ async function add() {
     await api.addFixedExpense(planId, {
       name: name.value.trim(),
       category: category.value,
-      amount: toWon(amount.value),
+      amount: parsedAmount.value.value ?? 0,
       dueDay: dueDay.value ? Number(dueDay.value) : null,
       autopay: autopay.value,
     });
@@ -83,10 +87,16 @@ async function remove(expenseId: number) {
             <option value="OTHER">기타</option>
           </select>
         </label>
-        <AppInput v-model="amount" label="월 금액 (만 원)" type="tel" placeholder="숫자만 입력" />
+        <AppInput
+          v-model="amount"
+          label="월 금액 (만 원)"
+          type="tel"
+          placeholder="숫자만 입력"
+          :error="parsedAmount.error ?? ''"
+        />
         <AppInput v-model="dueDay" label="납부일 (선택)" type="tel" placeholder="1~31" />
         <AppCheckbox v-model="autopay">자동이체를 등록했어요</AppCheckbox>
-        <AppButton :disabled="!name.trim() || !amount.trim() || busy" @click="add">
+        <AppButton :disabled="!name.trim() || parsedAmount.value === null || busy" @click="add">
           {{ busy ? '저장 중…' : '고정지출 추가' }}
         </AppButton>
       </AppCard>
