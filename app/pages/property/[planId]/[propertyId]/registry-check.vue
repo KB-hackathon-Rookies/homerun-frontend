@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyApi, type OfficialPriceSource, type RegistryStepPatch } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
+import { parseManwon } from '~/utils/amount';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { usePlanApi, type LeaseType, type PlanResponse } from '~/api/plan';
+import { parseManwon } from '~/utils/amount';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
-import { parseManwon } from '~/utils/amount';
 
 /**
  * 독립 준비 문진(시안 벤치 1~4).
