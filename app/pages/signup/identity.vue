@@ -76,6 +76,31 @@ const regionOptions = ref<RegionOption[]>([]);
 const pickingBirthDate = ref(false);
 
 const phoneSent = ref(false);
+
+/*
+ * 인증번호는 서버에서 시간이 지나면 죽는다(AU-05 "인증 시간 초과"). 남은 시간을 안 보여주면
+ * 사용자는 이미 죽은 번호를 계속 넣어 보고, 만료 에러를 받고 나서야 알게 된다.
+ *
+ * 재발송도 서버가 쿨다운으로 막는다. 얼마나 기다려야 하는지 보여주지 않으면 눌러도 안 되는
+ * 버튼을 계속 누르게 된다.
+ *
+ * 두 시간 모두 발송 응답이 준다. 화면에 박아 두지 않는다.
+ */
+const {
+  label: codeRemaining,
+  running: codeAlive,
+  start: startCodeLife,
+  clear: stopCodeLife,
+} = useCountdown();
+const {
+  label: resendRemaining,
+  running: resendBlocked,
+  start: startResendWait,
+  clear: stopResendWait,
+} = useCountdown();
+
+/** 보냈는데 시간이 다 됐다. 이 번호로는 더 확인할 수 없다. */
+const codeExpired = computed(() => phoneSent.value && !codeAlive.value && !signup.isPhoneVerified);
 const error = ref('');
 const pending = ref(false);
 
@@ -141,12 +166,17 @@ async function search() {
 }
 
 async function sendPhone() {
-  if (phoneDigits.value.length < 9 || pending.value) return;
+  if (phoneDigits.value.length < 9 || pending.value || resendBlocked.value) return;
   pending.value = true;
   error.value = '';
   try {
-    await sendPhoneVerification(phoneDigits.value);
+    const { expiresInSeconds, resendAvailableInSeconds } = await sendPhoneVerification(
+      phoneDigits.value,
+    );
     phoneSent.value = true;
+    phoneCode.value = '';
+    startCodeLife(expiresInSeconds);
+    startResendWait(resendAvailableInSeconds);
   } catch (cause) {
     error.value = messageFrom(cause, '인증번호를 보내지 못했어요.');
   } finally {
@@ -155,7 +185,7 @@ async function sendPhone() {
 }
 
 async function confirmPhone() {
-  if (phoneCode.value.length !== 6 || pending.value) return;
+  if (phoneCode.value.length !== 6 || pending.value || codeExpired.value) return;
   pending.value = true;
   error.value = '';
   try {
@@ -164,6 +194,9 @@ async function confirmPhone() {
       phoneCode.value,
     );
     signup.phoneVerificationToken = verificationToken;
+    // 인증이 끝났으면 더 셀 이유가 없다. 남은 시간이 계속 줄어들면 아직 할 일이 있는 것처럼 보인다.
+    stopCodeLife();
+    stopResendWait();
   } catch (cause) {
     error.value = messageFrom(cause, '인증번호가 맞지 않아요.');
   } finally {
@@ -239,8 +272,12 @@ async function submit() {
           autocomplete="tel"
         >
           <template #action>
-            <InputAction :disabled="phoneDigits.length < 9 || pending" @click="sendPhone">
-              {{ phoneSent ? '재발송' : '인증번호 받기' }}
+            <InputAction
+              :disabled="phoneDigits.length < 9 || pending || resendBlocked"
+              @click="sendPhone"
+            >
+              <template v-if="resendBlocked">{{ resendRemaining }} 후 재발송</template>
+              <template v-else>{{ phoneSent ? '재발송' : '인증번호 받기' }}</template>
             </InputAction>
           </template>
         </AppInput>
@@ -253,14 +290,25 @@ async function submit() {
         >
           <template #action>
             <InputAction
-              :disabled="!phoneSent || phoneCode.length !== 6 || pending || signup.isPhoneVerified"
+              :disabled="
+                !phoneSent ||
+                phoneCode.length !== 6 ||
+                pending ||
+                signup.isPhoneVerified ||
+                codeExpired
+              "
               @click="confirmPhone"
             >
               확인
             </InputAction>
           </template>
           <template v-if="signup.isPhoneVerified" #hint>인증이 완료됐어요.</template>
-          <template v-else-if="phoneSent" #hint>문자로 보낸 6자리를 입력해주세요.</template>
+          <template v-else-if="codeExpired" #hint>
+            인증번호가 만료됐어요. 재발송을 눌러주세요.
+          </template>
+          <template v-else-if="phoneSent" #hint>
+            문자로 보낸 6자리를 입력해주세요. 남은 시간 {{ codeRemaining }}
+          </template>
         </AppInput>
 
         <div class="flex flex-col gap-2">

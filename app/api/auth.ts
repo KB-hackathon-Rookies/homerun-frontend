@@ -27,6 +27,12 @@ export interface LoginResponse {
   member: MemberResponse;
 }
 
+/** 인증번호 발송 결과. 남은 시간을 세는 데 쓴다. */
+export interface PhoneVerificationSendResponse {
+  expiresInSeconds: number;
+  resendAvailableInSeconds: number;
+}
+
 export interface EmailVerificationResponse {
   verificationToken: string;
   expiresInSeconds: number;
@@ -79,9 +85,19 @@ export function useAuthApi() {
       return data.data;
     },
 
-    /** 휴대전화 인증번호 발송. 성공해도 본문이 없다. */
+    /**
+     * 휴대전화 인증번호 발송.
+     *
+     * 인증번호 유효시간과 재발송 대기시간을 함께 받는다. 화면이 남은 시간을 세려면 필요하고,
+     * 두 값 모두 서버 설정에서 나온다 — 화면에 숫자를 박아 두면 설정을 바꿔도 화면만 거짓말을 한다.
+     */
     async sendPhoneVerification(phone: string) {
-      await $api.post<ApiResponse<void>>(`${PHONE}/verification/send`, { phone }, NO_REFRESH);
+      const { data } = await $api.post<ApiResponse<PhoneVerificationSendResponse>>(
+        `${PHONE}/verification/send`,
+        { phone },
+        NO_REFRESH,
+      );
+      return data.data;
     },
 
     /** 휴대전화 인증번호 확인. 여기서 받은 토큰이 있어야 가입할 수 있다. */
