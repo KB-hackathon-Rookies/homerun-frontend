@@ -76,16 +76,38 @@ function back() {
 }
 
 async function submit() {
-  const { create, saveInput } = usePlanApi();
+  const { create, saveInput, profilePrefill } = usePlanApi();
 
   pending.value = true;
   error.value = '';
   try {
     const plan = await create(leaseType.value as LeaseType);
-    // 홈이 이 번호로 대시보드를 읽는다. 계획 목록 API 가 없어 여기서 적어 둔다.
+    // 홈이 이 번호로 대시보드를 읽는다. 캐시로 적어 두고, 없으면 서버에서 되살린다.
     currentPlan.set(plan.id);
+
+    /*
+     * 가입 때 받아 둔 생년월일을 진단 입력에 실어 정책 연령 조건까지 전달한다.
+     * `PUT /input` 은 스냅샷을 통째로 덮으므로 다른 값이 아직 없는 지금 함께 보낸다.
+     * 확정된 값(가입·저장)만 쓰고, 모름·미입력이나 병역처럼 회원 정보에 없을 수
+     * 있는 값은 임의로 확정하지 않는다.
+     */
+    let birthDate: string | undefined;
+    try {
+      const prefill = await profilePrefill(plan.id);
+      if (
+        prefill.birthDate.value &&
+        (prefill.birthDate.source === 'MEMBER_PROFILE' ||
+          prefill.birthDate.source === 'SAVED_INPUT')
+      ) {
+        birthDate = prefill.birthDate.value;
+      }
+    } catch {
+      // 프로필을 못 읽어도 진단은 진행한다. 생년월일은 뒤 단계에서 다시 받을 수 있다.
+    }
+
     await saveInput(plan.id, {
       livesApartFromParents: situation.value === 'RENTING',
+      ...(birthDate ? { birthDate } : {}),
       ...(skipsDeposit.value ? {} : { currentDeposit: depositAmount.value }),
     });
     await navigateTo(`/diagnosis/${plan.id}`, { replace: true });

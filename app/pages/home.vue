@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { useNotificationApi } from '~/api/notification';
+import { usePlanApi } from '~/api/plan';
 import { FEATURED_MODULES } from '~/components/coach/modules';
 import { usePush } from '~/composables/usePush';
 import { currentPlan } from '~/utils/currentPlan';
@@ -104,28 +105,63 @@ onMounted(async () => {
   // 앱을 보고 있을 때는 OS 알림이 뜨지 않는다. 종 개수라도 바로 늘려 준다.
   push.onForeground(countUnread);
 
-  planId.value = currentPlan.get();
-  if (!planId.value) {
-    pending.value = false;
-    return;
-  }
+  await recoverPlan();
+});
 
+/** 계정에 걸린 planId 조회가 남의 것이라 막힌 상태인가. */
+function isMissing(cause: unknown) {
+  const status = statusFrom(cause);
+  return status === 403 || status === 404;
+}
+
+/**
+ * 볼 계획을 정한다.
+ *
+ * 1) 브라우저에 적어 둔 번호(캐시)로 먼저 대시보드를 읽는다.
+ * 2) 캐시가 없거나(재로그인·새 기기) 남의 것이라 막히면(403·404) 낡은 값을
+ *    버리고 `GET /plans/active` 로 서버에서 계획을 되살린다.
+ * 3) 서버가 진행 중인 계획이 없다고 답할 때(404)만 '계획 없음' 으로 둔다.
+ */
+async function recoverPlan() {
+  const cached = currentPlan.get();
   try {
-    dashboard.value = await useDashboardApi().get(planId.value);
-  } catch (cause) {
-    // 저장된 planId 가 이 계정 것이 아니면(계정 전환·기기 이동) 조회가 403·404 로 막힌다.
-    // 그럴 땐 낡은 planId 를 지우고 '계획 없음'으로 되돌려 1루부터 다시 시작하게 한다.
-    const status = statusFrom(cause);
-    if (status === 403 || status === 404) {
-      currentPlan.clear();
-      planId.value = null;
-    } else {
-      error.value = messageFrom(cause, '진행 상황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+    if (cached) {
+      try {
+        dashboard.value = await useDashboardApi().get(cached);
+        planId.value = cached;
+        return;
+      } catch (cause) {
+        if (!isMissing(cause)) {
+          error.value = messageFrom(
+            cause,
+            '진행 상황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+          );
+          return;
+        }
+        currentPlan.clear();
+      }
+    }
+
+    try {
+      const active = await usePlanApi().getActive();
+      currentPlan.set(active.id);
+      dashboard.value = await useDashboardApi().get(active.id);
+      planId.value = active.id;
+    } catch (cause) {
+      // 진행 중인 계획이 정말 없으면 404(PLAN_022) 다 — 그때만 새로 시작 안내를 띄운다.
+      if (statusFrom(cause) === 404) {
+        planId.value = null;
+      } else {
+        error.value = messageFrom(
+          cause,
+          '진행 상황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+        );
+      }
     }
   } finally {
     pending.value = false;
   }
-});
+}
 </script>
 
 <template>
