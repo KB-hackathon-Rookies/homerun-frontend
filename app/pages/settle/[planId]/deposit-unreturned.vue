@@ -62,13 +62,18 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        @click="navigateTo(`/settle/${planId}/deposit-unreturned-detail`)"
-      >
-        임차권등기명령 안내 보기
-      </AppButton>
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton
+          variant="strong"
+          @click="navigateTo(`/settle/${planId}/deposit-unreturned-detail`)"
+        >
+          임차권등기 안내
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

@@ -44,12 +44,14 @@ const checked = ref<Record<string, boolean>>({});
 
       <h2 class="text-card-title text-ink-hero font-bold">놓치지 말 것</h2>
 
-      <CheckItem
-        v-for="item in MOVE_OUT_RETURNS.slice(0, 4)"
-        :key="item.title"
-        v-model="checked[item.title]"
-      >
+      <!--
+        앞 네 개만 잘라 쓰다가 시안에 있는 `자동이체 해지` 가 빠졌었다. 다섯 개
+        모두 놓치면 그냥 사라지는 돈이라 자르지 않고, 얼마를 어떻게 돌려받는지
+        부제도 같이 둔다.
+      -->
+      <CheckItem v-for="item in MOVE_OUT_RETURNS" :key="item.title" v-model="checked[item.title]">
         {{ item.title }}
+        <template #note>{{ item.note }}</template>
       </CheckItem>
 
       <DetailLink @open="navigateTo(`/settle/${planId}/move-out-detail`)">
@@ -57,10 +59,15 @@ const checked = ref<Record<string, boolean>>({});
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/move-out-detail`)">
-        퇴거 준비 시작
-      </AppButton>
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/move-out-detail`)">
+          퇴거 준비
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

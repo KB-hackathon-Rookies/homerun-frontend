@@ -61,10 +61,18 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
-        내 지자체 사업 확인
-      </AppButton>
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <!-- 필수 요소 4번(마지막). 앞 단계는 사후자산심사다. -->
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}/asset-review`)">
+          이전
+        </AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
+          지자체 확인
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

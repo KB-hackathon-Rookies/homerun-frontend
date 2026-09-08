@@ -143,8 +143,25 @@ onMounted(() => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
+    <!--
+      시안의 주 버튼은 "은행에 신청" 이다. 다만 비대상(기금대출)에게 그 말을
+      띄우면 헛걸음을 시킨다 -- 대상일 때만 신청 방법으로 보내고, 그 밖에는
+      확인으로 둔다.
+    -->
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton
+          v-if="eligible"
+          variant="strong"
+          @click="navigateTo(`/settle/${planId}/rate-cut-detail`)"
+        >
+          은행에 신청
+        </AppButton>
+        <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

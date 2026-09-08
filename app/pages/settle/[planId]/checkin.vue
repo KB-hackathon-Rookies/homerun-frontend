@@ -172,12 +172,17 @@ onMounted(() => {
 
       <h2 class="text-card-title text-ink-hero font-bold">첫 달에 할 일</h2>
 
+      <!--
+        부제까지 같이 보여준다. "고정지출 등록" 만으로는 무엇을 넣는 자리인지
+        모르고, 안 넣으면 연체 알림이 안 돌아간다는 말이 본 화면에 없었다.
+      -->
       <CheckItem
         v-for="task in FIRST_MONTH_TASKS.slice(0, 4)"
         :key="task.title"
         v-model="checked[task.title]"
       >
         {{ task.title }}
+        <template v-if="task.note" #note>{{ task.note }}</template>
       </CheckItem>
 
       <p class="bg-surface-brand rounded-chip text-micro text-ink-hero-body p-3">
@@ -200,9 +205,16 @@ onMounted(() => {
         관리비가 주거비의 절반을 가른다. 등록 화면(`expenses`)이 이미 있는데
         여기서 잠겨 있어 아무도 닿지 못했다.
       -->
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
-        고정지출 등록하러 가기
-      </AppButton>
+      <div class="flex gap-2.5">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
+            고정지출 등록
+          </AppButton>
+        </div>
+      </div>
       <p class="text-micro text-ink-muted text-center">
         관리비를 넣으면 주거비와 RIR 이 더 정확해져요
       </p>

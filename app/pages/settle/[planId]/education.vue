@@ -38,8 +38,18 @@ const planId = Number(route.params.planId);
     </div>
 
     <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <!-- 모듈 내용이 아직 없다. 목록은 보여주되 시작은 잠가 둔다. -->
-      <AppButton variant="strong" disabled>교육 시작하기</AppButton>
+      <!--
+        모듈 내용이 아직 없다. 목록은 보여주되 시작은 잠가 둔다. 다만 주 버튼이
+        잠긴 화면이라 헤더 화살표 말고는 나갈 길이 없었다 -- `이전` 을 둔다.
+      -->
+      <div class="flex gap-2.5">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" disabled>교육 시작하기</AppButton>
+        </div>
+      </div>
       <p class="text-micro text-ink-muted text-center">교육 콘텐츠는 아직 준비 중이에요</p>
     </footer>
   </PhoneFrame>
