@@ -9,7 +9,7 @@ import {
 import { messageFrom } from '~/utils/error';
 
 /**
- * 3루 10 · 잔금일.
+ * 3루 11 · 잔금일.
  *
  * **돈을 보내기 전에 등기부를 한 번 더 뗀다.** 700원이면 되는 일이고,
  * 이걸 안 하면 특약 2번이 무용지물이 된다.
@@ -63,8 +63,10 @@ const isNeedInfo = computed(() => result.value?.status === 'NEED_INFO');
 
 /** 결과 카드 색·문구. NEED_INFO 는 초록(안전)이 아니라 주의로 그린다. */
 const resultTone = computed(() => {
-  if (isSafe.value) return { box: 'bg-badge-success', text: 'text-success', title: '계약 때와 같아요' };
-  if (isBlock.value) return { box: 'bg-badge-danger', text: 'text-danger', title: '잔금을 보내지 마세요' };
+  if (isSafe.value)
+    return { box: 'bg-badge-success', text: 'text-success', title: '계약 때와 같아요' };
+  if (isBlock.value)
+    return { box: 'bg-badge-danger', text: 'text-danger', title: '잔금을 보내지 마세요' };
   return { box: 'bg-badge-warning', text: 'text-warning', title: '아직 확인이 필요해요' };
 });
 
@@ -74,7 +76,12 @@ async function compare() {
   saving.value = true;
   error.value = '';
   try {
-    result.value = await useContractApi().recordRegistry(planId, 'SETTLEMENT_DAY', today(), facts.value);
+    result.value = await useContractApi().recordRegistry(
+      planId,
+      'SETTLEMENT_DAY',
+      today(),
+      facts.value,
+    );
   } catch (cause) {
     error.value = messageFrom(cause, '대조하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -102,7 +109,8 @@ async function finish() {
     if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
     await complete(planId, plan.ruleVersion);
 
-    await navigateTo(`/contract/${planId}/after-settlement`);
+    // done=1 은 안착 축하를 여는 표시다. 서버 완료가 승인된 뒤에만 붙는다.
+    await navigateTo(`/contract/${planId}/after-settlement?done=1`);
   } catch (cause) {
     error.value = messageFrom(cause, '3루를 완료하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -221,7 +229,12 @@ async function finish() {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/review`)">
+          이전
+        </AppButton>
+      </div>
       <AppButton
         v-if="isSafe"
         variant="strong"
@@ -230,11 +243,7 @@ async function finish() {
       >
         {{ completing ? '완료 처리 중…' : '잔금 송금 완료 · 3루 마치기' }}
       </AppButton>
-      <AppButton
-        v-else-if="isNeedInfo || isBlock"
-        variant="strong"
-        disabled
-      >
+      <AppButton v-else-if="isNeedInfo || isBlock" variant="strong" disabled>
         {{ isBlock ? '잔금을 보낼 수 없어요' : '확인이 더 필요해요' }}
       </AppButton>
       <AppButton v-else variant="strong" :disabled="!answered || saving" @click="compare">

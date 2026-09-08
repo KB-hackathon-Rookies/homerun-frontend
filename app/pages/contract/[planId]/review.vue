@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 3루 9 · 심사 확인 (D-3).
+ * 3루 10 · 심사 확인 (D-3).
  *
  * 기다리기만 하면 되는 구간이라 아무것도 안 하고 잔금일을 맞는 일이 있다.
  * **잔금일 3일 전에 한 번 확인**하면 늦기 전에 재촉할 수 있다.
@@ -55,7 +55,12 @@ const checked = ref<Record<string, boolean>>({});
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/loan-apply`)">
+          이전
+        </AppButton>
+      </div>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
         심사 정상 · D-day 준비
       </AppButton>

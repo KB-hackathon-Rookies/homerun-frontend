@@ -83,7 +83,12 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
+          이전
+        </AppButton>
+      </div>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/docs`)">
         방문 예약 완료
       </AppButton>

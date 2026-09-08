@@ -91,8 +91,12 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <!-- 대출 신청 화면은 다음 묶음이다. 생기면 여기서 잇는다. -->
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/docs`)">
+          이전
+        </AppButton>
+      </div>
       <AppButton
         variant="strong"
         :disabled="pending"
