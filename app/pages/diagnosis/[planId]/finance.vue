@@ -37,16 +37,6 @@ const { revision, load, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
 
-/** 진단 비용은 화면에서 따로 받지 않는다. 한도·이자는 서버가 정책 판정으로 계산한다. */
-const ZERO_COSTS = {
-  movingCost: 0,
-  brokerageFee: 0,
-  guaranteeFee: 0,
-  stampTax: 0,
-  emergencyReserve: 0,
-  monthlyLivingExpense: 0,
-} as const;
-
 /** 오픈뱅킹 조회값. 못 가져오면 바로 직접 입력으로 보낸다. */
 const summary = ref<FinancialSummary | null>(null);
 const regions = ref<RegionOption[]>([]);
@@ -276,9 +266,12 @@ async function submitFirstBase() {
   const plan = await usePlanApi().get(planId);
   if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
 
-  const result = await useFirstBaseApi().complete(planId, revision.value, plan.ruleVersion, {
-    ...ZERO_COSTS,
-  });
+  /*
+   * 비용은 하나도 보내지 않는다. 화면에서 받지 않는 값이라 0 을 보내면 "확인해서 0원" 이
+   * 되어 초기 필요자금과 부족자금이 실제보다 작게 나온다. 중개보수·인지세·보증료는 대출금이
+   * 정해져야 나오는 값이라 애초에 화면이 알 수 없고, 서버가 기준 수치로 계산해 채운다.
+   */
+  const result = await useFirstBaseApi().complete(planId, revision.value, plan.ruleVersion, {});
   if (result.status !== 'COMPLETED') {
     // 아직 확인하지 못한 입력이 남았다(예: 자기자금). 화면을 넘기지 않는다.
     error.value = '입력을 한 번 더 확인해야 해요. 값을 확인하고 다시 시도해주세요.';

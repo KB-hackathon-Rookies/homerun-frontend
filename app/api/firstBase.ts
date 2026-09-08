@@ -9,14 +9,24 @@ import type { ApiResponse } from '~/types/api';
  */
 const BASE = '/api/v1/plans';
 
-/** 진단 비용 입력. 화면에서 따로 받지 않으므로 0 으로 보낸다 — 한도·이자는 서버가 정책 판정으로 계산한다. */
+/**
+ * 진단 비용 입력. **모르는 항목은 보내지 않는다.**
+ *
+ * 전에는 전부 0 으로 보냈다. 0 은 "확인해서 0원" 이라는 뜻이라 그대로 계산에 들어갔고,
+ * 초기 필요자금에서 중개보수·인지세·보증료·이사비·예비비가 통째로 빠져 **부족자금이
+ * 실제보다 작게** 나왔다. 생활비 0 은 월 여유자금을 소득 전액에 가깝게 만들어 독립
+ * 가능 시점까지 낙관적으로 밀었다.
+ *
+ * 중개보수·인지세·보증료는 대출금이 정해져야 나오는 값이라 화면이 알 수 없다. 생략하면
+ * 서버가 `config_effective` 기준으로 계산하고, 계산할 근거가 없는 항목은 경고로 돌려준다.
+ */
 export interface FirstBaseCostInput {
-  movingCost: number;
-  brokerageFee: number;
-  guaranteeFee: number;
-  stampTax: number;
-  emergencyReserve: number;
-  monthlyLivingExpense: number;
+  movingCost?: number | null;
+  brokerageFee?: number | null;
+  guaranteeFee?: number | null;
+  stampTax?: number | null;
+  emergencyReserve?: number | null;
+  monthlyLivingExpense?: number | null;
   /** 생략하면 서버가 최근 오픈뱅킹 스냅샷을 쓴다. */
   monthlyDebtPayment?: number | null;
 }
