@@ -11,6 +11,10 @@ import { currentPlan } from '~/utils/currentPlan';
  * `status` 는 백엔드가 정한다. 생년월일·휴대전화·거주지가 비어 있는 계정이면 `signup`, 다 채운
  * 계정이면 `login` 이다. 신규인지 아닌지를 프론트가 추측하지 않는다.
  *
+ * `signup` 은 **본인 확인 화면으로 바로** 보낸다. 소셜은 이메일·비밀번호를 받을 이유가 없고,
+ * 제공자가 주지 않는 값(생년월일·휴대전화·주소)만 채우면 가입이 끝난다. 필수 약관 동의는 그
+ * 화면 안에서 함께 받는다.
+ *
  * 이미 가입한 사람을 어디로 보낼지는 이메일 로그인(`login.vue`)과 같은 규칙을 쓴다 — 진행 중인
  * 계획이 있으면 홈, 없으면 온보딩이다. 두 경로가 갈리면 소셜만 다른 화면에 떨어진다.
  */
@@ -38,9 +42,8 @@ onMounted(async () => {
     return;
   }
 
-  // 가입이 끝나지 않은 계정은 약관부터 다시 태운다. 소셜은 이름·이메일밖에 주지 않는다.
   if (status === 'signup') {
-    await navigateTo('/signup/terms', { replace: true });
+    await navigateTo('/signup/identity', { replace: true });
     return;
   }
   await navigateTo(currentPlan.get() ? '/home' : '/onboarding', { replace: true });

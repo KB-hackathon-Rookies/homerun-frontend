@@ -47,11 +47,16 @@ export function useAddressApi() {
   const { $api } = useNuxtApp();
 
   return {
-    /** 두 글자 이상이어야 백엔드가 받는다. */
+    /**
+     * 두 글자 이상이어야 백엔드가 받는다.
+     *
+     * 지역 조회와 같은 이유로 토큰을 붙이지 않는다. 회원가입 중에 부르는데, 토큰이 붙으면
+     * 필수약관 필터가 동의 전 계정을 403 으로 막는다.
+     */
     async search(keyword: string) {
       const { data } = await $api.get<ApiResponse<AddressSearch> | AddressSearch>(
         `${BASE}/search`,
-        { params: { keyword } },
+        { params: { keyword }, skipAuth: true },
       );
       return unwrap(data);
     },
