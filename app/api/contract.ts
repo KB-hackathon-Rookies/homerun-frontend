@@ -105,6 +105,30 @@ export function useContractApi() {
     },
 
     /**
+     * 실제 잔금 지급일·전입신고일만 부분 수정한다.
+     *
+     * 3루 완료는 이 두 날짜가 모두 있어야 승인한다. 전체 저장(PUT)은 폼에 없는 계약 값을
+     * 지우므로, 잔금일 PATCH 와 같은 부분 수정으로 실행 사실만 남긴다.
+     */
+    async saveExecutionFacts(planId: number, balancePaidAt: string, moveInReportAt: string) {
+      await $api.patch<ApiResponse<unknown>>(`${contract(planId)}/execution-facts`, {
+        balancePaidAt,
+        moveInReportAt,
+      });
+    },
+
+    /**
+     * 3루를 완료한다.
+     *
+     * 서버가 잔금 지급·전입신고 사실과 잔금일 등기부 SAFE 대조를 다시 확인하고, 통과할
+     * 때만 HOME 단계로 넘긴다. 대조가 SAFE 가 아니거나 날짜가 없으면 4xx 로 막는다 —
+     * 화면이 통과를 흉내 내지 않고 서버 승인을 그대로 따른다.
+     */
+    async complete(planId: number, ruleVersion: string) {
+      await $api.post<ApiResponse<unknown>>(`${contract(planId)}/complete`, { ruleVersion });
+    },
+
+    /**
      * 등기부를 기록하고 곧바로 대조한다.
      *
      * 판정은 백엔드가 한다. 사용자가 눈으로 보고 "같다" 고 체크하는 것과
