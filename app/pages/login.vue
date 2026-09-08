@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { socialLoginUrl } from '~/api/auth';
 import { useAuthStore } from '~/stores/auth';
-import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -21,6 +20,17 @@ const pending = ref(false);
 
 const canSubmit = computed(() => !!email.value && !!password.value && !pending.value);
 
+/**
+ * 돌아갈 곳으로 받아도 되는 값인가.
+ *
+ * `redirect` 는 주소창에 실려 오니 남이 심을 수 있다. 이 앱 안의 경로만 받는다 —
+ * `/` 하나로 시작하고 그다음이 `/` 나 `\` 가 아니어야 한다. `//evil.example` 과
+ * `https://evil.example` 은 브라우저가 바깥 주소로 읽으므로 여기서 걸러 낸다.
+ */
+function safeRedirect(value: unknown): string | null {
+  return typeof value === 'string' && /^\/(?![/\\])/.test(value) ? value : null;
+}
+
 async function submit() {
   if (!canSubmit.value) return;
 
@@ -28,10 +38,15 @@ async function submit() {
   error.value = '';
   try {
     await auth.login(email.value, password.value);
-    // 인증이 필요해서 밀려난 사람은 원래 가려던 곳으로 돌려보낸다.
-    // 그 외에는 진행 중인 계획이 있으면 홈으로, 없으면 온보딩으로 보낸다.
-    const redirect = route.query.redirect as string | undefined;
-    await navigateTo(redirect || (currentPlan.get() ? '/home' : '/onboarding'), { replace: true });
+    /*
+     * 인증이 필요해서 밀려난 사람은 원래 가려던 곳으로 돌려보낸다. 그 외에는 홈이다.
+     *
+     * 여기서 계획 유무를 따지지 않는다. `currentPlanId` 는 브라우저에만 있는 캐시라
+     * 깨끗한 브라우저·시크릿 창·다른 기기에서는 늘 비어 있고, 그걸 '계획 없음' 으로
+     * 읽으면 온보딩 → 준비 문진으로 밀려 계획이 새로 만들어진다. 홈이 `/plans/active`
+     * 로 서버에서 되살리고, 정말 없을 때만 시작하기를 안내한다.
+     */
+    await navigateTo(safeRedirect(route.query.redirect) ?? '/home', { replace: true });
   } catch (cause) {
     error.value = messageFrom(cause, '이메일 또는 비밀번호를 확인해주세요.');
   } finally {

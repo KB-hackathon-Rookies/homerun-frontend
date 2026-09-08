@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthApi } from '~/api/auth';
 import { useAuthStore } from '~/stores/auth';
-import { currentPlan } from '~/utils/currentPlan';
 
 /**
  * 소셜 로그인 착지 화면.
@@ -16,8 +15,8 @@ import { currentPlan } from '~/utils/currentPlan';
  * 제공자가 주지 않는 값(생년월일·휴대전화·주소)만 채우면 가입이 끝난다. 필수 약관 동의는 그
  * 화면 안에서 함께 받는다.
  *
- * 이미 가입한 사람을 어디로 보낼지는 이메일 로그인(`login.vue`)과 같은 규칙을 쓴다 — 진행 중인
- * 계획이 있으면 홈, 없으면 온보딩이다. 두 경로가 갈리면 소셜만 다른 화면에 떨어진다.
+ * 이미 가입한 사람을 어디로 보낼지는 이메일 로그인(`login.vue`)과 같은 규칙을 쓴다 — 홈이다.
+ * 두 경로가 갈리면 소셜만 다른 화면에 떨어진다.
  */
 const route = useRoute();
 const auth = useAuthStore();
@@ -47,7 +46,12 @@ onMounted(async () => {
     await navigateTo('/signup/identity', { replace: true });
     return;
   }
-  await navigateTo(currentPlan.get() ? '/home' : '/onboarding', { replace: true });
+  /*
+   * 계획 유무를 여기서 따지지 않는다. `currentPlanId` 는 브라우저에만 있는 캐시라 깨끗한
+   * 브라우저에서는 늘 비어 있고, 그걸 '계획 없음' 으로 읽으면 온보딩 → 준비 문진으로 밀려
+   * 계획이 새로 만들어진다. 홈이 `/plans/active` 로 서버에서 되살린다.
+   */
+  await navigateTo('/home', { replace: true });
 });
 </script>
 

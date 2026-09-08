@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { currentPlan } from '~/utils/currentPlan';
 import { useAuthStore } from '~/stores/auth';
 
 /**
@@ -11,17 +10,20 @@ const DURATION_MS = 1600;
 
 const auth = useAuthStore();
 
-/** 진행 중인 계획이 있으면 온보딩을 다시 보여줄 이유가 없다. 홈으로 보낸다. */
-async function destination() {
-  if (!auth.isAuthenticated) return '/welcome';
-  return (await currentPlan.resolve()) ? '/home' : '/onboarding';
-}
+/**
+ * 로그인해 둔 사람은 홈으로 보낸다.
+ *
+ * 계획이 있는지 여기서 묻지 않는다. 홈이 `/plans/active` 로 서버에서 계획을 되살리고,
+ * 정말 없을 때만 시작하기를 안내한다. 스플래시에서 한 번 더 물으면 같은 조회가 두 번
+ * 나가고, 조회가 잠깐 실패하면 계획이 있는 사람도 온보딩으로 밀려 계획이 새로 만들어진다.
+ */
+const destination = () => (auth.isAuthenticated ? '/home' : '/welcome');
 
 onMounted(() => {
   auth.restore();
 
   const timer = setTimeout(async () => {
-    await navigateTo(await destination(), { replace: true });
+    await navigateTo(destination(), { replace: true });
   }, DURATION_MS);
 
   onUnmounted(() => clearTimeout(timer));

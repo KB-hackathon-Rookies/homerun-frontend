@@ -46,11 +46,16 @@ export function nodeState(node: PlanStage, current: PlanStage): NodeState {
  *
  * 백엔드는 단계 말고 `locationCode` 도 주는데, 그 코드와 라우트를 짝지어 둔 표가
  * 아직 없다. 단계까지만 보고 그 단계의 첫 화면으로 보낸다.
+ *
+ * BENCH 도 1루로 보낸다. 여기까지 왔다는 건 계획이 이미 있다는 뜻인데(`planId` 가 있다),
+ * 준비 문진(`/prep`)은 제출할 때마다 계획을 새로 만든다. `BENCH_ONBOARDING` 완료가 한 번
+ * 실패해 단계가 BENCH 에 남은 사람을 거기로 보내면 계획이 하나 더 생긴다. 카드도
+ * `displayStage` 로 BENCH 를 1루로 그리니 목적지가 같아야 말이 맞는다. 진단 화면은 서버가
+ * 주는 `resumeStep` 으로 자리를 잡으므로 BENCH 계획도 처음부터 이어서 진행된다.
  */
 export function resumePath(stage: PlanStage, planId: number) {
   switch (stage) {
     case 'BENCH':
-      return '/prep';
     case 'FIRST':
       return `/diagnosis/${planId}`;
     case 'SECOND':

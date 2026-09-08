@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePlanApi, type LeaseType } from '~/api/plan';
+import { usePlanApi, type LeaseType, type PlanResponse } from '~/api/plan';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
@@ -43,6 +43,16 @@ const step = ref(0);
 const pending = ref(false);
 const error = ref('');
 
+/**
+ * 이 화면에서 만든 계획.
+ *
+ * 저장은 계획 생성 · 입력 저장 · 준비 완료 세 번에 걸쳐 일어난다. 뒤쪽에서 한 번
+ * 실패하면 사용자는 다음을 다시 누르는데, 그때 계획을 또 만들면 안 된다 — 실패할
+ * 때마다 빈 계획이 하나씩 쌓이고, `GET /plans/active` 는 가장 최근 것을 주므로
+ * 원래 쓰던 계획이 가려진다. 한 번 만든 계획을 들고 있다가 재시도 때 이어 쓴다.
+ */
+const created = ref<PlanResponse | null>(null);
+
 /** 처음 독립하면 보증금 질문이 의미가 없다. */
 const skipsDeposit = computed(() => situation.value === 'FIRST');
 const lastStep = computed(() => (skipsDeposit.value ? 1 : 2));
@@ -79,7 +89,8 @@ async function submit() {
   pending.value = true;
   error.value = '';
   try {
-    const plan = await create(LEASE_TYPE);
+    // 앞선 시도에서 이미 만들었으면 그걸 쓴다. 재시도가 계획을 새로 만들지 않게 한다.
+    const plan = (created.value ??= await create(LEASE_TYPE));
     // 홈이 이 번호로 대시보드를 읽는다. 캐시로 적어 두고, 없으면 서버에서 되살린다.
     currentPlan.set(plan.id);
 
