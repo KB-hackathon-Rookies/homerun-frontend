@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePlanApi } from '~/api/plan';
 import { usePropertyApi } from '~/api/property';
+import { useSettlementApi, type CashFlowSummary } from '~/api/settlement';
 import {
   FIRST_MONTH_TASKS,
   OVERDUE_SURCHARGE,
@@ -8,6 +8,7 @@ import {
   monthlyInterestOf,
   rirGrade,
 } from '~/components/settle/rir';
+import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
 /**
@@ -15,9 +16,12 @@ import { formatKoreanMoney } from '~/utils/money';
  *
  * 매달 얼마가 나가는지 알아야 연체를 막는다. 첫 달만 잡아 두면 그다음은 쉽다.
  *
- * RIR 은 백엔드에 계산해 주는 곳이 없다(1루 진단이 RIR 을 안 쓴다). 확정한
- * 대출 조건과 저장된 입력이 다 있을 때만 여기서 센다 — 하나라도 없으면
- * 숫자를 지어내지 않고 무엇이 없는지를 말한다.
+ * 월 이자·주거비·월 소득·관리비 같은 정착 지표는 백엔드 현금흐름 종합
+ * (`/settlement/cash-flow`, BR-28)이 계산한 값을 그대로 받는다. 대출이 등록돼
+ * 있어야 계산되므로, 없으면(404) 숫자를 지어내지 않고 무엇이 없는지를 말한다.
+ *
+ * RIR 만은 백엔드에 계산해 주는 곳이 없어(1루 진단이 RIR 을 안 쓴다) 위 지표로
+ * 화면에서 센다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -26,19 +30,19 @@ const planId = Number(route.params.planId);
 
 const principal = ref<number | null>(null);
 const rate = ref<number | null>(null);
-const monthlyIncome = ref<number | null>(null);
-const maintenanceFee = ref<number | null>(null);
+
+/** 정착 지표. 대출이 등록돼 있어야 서버가 계산해 준다. */
+const summary = ref<CashFlowSummary | null>(null);
+const pending = ref(true);
+const error = ref('');
 
 const checked = ref<Record<string, boolean>>({});
 
-const interest = computed(() => monthlyInterestOf(principal.value, rate.value));
-
-/** 월 주거비 = 관리비 + 월 이자. 관리비를 모르면 주거비도 모른다. */
-const housingCost = computed(() =>
-  interest.value === null || maintenanceFee.value === null
-    ? null
-    : interest.value + maintenanceFee.value,
-);
+/** 월 이자·주거비·월 소득·관리비는 서버가 센 값을 그대로 쓴다. */
+const interest = computed(() => summary.value?.metrics.monthlyInterest ?? null);
+const housingCost = computed(() => summary.value?.metrics.housingCost ?? null);
+const monthlyIncome = computed(() => summary.value?.monthlyIncome ?? null);
+const maintenanceFee = computed(() => summary.value?.managementFee ?? null);
 
 const rir = computed(() => {
   if (housingCost.value === null || !monthlyIncome.value) return null;
@@ -63,6 +67,8 @@ const overdue = computed(() => {
 });
 
 onMounted(() => {
+  // 연체 시 이자 폭을 세려면 확정 대출 조건(원금·금리)이 필요하다. 서버 지표에는
+  // 금리가 없어 이 조회는 그대로 둔다.
   usePropertyApi()
     .decision(planId)
     .then((found) => {
@@ -71,13 +77,20 @@ onMounted(() => {
     })
     .catch(() => {});
 
-  usePlanApi()
-    .input(planId)
-    .then((input) => {
-      monthlyIncome.value = input.monthlyIncome;
-      maintenanceFee.value = input.maintenanceFee;
+  useSettlementApi()
+    .cashFlow(planId)
+    .then((found) => {
+      summary.value = found;
     })
-    .catch(() => {});
+    .catch((cause) => {
+      // 대출 미등록이면 404 -- 에러가 아니라 "아직 값이 없음" 으로 두고 빈 상태를 보인다.
+      if (statusFrom(cause) !== 404) {
+        error.value = messageFrom(cause, '정착 지표를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      }
+    })
+    .finally(() => {
+      pending.value = false;
+    });
 });
 </script>
 
@@ -115,7 +128,9 @@ onMounted(() => {
         <p class="text-chip text-ink-meta font-normal">20% 안정 · 30% 위험</p>
 
         <p class="text-caption-tight text-ink-hero-body font-normal">
-          <template v-if="rir !== null">
+          <template v-if="pending">정착 지표를 불러오는 중이에요…</template>
+          <span v-else-if="error" class="text-danger">{{ error }}</span>
+          <template v-else-if="rir !== null">
             월 이자 {{ formatKoreanMoney(interest) }} + 관리비
             {{ formatKoreanMoney(maintenanceFee) }} = {{ formatKoreanMoney(housingCost) }} (÷ 월소득
             {{ formatKoreanMoney(monthlyIncome) }})
