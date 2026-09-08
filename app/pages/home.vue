@@ -4,6 +4,7 @@ import { useNotificationApi } from '~/api/notification';
 import { usePlanApi } from '~/api/plan';
 import { FEATURED_MODULES } from '~/components/coach/modules';
 import { usePush } from '~/composables/usePush';
+import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { displayStage, resumePath } from '~/utils/stage';

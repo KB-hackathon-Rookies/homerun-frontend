@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { COACH_MODULES } from '~/components/coach/modules';
+import { educationCode, useEducationApi, type EducationModuleDetail } from '~/api/education';
 import { useCoachProgress } from '~/composables/useCoachProgress';
 
 /**
@@ -16,6 +17,8 @@ const { markDone } = useCoachProgress();
 const module = computed(() => COACH_MODULES.find((item) => item.id === route.params.moduleId));
 const index = computed(() => COACH_MODULES.findIndex((item) => item.id === route.params.moduleId));
 const nextModule = computed(() => (index.value >= 0 ? COACH_MODULES[index.value + 1] : undefined));
+const serverModule = ref<EducationModuleDetail | null>(null);
+const error = ref('');
 
 const phase = ref<'read' | 'quiz' | 'done'>('read');
 const quizAt = ref(0);
@@ -27,9 +30,9 @@ const question = computed(() => module.value?.quiz?.[quizAt.value]);
 const isLastQuestion = computed(() => quizTotal.value > 0 && quizAt.value === quizTotal.value - 1);
 
 /** 본문을 다 읽었다. 문제가 있으면 풀고, 없으면 바로 끝낸다. */
-function afterRead() {
+async function afterRead() {
   if (quizTotal.value) phase.value = 'quiz';
-  else finish();
+  else await finish();
 }
 
 function pick(choice: 'O' | 'X') {
@@ -38,24 +41,43 @@ function pick(choice: 'O' | 'X') {
   if (choice === question.value.answer) correctCount.value += 1;
 }
 
-function nextQuestion() {
+async function nextQuestion() {
   if (isLastQuestion.value) {
-    finish();
+    await finish();
     return;
   }
   quizAt.value += 1;
   picked.value = null;
 }
 
-function finish() {
-  if (module.value) markDone(module.value.id);
-  phase.value = 'done';
+async function finish() {
+  if (!module.value) return;
+  try {
+    await markDone(module.value.id);
+    phase.value = 'done';
+  } catch {
+    error.value = '교육 완료를 저장하지 못했어요. 잠시 후 다시 시도해주세요.';
+  }
 }
+
+onMounted(async () => {
+  const id = String(route.params.moduleId);
+  const code = educationCode(
+    id,
+    COACH_MODULES.map((item) => item.id),
+  );
+  if (!code) return;
+  try {
+    serverModule.value = await useEducationApi().detail(code);
+  } catch {
+    // 배포 데이터 조회가 안 되면 번들에 포함된 콘텐츠를 대신 보여준다.
+  }
+});
 </script>
 
 <template>
   <PhoneFrame>
-    <PageBar :title="module?.title ?? '코치 교육'" />
+    <PageBar :title="serverModule?.title ?? module?.title ?? '코치 교육'" />
 
     <!-- 없는 모듈: 목록에서 지운 뒤에도 주소로 들어올 수 있다. -->
     <div v-if="!module" class="px-gutter flex flex-1 flex-col items-center justify-center gap-3">
@@ -65,7 +87,7 @@ function finish() {
 
     <!-- 준비 중: 제목·시간만 있고 본문이 없는 모듈. -->
     <div
-      v-else-if="!module.body"
+      v-else-if="!module.body && !serverModule"
       class="px-gutter flex flex-1 flex-col items-center justify-center gap-3 text-center"
     >
       <p class="text-headline2 text-ink-hero">준비 중이에요</p>
@@ -80,7 +102,11 @@ function finish() {
       <div class="px-gutter-tight flex flex-1 flex-col gap-4 overflow-y-auto py-4">
         <p class="text-step text-ink-muted px-1">{{ module.base }} · {{ module.minutes }}분</p>
 
-        <template v-for="(block, i) in module.body" :key="i">
+        <AppCard v-if="serverModule" class="text-caption2 text-ink-hero-body whitespace-pre-wrap">
+          {{ serverModule.body }}
+        </AppCard>
+
+        <template v-for="(block, i) in serverModule ? [] : module.body" :key="i">
           <CoachTip v-if="block.kind === 'coach'" label="코치 TIME" tone="plain">
             {{ block.text }}
           </CoachTip>
@@ -115,6 +141,8 @@ function finish() {
           </div>
         </template>
       </div>
+
+      <p v-if="error" class="text-label2 text-danger px-gutter-tight">{{ error }}</p>
 
       <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
         <AppButton variant="strong" @click="afterRead">

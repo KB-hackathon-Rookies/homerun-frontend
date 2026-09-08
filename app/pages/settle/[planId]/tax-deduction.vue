@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePropertyApi } from '~/api/property';
+import { useSettlementApi, type TaxDeduction } from '~/api/settlement';
 import { monthlyInterestOf } from '~/components/settle/rir';
 import {
   HOMETAX_URL,
@@ -25,20 +26,37 @@ const planId = Number(route.params.planId);
 
 const principal = ref<number | null>(null);
 const rate = ref<number | null>(null);
+const serverEstimate = ref<TaxDeduction | null>(null);
 
 const yearlyInterest = computed(() => {
   const monthly = monthlyInterestOf(principal.value, rate.value);
   return monthly === null ? null : monthly * 12;
 });
 
-const estimate = computed(() => estimateRefund(yearlyInterest.value));
+const estimate = computed(() => {
+  if (serverEstimate.value?.estimatedRefund !== null && serverEstimate.value) {
+    return {
+      refund: serverEstimate.value.estimatedRefund,
+      deductible: serverEstimate.value.deductionAmount ?? 0,
+    };
+  }
+  return estimateRefund(yearlyInterest.value);
+});
 
 onMounted(() => {
   usePropertyApi()
     .decision(planId)
-    .then((found) => {
+    .then(async (found) => {
       principal.value = found.consultation?.approvedLimit ?? null;
       rate.value = found.consultation?.quotedRate ?? null;
+      if (principal.value !== null && rate.value !== null) {
+        serverEstimate.value = await useSettlementApi().taxDeduction(planId, {
+          loanAmount: principal.value,
+          annualRatePercent: rate.value,
+          maturityLumpSum: true,
+          annualRepayment: null,
+        });
+      }
     })
     .catch(() => {});
 });

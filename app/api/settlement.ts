@@ -40,14 +40,159 @@ export interface CashFlowSummary {
   metrics: MonthlyMetrics;
 }
 
+export interface ReturnGuaranteeGuide {
+  needed: boolean;
+  summary: string;
+  timing: string | null;
+  channels: string[];
+  documents: string[];
+  reuseNote: string | null;
+}
+
+export interface PostAssetReview {
+  applicable: boolean;
+  summary: string;
+  easyToMiss: string[];
+  cautions: string[];
+}
+
+export interface RateCutRight {
+  applicable: boolean;
+  summary: string;
+  applyReasons: string[];
+  applyChannels: string[];
+  alternativeNote: string | null;
+}
+
+export interface TaxDeduction {
+  annualRepayment: number | null;
+  deductionAmount: number | null;
+  estimatedRefund: number | null;
+  simplifiedRate: boolean;
+}
+
+export type ExpenseCategory = 'INTEREST' | 'MGMT' | 'OTHER';
+
+export interface FixedExpense {
+  id: number;
+  name: string;
+  category: ExpenseCategory;
+  amount: number;
+  dueDay: number | null;
+  autopay: boolean;
+}
+
+export interface FixedExpenseList {
+  items: FixedExpense[];
+  monthlyTotal: number;
+  delinquencyAlertActive: boolean;
+}
+
+export interface SettlementDashboard {
+  daysSinceIndependence: number | null;
+  items: { code: string; label: string; status: 'DONE' | 'PENDING' | 'UNTRACKED' }[];
+  progressPercent: number;
+}
+
 export function useSettlementApi() {
   const { $api } = useNuxtApp();
 
   return {
     /** 정착 지표(월 이자·주거비·잔여금)를 서버 계산으로 읽는다. 대출 미등록이면 404. */
     async cashFlow(planId: number) {
-      const { data } = await $api.get<ApiResponse<CashFlowSummary>>(`${settlement(planId)}/cash-flow`);
+      const { data } = await $api.get<ApiResponse<CashFlowSummary>>(
+        `${settlement(planId)}/cash-flow`,
+      );
       return data.data;
+    },
+
+    async dashboard(planId: number) {
+      const { data } = await $api.get<ApiResponse<SettlementDashboard>>(
+        `${settlement(planId)}/dashboard`,
+      );
+      return data.data;
+    },
+
+    async monthlyMetrics(
+      planId: number,
+      request: {
+        loanAmount: number;
+        annualRatePercent: number;
+        managementFee: number;
+        monthlyIncome: number;
+        livingCost: number;
+      },
+    ) {
+      const { data } = await $api.post<ApiResponse<MonthlyMetrics>>(
+        `${settlement(planId)}/monthly-metrics`,
+        request,
+      );
+      return data.data;
+    },
+
+    async returnGuarantee(planId: number) {
+      const { data } = await $api.get<ApiResponse<ReturnGuaranteeGuide>>(
+        `${settlement(planId)}/return-guarantee`,
+      );
+      return data.data;
+    },
+
+    async postAssetReview(planId: number) {
+      const { data } = await $api.get<ApiResponse<PostAssetReview>>(
+        `${settlement(planId)}/post-asset-review`,
+      );
+      return data.data;
+    },
+
+    async rateCutRight(planId: number) {
+      const { data } = await $api.get<ApiResponse<RateCutRight>>(
+        `${settlement(planId)}/rate-cut-right`,
+      );
+      return data.data;
+    },
+
+    async taxDeduction(
+      planId: number,
+      request: {
+        loanAmount: number;
+        annualRatePercent: number;
+        maturityLumpSum: boolean;
+        annualRepayment: number | null;
+      },
+    ) {
+      const { data } = await $api.post<ApiResponse<TaxDeduction>>(
+        `${settlement(planId)}/tax-deduction`,
+        request,
+      );
+      return data.data;
+    },
+
+    async fixedExpenses(planId: number) {
+      const { data } = await $api.get<ApiResponse<FixedExpenseList>>(
+        `${BASE}/${planId}/fixed-expenses`,
+      );
+      return data.data;
+    },
+
+    async addFixedExpense(
+      planId: number,
+      request: {
+        name: string;
+        category: ExpenseCategory;
+        amount: number;
+        dueDay: number | null;
+        autopay: boolean;
+      },
+    ) {
+      const { data } = await $api.post<ApiResponse<FixedExpense>>(
+        `${BASE}/${planId}/fixed-expenses`,
+        request,
+      );
+      return data.data;
+    },
+
+    async deleteFixedExpense(planId: number, expenseId: number) {
+      await $api.delete(`${BASE}/${planId}/fixed-expenses/${expenseId}`);
     },
   };
 }

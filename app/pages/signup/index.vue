@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthApi } from '~/api/auth';
+import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
 /**

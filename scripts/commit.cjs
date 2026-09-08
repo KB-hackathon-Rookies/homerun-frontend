@@ -40,7 +40,7 @@ async function main() {
   }
   const rl = readline.createInterface({ input, output });
   try {
-    commitTypes.forEach((type, index) => console.log(`  ${index + 1}. ${type}`));
+    output.write(`${commitTypes.map((type, index) => `  ${index + 1}. ${type}`).join('\n')}\n`);
     const selected = Number.parseInt(await rl.question('번호: '), 10) - 1;
     if (!commitTypes[selected]) throw new Error('올바른 번호를 입력해주세요.');
     const subject = (await rl.question('커밋 제목: ')).trim();

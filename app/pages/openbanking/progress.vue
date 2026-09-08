@@ -34,7 +34,7 @@ const error = ref('');
  * 계획이 없으면 갈 곳도 없으니 이 화면에 오류만 남긴다.
  */
 async function giveUp(message: string) {
-  const planId = currentPlan.get();
+  const planId = await currentPlan.resolve();
   if (!planId) {
     error.value = message;
     return;

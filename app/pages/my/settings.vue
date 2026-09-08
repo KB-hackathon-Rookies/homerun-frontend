@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { usePlanApi } from '~/api/plan';
+import { useMemberApi } from '~/api/member';
 import { useAgreementApi, type AgreementItem } from '~/api/terms-status';
 import { usePush } from '~/composables/usePush';
+import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
@@ -24,6 +26,7 @@ const confirming = ref<'reset' | 'withdraw' | null>(null);
 const busy = ref(false);
 const error = ref('');
 const done = ref('');
+const profileName = ref(auth.user?.name ?? '');
 
 const push = usePush();
 
@@ -70,12 +73,49 @@ async function logout() {
   await navigateTo('/welcome', { replace: true });
 }
 
-onMounted(() => {
-  planId.value = currentPlan.get();
+async function withdraw() {
+  if (busy.value) return;
+  busy.value = true;
+  error.value = '';
+  try {
+    await useMemberApi().withdraw();
+    auth.clear();
+    currentPlan.clear();
+    await navigateTo('/welcome', { replace: true });
+  } catch (cause) {
+    error.value = messageFrom(cause, '회원 탈퇴를 처리하지 못했어요.');
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function saveProfile() {
+  const name = profileName.value.trim();
+  if (!name || busy.value) return;
+  busy.value = true;
+  error.value = '';
+  try {
+    const profile = await useMemberApi().updateName(name);
+    if (auth.user) auth.user.name = profile.name ?? name;
+    done.value = '이름을 변경했어요.';
+  } catch (cause) {
+    error.value = messageFrom(cause, '이름을 변경하지 못했어요.');
+  } finally {
+    busy.value = false;
+  }
+}
+
+onMounted(async () => {
+  planId.value = await currentPlan.resolve();
 
   useAgreementApi()
     .mine()
     .then((found) => (agreements.value = found.agreements))
+    .catch(() => {});
+
+  useMemberApi()
+    .profile()
+    .then((profile) => (profileName.value = profile.name ?? ''))
     .catch(() => {});
 });
 </script>
@@ -85,6 +125,13 @@ onMounted(() => {
     <StatusBar title="설정" @back="navigateTo('/my')" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <SectionCard title="프로필">
+        <AppInput v-model="profileName" label="이름" autocomplete="name" />
+        <AppButton :disabled="!profileName.trim() || busy" @click="saveProfile">
+          이름 저장
+        </AppButton>
+      </SectionCard>
+
       <SectionCard title="알림">
         <!--
           마감 알림만 실제로 켜고 끈다. 종류별 설정은 저장할 API 가 없어
@@ -146,10 +193,14 @@ onMounted(() => {
 
       <SectionCard v-if="confirming === 'withdraw'" title="회원 탈퇴" tone="bad">
         <p class="text-label2 text-ink-body">
-          계정을 지우면 계획·판정·상담 기록이 모두 사라지고 되돌릴 수 없어요. 고객센터를 통해
-          진행해주세요.
+          계정을 지우면 더 이상 로그인할 수 없고 되돌릴 수 없어요.
         </p>
-        <AppButton variant="white" @click="confirming = null">닫기</AppButton>
+        <div class="flex gap-2">
+          <AppButton variant="white" @click="confirming = null">그만두기</AppButton>
+          <AppButton :disabled="busy" @click="withdraw">
+            {{ busy ? '탈퇴 처리 중…' : '회원 탈퇴' }}
+          </AppButton>
+        </div>
       </SectionCard>
 
       <p v-if="done" class="text-label2 text-success">{{ done }}</p>

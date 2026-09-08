@@ -1,8 +1,11 @@
+import { educationCode, useEducationApi } from '~/api/education';
+import { COACH_MODULES } from '~/components/coach/modules';
+
 /**
  * 코치 교육 진행 상태.
  *
- * 어느 모듈을 끝냈는지 기록한다. **저장할 API 가 아직 없어서 브라우저에 둔다** —
- * 기기를 바꾸면 초기화된다. 서버가 생기면 이 파일만 갈아 끼운다.
+ * 서버의 교육 진행률을 진실의 원천으로 쓰고, 네트워크 장애 때만 브라우저
+ * 기록을 임시 표시한다.
  *
  * 진행 상태는 화면을 꾸미는 값이지 판정이 아니다. 못 읽어도 "아직 안 함" 으로
  * 두면 되므로, 읽기·쓰기를 전부 try/catch 로 감싸고 조용히 넘어간다.
@@ -21,16 +24,30 @@ function read(): Set<string> {
 
 export function useCoachProgress() {
   const done = ref<Set<string>>(new Set());
+  const ids = COACH_MODULES.map((module) => module.id);
 
-  onMounted(() => {
+  onMounted(async () => {
     done.value = read();
+    try {
+      const modules = await useEducationApi().list();
+      done.value = new Set(
+        modules
+          .filter((module) => module.status === 'DONE')
+          .map((module) => ids[Number(module.code.slice(1))])
+          .filter((id): id is string => !!id),
+      );
+    } catch {
+      // 오프라인이면 이 기기에 남아 있던 완료 표시를 유지한다.
+    }
   });
 
   function isDone(moduleId: string) {
     return done.value.has(moduleId);
   }
 
-  function markDone(moduleId: string) {
+  async function markDone(moduleId: string) {
+    const code = educationCode(moduleId, ids);
+    if (code) await useEducationApi().markRead(code);
     const next = new Set(done.value);
     next.add(moduleId);
     done.value = next;

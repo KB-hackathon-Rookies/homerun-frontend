@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
+
 /**
  * 오픈뱅킹 연동 완료.
  *

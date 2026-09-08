@@ -118,6 +118,19 @@ export function usePropertyApi() {
       return data.data;
     },
 
+    /** 최종 선택을 제출하고 서버 계획 단계를 3루로 넘긴다. */
+    async completeSecondBase(
+      planId: number,
+      expectedDecisionRevision: number,
+      ruleVersion: string,
+    ) {
+      const { data } = await $api.post<ApiResponse<unknown>>(
+        `${BASE}/${planId}/second-base/complete`,
+        { expectedDecisionRevision, ruleVersion },
+      );
+      return data.data;
+    },
+
     /** 확정한 매물·대출 조건. 4루는 이걸 기준으로 담보와 상품을 말한다. */
     async decision(planId: number) {
       const { data } = await $api.get<ApiResponse<PropertyDecision>>(

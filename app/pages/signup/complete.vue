@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
+
 /**
  * AU-07 회원가입 완료.
  *
@@ -8,9 +10,7 @@
 const auth = useAuthStore();
 
 const greeting = computed(() =>
-  auth.user?.name
-    ? `${auth.user.name}님, 홈런에 오신 걸 환영해요`
-    : '홈런에 오신 걸 환영해요',
+  auth.user?.name ? `${auth.user.name}님, 홈런에 오신 걸 환영해요` : '홈런에 오신 걸 환영해요',
 );
 </script>
 

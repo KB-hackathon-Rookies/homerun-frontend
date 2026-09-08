@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { usePlanApi } from '~/api/plan';
+
 /**
  * 지금 보고 있는 계획 번호.
  *
@@ -25,5 +28,18 @@ export const currentPlan = {
   clear() {
     if (!import.meta.client) return;
     window.localStorage.removeItem(KEY);
+  },
+  async resolve(): Promise<number | null> {
+    try {
+      const plan = await usePlanApi().getActive();
+      this.set(plan.id);
+      return plan.id;
+    } catch (cause) {
+      if (axios.isAxiosError(cause) && cause.response?.status === 404) {
+        this.clear();
+        return null;
+      }
+      return this.get();
+    }
   },
 };
