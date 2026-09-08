@@ -21,10 +21,23 @@ export function useRegistrySnapshot() {
   /** 위험 항목은 없음/있음/모름 셋 중 하나다. 모름은 null 이다. */
   const presence = (value: string | null) => (value === 'UNKNOWN' || value === null ? null : value === 'FOUND');
 
-  /** 다섯 항목을 모두 골라야 대조를 요청할 수 있다. 금액은 모르면 비워 둔다(null). */
+  /**
+   * 일곱 항목을 다 채워야 대조를 요청할 수 있다.
+   *
+   * 서버는 채권최고액·근저당 건수가 계약 때와 잔금일 **양쪽 모두 있어야** SAFE 를 낸다
+   * (`RegistryComparisonService` 의 unknown 판정). 비워서 `null` 로 보내면 대조가 계속
+   * NEED_INFO 에 머물러 3루 완료가 영영 막힌다. 없으면 0 을 받는다 — 안 본 것을 채우는
+   * 게 아니라, 확인해서 없더라는 사실을 적는 것이다.
+   */
   const answered = computed(
     () =>
-      !!owner.value && !!seizure.value && !!leasehold.value && !!auction.value && !!trust.value,
+      !!owner.value &&
+      !!seizure.value &&
+      !!leasehold.value &&
+      !!auction.value &&
+      !!trust.value &&
+      !!seniorDebt.value.trim() &&
+      !!mortgageCount.value.trim(),
   );
 
   const facts = computed<RegistryFacts>(() => ({
