@@ -53,6 +53,24 @@ const assets = ref('');
 const availableCash = ref('');
 /** 기존 전세자금대출 유무(YES/NO). 정책 판정에 쓰이므로 임의로 채우지 않고 직접 받는다. */
 const existingJeonseLoan = ref<string | null>(null);
+/**
+ * 세대원 기금대출과 배우자의 전세·주택담보대출까지 없음을 사용자가 확인했는가.
+ *
+ * 버팀목 중복대출 금지는 본인 대출 하나로 판정할 수 없어서, 이 확인이 없으면 판정이
+ * 추가확인으로 남는다. 사용자 진술이지 은행 확인이 아니라 진행을 막지는 않는다 —
+ * 체크를 안 해도 다음으로 넘어가고, 결과에서 추가확인으로 안내된다.
+ */
+const prohibitedLoanConfirmed = ref(false);
+
+// 기존 대출이 있다고 답을 바꾸면 앞서 한 확인은 더 이상 성립하지 않는다.
+watch(existingJeonseLoan, (value) => {
+  if (value !== 'NO') prohibitedLoanConfirmed.value = false;
+});
+
+/** 대출이 없다고 답한 경우에만 의미가 있다. 그 밖에는 확인하지 않은 것으로 보낸다. */
+const prohibitedLoanAnswer = computed(
+  () => existingJeonseLoan.value === 'NO' && prohibitedLoanConfirmed.value,
+);
 const deposit = ref('');
 const regionId = ref<string | null>(null);
 
@@ -156,6 +174,7 @@ async function next() {
         netAssets: toWon(assets.value),
         availableCash: toWon(availableCash.value),
         existingJeonseLoan: existingJeonseLoan.value === 'YES',
+        prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
         incomeSource: 'MANUAL',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
@@ -172,6 +191,7 @@ async function next() {
         netAssets: toWon(assets.value),
         availableCash: toWon(availableCash.value),
         existingJeonseLoan: existingJeonseLoan.value === 'YES',
+        prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
         incomeSource: 'OPEN_BANKING',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
@@ -291,6 +311,19 @@ function back() {
               { value: 'NO', label: '없어요' },
             ]"
           />
+
+          <div
+            v-if="existingJeonseLoan === 'NO'"
+            class="border-line rounded-field flex flex-col gap-1.5 border p-3.5"
+          >
+            <AppCheckbox v-model="prohibitedLoanConfirmed">
+              세대원의 기금대출과 배우자의 전세·주택담보대출도 없는 것을 확인했어요
+            </AppCheckbox>
+            <p class="text-caption2 text-ink-muted">
+              버팀목은 본인 대출만으로 판단할 수 없어요. 체크하지 않아도 다음으로 넘어갈 수
+              있고, 그때는 결과에서 은행 확인이 필요하다고 안내해드려요
+            </p>
+          </div>
         </div>
       </QuestionCard>
 
@@ -326,6 +359,19 @@ function back() {
               { value: 'NO', label: '없어요' },
             ]"
           />
+
+          <div
+            v-if="existingJeonseLoan === 'NO'"
+            class="border-line rounded-field flex flex-col gap-1.5 border p-3.5"
+          >
+            <AppCheckbox v-model="prohibitedLoanConfirmed">
+              세대원의 기금대출과 배우자의 전세·주택담보대출도 없는 것을 확인했어요
+            </AppCheckbox>
+            <p class="text-caption2 text-ink-muted">
+              버팀목은 본인 대출만으로 판단할 수 없어요. 체크하지 않아도 다음으로 넘어갈 수
+              있고, 그때는 결과에서 은행 확인이 필요하다고 안내해드려요
+            </p>
+          </div>
         </div>
       </QuestionCard>
 
