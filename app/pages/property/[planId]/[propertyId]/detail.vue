@@ -3,6 +3,7 @@ import type { LoanCard } from '~/api/policy';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useProperty } from '~/composables/useProperty';
 import { trafficTone } from '~/components/property/trafficLight';
+import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -24,6 +25,13 @@ const propertyId = Number(route.params.propertyId);
 const { pending, error, cards, results } = useJeonsePolicies(planId, propertyId);
 
 const { property, fullAddress, error: propertyError } = useProperty(planId, propertyId);
+
+/**
+ * 여기서 갈리는 판정은 위반건축물까지 답한 뒤에야 온전하다. 아직 STEP 2·3 에 머문
+ * 매물이 URL 로 들어오면 절반만 채워진 판정을 결론처럼 읽게 되고, 하단 `등기부등본
+ * 확인하러 가기` 도 저장에서 막힌다. 그래서 지금 단계 화면으로 돌려보낸다.
+ */
+usePropertyStepGuard(planId, propertyId, 'detail');
 
 /** 판정이 FAIL 인 상품 코드. `cards` 에는 통과한 것만 들어 있다. */
 const failedCodes = computed(

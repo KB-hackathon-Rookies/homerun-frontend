@@ -2,9 +2,8 @@
 import { usePropertyApi } from '~/api/property';
 import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { useProperty } from '~/composables/useProperty';
-import { messageFrom } from '~/utils/error';
 import { HOUSE_TYPE_LABEL } from '~/utils/labels';
-import { propertyStepRoute } from '~/utils/propertyStep';
+import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 
 /**
  * 2루 매물 진단 STEP 2 — 주택유형·전용면적.
@@ -28,10 +27,14 @@ const HOUSE_TYPE_OPTIONS: PillOption[] = Object.entries(HOUSE_TYPE_LABEL).map(([
 
 const houseType = ref<string | null>(null);
 const area = ref('');
-const revision = ref(0);
-const pending = ref(true);
 const saving = ref(false);
-const error = ref('');
+
+/** STEP 2 는 워크플로가 BUILDING 일 때만 저장된다. 어긋나 있으면 지금 단계 화면으로 보낸다. */
+const { revision, pending, error, conflict, sync, reportSaveError } = usePropertyStepGuard(
+  planId,
+  propertyId,
+  'building',
+);
 
 /** 자동조회로 일부라도 들어온 값이 있으면 채워 둔다. */
 watchEffect(() => {
@@ -46,27 +49,12 @@ watchEffect(() => {
 const areaValue = computed(() => Number(area.value.replace(/[^0-9.]/g, '')) || 0);
 const canSave = computed(() => !!houseType.value && areaValue.value > 0 && !saving.value);
 
-onMounted(async () => {
-  try {
-    const workflow = await usePropertyApi().resume(planId, propertyId);
-    // STEP 2 는 워크플로가 BUILDING 일 때만 저장된다. 이미 지나갔으면 지금 단계 화면으로 보낸다.
-    if (workflow.currentStep !== 'BUILDING') {
-      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), { replace: true });
-      return;
-    }
-    revision.value = workflow.revision;
-  } catch (cause) {
-    error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    pending.value = false;
-  }
-});
-
 async function next() {
   if (!canSave.value) return;
 
   saving.value = true;
   error.value = '';
+  conflict.value = false;
   try {
     await usePropertyApi().saveBuilding(
       planId,
@@ -77,7 +65,7 @@ async function next() {
     );
     await navigateTo(`/property/${planId}/${propertyId}/violation`);
   } catch (cause) {
-    error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+    reportSaveError(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     saving.value = false;
   }
@@ -114,7 +102,7 @@ async function next() {
         placeholder="㎡ (예: 44.2)"
       />
 
-      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+      <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">

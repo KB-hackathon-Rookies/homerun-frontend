@@ -99,12 +99,21 @@ onMounted(async () => {
         </button>
       </div>
 
+      <!--
+        카드는 STEP 1 허브로 보낸다. 매물 상세로 바로 보내면 아직 STEP 2 에 머문
+        매물까지 뒷 화면으로 들어가 입력을 다 하고 저장에서 409 로 막힌다.
+
+        목록 응답에는 단계가 실려 오지 않는다. 여기서 카드마다 `resume` 을 따로
+        물어 보낼 수도 있지만, 그러면 탭과 이동 사이에 왕복이 하나 끼고 그 요청이
+        실패하면 눌러도 아무 일이 없는 카드가 된다. 허브는 어차피 열리면서 단계를
+        묻고 하단 버튼을 그 단계에 맞춰 세운다 — 묻는 자리를 하나로 둔다.
+      -->
       <button
         v-for="(property, index) in properties"
         :key="property.propertyId"
         type="button"
         class="text-left"
-        @click="navigateTo(`/property/${planId}/${property.propertyId}/detail`)"
+        @click="navigateTo(`/property/${planId}/${property.propertyId}`)"
       >
         <PropertyCard
           :property="property"
