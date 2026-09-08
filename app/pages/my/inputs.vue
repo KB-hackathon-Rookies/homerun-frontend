@@ -2,7 +2,7 @@
 import { usePlanApi, type PlanInput } from '~/api/plan';
 import { useVerificationApi, type PendingCondition } from '~/api/verification';
 import { currentPlan } from '~/utils/currentPlan';
-import { messageFrom } from '~/utils/error';
+import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
 /**
@@ -60,18 +60,34 @@ async function save() {
   if (!planId.value || !input.value || saving.value) return;
 
   saving.value = true;
+  saved.value = false;
   error.value = '';
+  const nextIncome = toNumber(monthlyIncome.value);
+  const nextAssets = toNumber(netAssets.value);
   try {
-    await usePlanApi().saveStep(planId.value, 'FINANCIAL', input.value.revision, {
-      monthlyIncome: toNumber(monthlyIncome.value),
-      netAssets: toNumber(netAssets.value),
+    const result = await usePlanApi().saveStep(planId.value, 'FINANCIAL', input.value.revision, {
+      monthlyIncome: nextIncome,
+      netAssets: nextAssets,
       incomeSource: 'MANUAL',
       assetSource: 'MANUAL',
       unknownFields: ['AVAILABLE_CASH'],
     });
+    // 서버가 돌려준 새 revision 과 방금 보낸 값을 화면 상태에 반영한다. 이걸 빼먹으면
+    // 다음 저장이 옛 revision 으로 나가 충돌하고, `changed` 가 계속 참이라 버튼도 안 잠긴다.
+    input.value = {
+      ...input.value,
+      monthlyIncome: nextIncome,
+      netAssets: nextAssets,
+      incomeSource: 'MANUAL',
+      revision: result.revision,
+    };
     saved.value = true;
   } catch (cause) {
-    error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+    // 409 는 다른 기기가 먼저 고쳤다는 뜻이라, 덮어쓰지 말고 다시 불러오라고 안내한다.
+    error.value =
+      statusFrom(cause) === 409
+        ? '다른 곳에서 입력이 먼저 바뀌었어요. 화면을 새로고침해 최신 값을 불러온 뒤 다시 저장해주세요.'
+        : messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     saving.value = false;
   }
