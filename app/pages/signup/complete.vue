@@ -19,10 +19,11 @@ const greeting = computed(() =>
     <div class="h-statusbar shrink-0" />
 
     <div class="flex flex-1 flex-col items-center justify-center gap-4 px-6">
-      <!-- AI 코치 백호. 축하 화면이라 글자보다 먼저 눈에 들어와야 한다. -->
-      <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
-        <img src="/mascot.png" alt="" class="h-25 w-auto" />
-      </span>
+      <!--
+        완료 배지. 파란 원까지 그림에 들어 있어서 바깥에 원을 한 겹 더 두르지 않는다.
+        세로만 맞추고 가로는 비율을 따라가게 둔다 — 정사각으로 강제하면 2% 찌그러진다.
+      -->
+      <img src="/complete.png" alt="" class="h-hero w-auto" />
 
       <h1 class="text-title3 text-ink-hero">가입 완료!</h1>
 
