@@ -8,6 +8,9 @@
  * 1. 그냥 입력 (이름, 생년월일)
  * 2. 비밀번호 — 오른쪽에 보기 토글
  * 3. 인증 — 오른쪽에 "인증번호 받기" 버튼. 이때는 바깥 테두리가 r14 로 감싼다
+ *
+ * 값이 차면 지우기(X)가 붙는다. 모바일에서 긴 입력을 한 글자씩 지우는 건 고통이고,
+ * 특히 오타 난 이메일·휴대전화처럼 통째로 다시 쓰는 자리가 많다.
  */
 const {
   label,
@@ -30,6 +33,22 @@ const {
 const model = defineModel<string>({ default: '' });
 const slots = useSlots();
 
+const field = ref<HTMLInputElement | null>(null);
+
+/**
+ * 지우기를 보일 것인가.
+ *
+ * 값이 없으면 지울 것도 없다. 읽기 전용은 시트나 검색으로 값을 정하는 자리라
+ * 여기서 비우면 화면이 들고 있는 선택과 어긋난다 — 그쪽에서 다시 고르게 둔다.
+ */
+const clearable = computed(() => !!model.value && !readonly);
+
+function clear() {
+  model.value = '';
+  // 지운 뒤엔 바로 다시 칠 수 있어야 한다. 키보드가 닫혔다 열리면 흐름이 끊긴다.
+  field.value?.focus();
+}
+
 /** 비밀번호는 눈 아이콘으로 잠깐 볼 수 있어야 한다. */
 const revealed = ref(false);
 const inputType = computed(() => (type === 'password' && revealed.value ? 'text' : type));
@@ -51,6 +70,7 @@ const hasAction = computed(() => !!slots.action);
         :class="hasAction ? '' : 'border-line border'"
       >
         <input
+          ref="field"
           v-model="model"
           :type="inputType"
           :placeholder="placeholder"
@@ -59,6 +79,22 @@ const hasAction = computed(() => !!slots.action);
           class="text-input text-ink placeholder:text-ink-placeholder w-full bg-transparent outline-none"
           :class="readonly ? 'cursor-pointer' : ''"
         />
+
+        <button
+          v-if="clearable"
+          type="button"
+          class="text-ink-placeholder shrink-0"
+          aria-label="입력 내용 지우기"
+          @click.stop="clear"
+        >
+          <svg viewBox="0 0 20 20" class="size-5" aria-hidden="true">
+            <circle cx="10" cy="10" r="8" fill="currentColor" />
+            <path
+              d="m10 8.9 2.1-2.1.9.9-2.1 2.1 2.1 2.1-.9.9-2.1-2.1-2.1 2.1-.9-.9 2.1-2.1-2.1-2.1.9-.9L10 8.9Z"
+              fill="#fff"
+            />
+          </svg>
+        </button>
 
         <button
           v-if="type === 'password'"
