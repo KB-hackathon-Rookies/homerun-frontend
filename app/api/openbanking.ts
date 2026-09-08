@@ -3,9 +3,12 @@ import type { ApiResponse } from '~/types/api';
 /**
  * 오픈뱅킹 API.
  *
- * 연동은 금융결제원 인가 페이지를 거친다. 우리가 하는 일은 셋이다.
- * 인가 URL 을 받아 사용자를 보내고, 돌아왔는지 `connection` 으로 확인하고,
- * 확인되면 `financial-summary` 로 자산·소득을 가져온다.
+ * 연동은 금융결제원 인가 페이지를 거친다. 인가 URL 을 받아 사용자를 보내고,
+ * 돌아왔는지 `connection` 으로 확인하고, 확인되면 `financial-summary` 로
+ * 자산·소득을 가져온다.
+ *
+ * 요약은 숫자만 말한다 — 무엇이 연결됐는지는 `accounts` 가 말한다. 연동이
+ * 정말 됐다는 것을 사용자가 눈으로 확인하는 곳이라 요약과 따로 둔다.
  */
 const BASE = '/api/v1/open-banking';
 
@@ -23,6 +26,50 @@ export interface FinancialSummary {
   averageMonthlyNetIncome: number | null;
   salaryDetectedMonths: number;
   incomplete: boolean;
+}
+
+/**
+ * 연결된 계좌 한 건(`OpenBankingAccountResponse`).
+ *
+ * 어느 은행을 몇 개 고를지는 금융결제원 인가 페이지에서 사용자가 정한다.
+ * 여기 오는 것이 실제로 고른 계좌 전부다.
+ */
+export interface OpenBankingAccount {
+  /** 은행이 붙여 둔 계좌 별칭. `급여통장` 처럼 온다. 없으면 빈 문자열. */
+  alias: string;
+  bankCode: string;
+  bankName: string;
+  /**
+   * 저축은행일 때만 실제 은행 이름이 여기 들어온다. 그때 `bankName` 은
+   * `저축은행` 이므로, 화면에는 이 값이 있으면 이쪽을 먼저 써야 한다.
+   */
+  savingsBankName: string;
+  /** 잔액·거래 조회의 계좌 식별자. 계좌번호 대신 이것을 쓴다. */
+  fintechUseNumber: string;
+  accountNumberMasked: string;
+  accountHolderName: string;
+  /** 금융결제원 계좌종류 코드. 이름이 아니라 `1` 같은 숫자 문자열이다. */
+  accountType: string;
+}
+
+/**
+ * 계좌 한 건의 잔액(`OpenBankingBalanceResponse`).
+ *
+ * 목록에 실려 오지 않는다 — 계좌마다 은행에 따로 물어보는 값이라 호출도 따로다.
+ * 날짜 셋은 상품에 따라 없을 수 있다(`BigDecimal` 은 JSON 에서 숫자로 온다).
+ */
+export interface OpenBankingBalance {
+  bankName: string;
+  savingsBankName: string;
+  fintechUseNumber: string;
+  balanceAmount: number;
+  availableAmount: number;
+  accountType: string;
+  productName: string;
+  accountIssueDate: string | null;
+  maturityDate: string | null;
+  lastTransactionDate: string | null;
+  fetchedAt: string;
 }
 
 /**
@@ -54,15 +101,36 @@ export function useOpenBankingApi() {
   return {
     /** 인가 URL 을 받는다. 이 주소를 열어야 계좌 등록·동의가 시작된다. */
     async connect() {
-      const { data } = await $api.get<ApiResponse<{ authorizationUrl: string }>>(
-        `${BASE}/connect`,
-      );
+      const { data } = await $api.get<ApiResponse<{ authorizationUrl: string }>>(`${BASE}/connect`);
       return data.data.authorizationUrl;
     },
 
     /** 연결됐는지 확인한다. 인가 페이지에서 돌아왔는지 알 방법이 이것뿐이다. */
     async connection() {
       const { data } = await $api.get<ApiResponse<OpenBankingConnection>>(`${BASE}/connection`);
+      return data.data;
+    },
+
+    /**
+     * 연결된 계좌 목록.
+     *
+     * 연결이 없으면 목록도 없다 — 인가를 거치지 않은 사용자에게는 실패로 온다.
+     */
+    async accounts() {
+      const { data } = await $api.get<ApiResponse<OpenBankingAccount[]>>(`${BASE}/accounts`);
+      return data.data;
+    },
+
+    /**
+     * 계좌 한 건의 잔액.
+     *
+     * 계좌마다 은행을 한 번씩 더 다녀오는 호출이다. 목록을 그리는 일과 묶지 말 것 —
+     * 한 계좌가 실패해도 나머지 목록은 그대로 서 있어야 한다.
+     */
+    async balance(fintechUseNumber: string) {
+      const { data } = await $api.get<ApiResponse<OpenBankingBalance>>(
+        `${BASE}/accounts/${encodeURIComponent(fintechUseNumber)}/balance`,
+      );
       return data.data;
     },
 
