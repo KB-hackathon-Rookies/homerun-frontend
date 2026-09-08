@@ -4,11 +4,14 @@ import { COLLATERAL_LABEL, includesReturnGuarantee } from '~/components/contract
 import { messageFrom } from '~/utils/error';
 
 /**
- * 3루 11 · 잔금일 이후.
+ * 3루 12 · 잔금일 이후, 그리고 3루 13 · 안착.
  *
  * **담보가 무엇이냐로 남은 할 일이 갈린다.** 안심전세는 반환보증이 이미
  * 들어 있어 보증료 지원만 신청하면 되고, 나머지는 반환보증부터 따로
  * 가입해야 한다.
+ *
+ * 잔금일 화면에서 3루를 마치고 넘어왔을 때만 안착 축하를 올린다(`?done=1`).
+ * 나중에 이 화면을 다시 열었을 때마다 축하가 뜨면 안내가 아니라 방해가 된다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -27,6 +30,12 @@ const error = ref('');
 
 const mine = computed(() => entry.value?.collateralMethod ?? null);
 const included = computed(() => includesReturnGuarantee(mine.value));
+
+/** 3루를 방금 마쳤을 때만 축하한다. 잔금일 화면이 완료 뒤에 붙여 보낸다. */
+const celebrating = ref(route.query.done === '1');
+const dismissCelebration = () => {
+  celebrating.value = false;
+};
 
 onMounted(async () => {
   try {
@@ -91,10 +100,32 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">
-        보증료 지원 신청하러 (홈)
-      </AppButton>
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
+          이전
+        </AppButton>
+      </div>
+      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
     </footer>
+
+    <!-- 3루 안착 축하(시안 3루 13). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
+    <DimOverlay v-if="celebrating" @close="dismissCelebration">
+      <div class="flex flex-col items-center gap-2 text-center">
+        <p class="text-caption1 text-primary-strong">3루 안착!</p>
+        <h2 class="text-headline1 text-ink-hero">잔금까지 무사히 끝났어</h2>
+        <p class="text-caption2 text-ink-hero-body">
+          계약, 서류, 대출 실행, 잔금 송금까지 마쳤어. 이제 홈에서 정착을 챙기자
+        </p>
+
+        <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
+          ⚾ 다음은 홈 · 정착
+        </p>
+
+        <div class="mt-3 w-full">
+          <AppButton variant="strong" @click="dismissCelebration">남은 할 일 보기</AppButton>
+        </div>
+      </div>
+    </DimOverlay>
   </PhoneFrame>
 </template>

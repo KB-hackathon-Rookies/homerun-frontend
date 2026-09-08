@@ -4,7 +4,7 @@ import { COLLATERAL_LABEL, includesReturnGuarantee } from '~/components/contract
 import { messageFrom } from '~/utils/error';
 
 /**
- * 3루 11 · 잔금일 이후 상세.
+ * 3루 12 · 잔금일 이후 상세.
  *
  * 반환보증이 무엇이고 왜 지금 해야 하는지를 푼다. **전입신고 전에는
  * 신청 자체가 안 되고**, 보증료 지원은 예산 선착순이라 늦으면 못 받는다.

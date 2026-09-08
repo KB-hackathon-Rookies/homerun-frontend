@@ -134,7 +134,10 @@ async function proceed() {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/visit`)">이전</AppButton>
+      </div>
       <AppButton variant="strong" :disabled="!answered || saving" @click="proceed">
         {{ saving ? '기록 중…' : '확정일자 받기' }}
       </AppButton>

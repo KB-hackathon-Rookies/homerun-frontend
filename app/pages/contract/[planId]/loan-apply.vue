@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 3루 8 · 대출 신청 (D-10).
+ * 3루 9 · 대출 신청 (D-10).
  *
  * **신청이 두 개**라는 걸 먼저 말한다. 대출과 보증이 따로 심사되는데
  * 하나만 낸 줄 알고 기다리다 잔금일을 넘기는 일이 있다.
@@ -66,7 +66,12 @@ const checked = ref<Record<string, boolean>>({});
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+      <div class="w-28 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/resident-cert`)">
+          이전
+        </AppButton>
+      </div>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/review`)">
         신청 완료
       </AppButton>
