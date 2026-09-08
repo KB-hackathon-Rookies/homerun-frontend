@@ -25,6 +25,29 @@ export interface FinancialSummary {
   incomplete: boolean;
 }
 
+/**
+ * 서버가 오픈뱅킹 소득을 계획 입력에 동기화한 결과. 화면에서 쓰는 값만 추렸다.
+ *
+ * 서버는 최근 3개월 급여가 모두 확인될 때만 월 실수령 추정값을 미확인 상태로
+ * 저장한다(`APPLIED`). 계좌 잔액은 순자산·가용현금으로 자동 저장하지 않으므로
+ * 여기서는 소득만 다룬다.
+ */
+export type OpenBankingIncomeSyncStatus =
+  | 'APPLIED'
+  | 'UNCHANGED'
+  | 'NOT_APPLICABLE'
+  | 'MANUAL_VALUE_PRESERVED'
+  | 'CONFIRMED_VALUE_PRESERVED';
+
+export interface PlanFinancialSync {
+  /** 서버가 오픈뱅킹으로 확정해 저장한 월 소득. 확정하지 못하면 `null`. */
+  suggestedMonthlyIncome: number | null;
+  monthlyIncomeSyncStatus: OpenBankingIncomeSyncStatus;
+}
+
+/** 계획 입력 엔드포인트. 오픈뱅킹 동기화·소득 확인은 여기에 붙는다. */
+const planInput = (planId: number) => `/api/v1/plans/${planId}/input`;
+
 export function useOpenBankingApi() {
   const { $api } = useNuxtApp();
 
@@ -47,6 +70,31 @@ export function useOpenBankingApi() {
     async financialSummary() {
       const { data } = await $api.get<ApiResponse<FinancialSummary>>(`${BASE}/financial-summary`);
       return data.data;
+    },
+
+    /**
+     * 오픈뱅킹 소득을 계획 입력에 서버에서 동기화한다.
+     *
+     * 요약 GET 은 입력을 저장하지 않는다. 이 호출이 있어야 서버가 소득 출처를
+     * `OPEN_BANKING` 으로 기록하고, 그다음에야 STEP 저장에서 같은 출처가 받아들여진다.
+     */
+    async syncPlanIncome(planId: number) {
+      const { data } = await $api.post<ApiResponse<PlanFinancialSync>>(
+        `${planInput(planId)}/open-banking-sync`,
+      );
+      return data.data;
+    },
+
+    /**
+     * 서버에 동기화된 오픈뱅킹 소득을 그대로 확인한다.
+     *
+     * 금액은 서버가 들고 있는 값을 쓰므로 보내지 않는다. 확인 전에는 정책 자격
+     * 판정에 쓰지 않는다.
+     */
+    async confirmPlanIncome(planId: number) {
+      await $api.put<ApiResponse<unknown>>(`${planInput(planId)}/financial-income`, {
+        action: 'CONFIRM_OPEN_BANKING',
+      });
     },
   };
 }
