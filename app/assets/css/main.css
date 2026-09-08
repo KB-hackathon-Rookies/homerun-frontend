@@ -130,6 +130,9 @@
   --color-surface-note: #fff7e6; /* 🍯 꿀팁 카드 */
   --color-ink-note: #8a6d1f; /* 꿀팁 카드 글자 */
 
+  /* 독립 준비 문진(시안 벤치 1~4) */
+  --color-line-step: #c9ced6; /* 지나온 단계 원 테두리 */
+
   /* ---------------------------------------------------------------
    * 색 · 파란 면 위
    *
@@ -277,6 +280,26 @@
   --text-option--line-height: 1.188;
   --text-option--font-weight: 700;
 
+  --text-overline: 0.75rem; /* 12 · 문진 화면 오버라인("독립 준비") */
+  --text-overline--line-height: 2;
+  --text-overline--font-weight: 500;
+
+  --text-question: 1.125rem; /* 18 · 문진 질문, 안내 카드 제목 */
+  --text-question--line-height: 1.445;
+  --text-question--font-weight: 700;
+
+  --text-substep: 0.625rem; /* 10 · 문진 진행 표시 단계 이름과 번호 */
+  --text-substep--line-height: 1.3;
+  --text-substep--font-weight: 700;
+
+  --text-choice: 1.0625rem; /* 17 · 큰 알약 선택지 */
+  --text-choice--line-height: 1.2;
+  --text-choice--font-weight: 700;
+
+  --text-note-body: 0.8125rem; /* 13 · 안내 카드 본문 */
+  --text-note-body--line-height: 1.462;
+  --text-note-body--font-weight: 400;
+
   /* ---------------------------------------------------------------
    * 반경
    * --------------------------------------------------------------- */
@@ -288,6 +311,7 @@
   --radius-cta: 10px;
   --radius-card: 16px;
   --radius-pill: 999px;
+  --radius-modal: 20px; /* 가운데 뜨는 안내 카드 */
 
   /* ---------------------------------------------------------------
    * 치수
@@ -339,6 +363,8 @@
   --spacing-step-circle: 28px; /* 홈 진행 카드 · 단계 원 */
   --spacing-badge: 14px; /* 알림 개수 원 */
   --spacing-row: 52px; /* 마이 한 줄 */
+  --spacing-modal: 310px; /* 가운데 뜨는 안내 카드 폭 */
+  --spacing-modal-art: 130px; /* 그 카드 안 일러스트 높이 */
   --spacing-edu-card: 165px; /* 코치 교육 카드 한 장 */
 
   /* 코치 FAB. 흰 버튼이 화면 위에 떠 보이게 하는 그림자 */
@@ -351,6 +377,17 @@
  * 모바일 전용 디자인이라 본문은 항상 Pretendard 다. 화면마다 font-family 를
  * 다시 지정하지 않는다.
  */
+/*
+ * 1.5px 테두리.
+ *
+ * 문진의 단계 원(22px)과 전세·월세 알약이 이 굵기다. Tailwind 는 1px 과 2px 만
+ * 주는데, 1px 이면 22px 원에서 눈에 띄게 가늘고 2px 이면 알약이 눌린 것처럼 보인다.
+ * 8px 마름모(`StepIndicator`)에서는 이 차이가 안 보여 1px 로 뒀지만 여기는 다르다.
+ */
+@utility border-hairline {
+  border-width: 1.5px;
+}
+
 @layer base {
   body {
     font-family: var(--font-sans);
