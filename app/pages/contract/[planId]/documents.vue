@@ -1,4 +1,15 @@
 <script setup lang="ts">
+import {
+  needsCompanyDocs,
+  needsFixedDateStatus,
+  needsIncomeCert,
+  needsResidentCert,
+  needsStandardPrice,
+  needsWithholdingReceipt,
+  type DocSituation,
+} from '~/components/contract/labels';
+import { loadDocSituation } from '~/components/contract/situation';
+
 /**
  * 상세 · 서류별 발급 방법.
  *
@@ -8,6 +19,11 @@
  * 줄을 누르면 시트가 올라온다. 발급 경로보다 **설정 옵션이 중요하다** —
  * 등본을 주소변동 미포함으로 떼면 반려되고, 등기부를 열람본으로 떼면 대출
  * 신청에 못 쓴다. 그 옵션이 화면에 없으면 한 번 더 떼러 가야 한다.
+ *
+ * **19종이 다 내 것은 아니다.** 오피스텔이 아니면 기준시가를, 다가구가 아니면
+ * 확정일자 부여현황을 뗄 일이 없다. 그래서 내 계약·진단 값으로 갈라서 해당하는
+ * 것만 위에 두고, 나머지는 아래 접힌 자리에 남긴다 — **지우지는 않는다.** 앱이
+ * 상황을 잘못 짚었을 때 정작 필요한 서류를 못 찾는 쪽이 더 나쁘다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -32,6 +48,10 @@ interface Doc {
   tip?: string;
   /** 경고는 팁과 색이 다르다. 온라인 발급이 아예 안 되는 자리다. */
   tipTone?: 'info' | 'warn';
+  /** 이 서류가 나에게 해당하는가. 없으면 누구에게나 해당한다. */
+  when?: (situation: DocSituation) => boolean;
+  /** 해당하지 않을 때 적어 주는 한 줄. 왜 빠졌는지 모르면 사용자가 불안해한다. */
+  whyNot?: string;
 }
 
 interface DocGroup {
@@ -150,6 +170,8 @@ const GROUPS: DocGroup[] = [
       {
         code: 'withholding',
         name: '근로소득 원천징수영수증',
+        when: (s) => needsWithholdingReceipt(s.employmentType),
+        whyNot: '근로소득이 있을 때 나오는 서류예요',
         ways: [
           {
             label: '온라인',
@@ -163,6 +185,8 @@ const GROUPS: DocGroup[] = [
       {
         code: 'income-cert',
         name: '소득금액증명원',
+        when: (s) => needsIncomeCert(s.employmentType),
+        whyNot: '프리랜서·사업소득자 자리예요. 은행이 따로 요청하면 그때 떼면 돼요',
         ways: [
           {
             label: '온라인',
@@ -176,6 +200,8 @@ const GROUPS: DocGroup[] = [
       {
         code: 'standard-price',
         name: '기준시가 (오피스텔일 때)',
+        when: (s) => needsStandardPrice(s.houseType),
+        whyNot: '오피스텔일 때만 필요해요',
         ways: [
           {
             label: '온라인',
@@ -244,6 +270,8 @@ const GROUPS: DocGroup[] = [
       {
         code: 'company-docs',
         name: '재직증명서 · 사업자등록증 사본 · 주업종코드 확인서',
+        when: (s) => needsCompanyDocs(s.product, s.companySize),
+        whyNot: '청년 버팀목 + 중소·중견기업 재직일 때 받는 우대금리용이에요',
         ways: [
           { label: '회사', text: '인사팀 또는 그룹웨어 셀프 발급 · 무료' },
           {
@@ -274,6 +302,8 @@ const GROUPS: DocGroup[] = [
         code: 'resident-cert',
         name: '전입세대확인서',
         badge: '온라인 불가',
+        when: (s) => needsResidentCert(s.houseType, s.collateral),
+        whyNot: '다가구·단독주택을 안심전세(HUG) 담보로 받을 때만 필요해요',
         ways: [
           {
             label: '사전 신청',
@@ -291,6 +321,8 @@ const GROUPS: DocGroup[] = [
       {
         code: 'fixed-date-status',
         name: '확정일자 부여현황 (다가구일 때)',
+        when: (s) => needsFixedDateStatus(s.houseType),
+        whyNot: '다가구일 때만 필요해요',
         ways: [{ label: '방문', text: '주민센터 · 임대차계약서 지참 · 방문만 가능' }],
         tip: '다가구는 건물 전체가 하나의 등기라 다른 호실 보증금이 등기부에 안 나와요. 선순위 보증금 총액을 알아야 내 순위를 계산할 수 있어요. 전입세대확인서와 같이 받으면 한 번에 끝나요',
       },
@@ -383,6 +415,35 @@ const HOW: Way[] = [
 
 const openDoc = ref<Doc | null>(null);
 
+const situation = ref<DocSituation | null>(null);
+const pending = ref(true);
+/** 계약·진단을 못 불러왔는가. 걸러내지 않았다는 사실을 화면이 밝혀야 한다. */
+const unfiltered = ref(false);
+const skippedOpen = ref(false);
+
+/** 상황을 모르면 전부 해당한다. 잘못 거른 목록보다 긴 목록이 낫다. */
+const applies = (doc: Doc) => !doc.when || !situation.value || doc.when(situation.value);
+
+/** 해당하는 것만 남긴다. 그룹이 통째로 비면 그 사이트는 갈 일이 없다. */
+const myGroups = computed(() =>
+  GROUPS.map((group) => ({ ...group, docs: group.docs.filter(applies) })).filter(
+    (group) => group.docs.length > 0,
+  ),
+);
+
+/** 해당하지 않는 것. 지우지 않고 접어 두기만 한다. 어느 묶음에 있던 건지 같이 적는다. */
+const skipped = computed(() =>
+  GROUPS.flatMap((group) =>
+    group.docs.filter((doc) => !applies(doc)).map((doc) => ({ group: group.title, doc })),
+  ),
+);
+
+onMounted(async () => {
+  situation.value = await loadDocSituation(planId);
+  unfiltered.value = situation.value === null;
+  pending.value = false;
+});
+
 /**
  * 여기는 서류 화면과 대출 신청 화면 양쪽에서 들어온다. 어느 쪽으로 들어왔든
  * 온 자리로 돌려보낸다 — 주소로 바로 들어왔을 때만 서류 화면으로 보낸다.
@@ -411,27 +472,78 @@ const back = () => {
       </p>
     </AppCard>
 
-    <template v-for="group in GROUPS" :key="group.title">
-      <h2 class="text-option text-ink-hero px-1 pt-2">{{ group.title }}</h2>
+    <p v-if="pending" class="text-label2 text-ink-muted px-1">내 상황에 맞춰 고르는 중이에요…</p>
 
-      <AppCard class="flex flex-col p-2.5">
-        <button
-          v-for="doc in group.docs"
-          :key="doc.code"
-          type="button"
-          class="border-line-soft flex items-center gap-2 border-b p-2.5 text-left last:border-b-0"
-          @click="openDoc = doc"
-        >
-          <span class="text-label2 text-ink-hero flex-1 font-medium">{{ doc.name }}</span>
-          <span
-            v-if="doc.badge"
-            class="bg-surface-info rounded-chip text-micro text-primary-strong shrink-0 px-1.5 py-0.5 font-semibold"
+    <template v-else>
+      <p v-if="unfiltered" class="bg-badge-warning rounded-field text-caption2 text-ink-hero p-3.5">
+        계약 정보를 불러오지 못해서 전체 목록을 그대로 보여드려요. 해당하지 않는 서류가 섞여 있을 수
+        있어요.
+      </p>
+
+      <template v-for="group in myGroups" :key="group.title">
+        <h2 class="text-option text-ink-hero px-1 pt-2">{{ group.title }}</h2>
+
+        <AppCard class="flex flex-col p-2.5">
+          <button
+            v-for="doc in group.docs"
+            :key="doc.code"
+            type="button"
+            class="border-line-soft flex items-center gap-2 border-b p-2.5 text-left last:border-b-0"
+            @click="openDoc = doc"
           >
-            {{ doc.badge }}
+            <span class="text-label2 text-ink-hero flex-1 font-medium">{{ doc.name }}</span>
+            <span
+              v-if="doc.badge"
+              class="bg-surface-info rounded-chip text-micro text-primary-strong shrink-0 px-1.5 py-0.5 font-semibold"
+            >
+              {{ doc.badge }}
+            </span>
+            <AppIcon name="chevron-right" class="text-ink-muted size-4 shrink-0" />
+          </button>
+        </AppCard>
+      </template>
+
+      <!-- 지우지 않고 접어 둔다. 앱이 상황을 잘못 짚었어도 여기서 찾을 수 있어야 한다. -->
+      <template v-if="skipped.length">
+        <button
+          type="button"
+          class="bg-surface border-line rounded-field mt-2 flex items-center gap-2 border px-3.5 py-3 text-left"
+          :aria-expanded="skippedOpen"
+          @click="skippedOpen = !skippedOpen"
+        >
+          <span class="text-label2 text-ink-hero-body flex-1">
+            내 상황에는 해당하지 않는 서류 {{ skipped.length }}개
           </span>
-          <AppIcon name="chevron-right" class="text-ink-muted size-4 shrink-0" />
+          <AppIcon
+            name="chevron-right"
+            class="text-ink-muted size-4 shrink-0 transition-transform"
+            :class="skippedOpen && 'rotate-90'"
+          />
         </button>
-      </AppCard>
+
+        <AppCard v-if="skippedOpen" class="flex flex-col p-2.5">
+          <button
+            v-for="item in skipped"
+            :key="item.doc.code"
+            type="button"
+            class="border-line-soft flex items-start gap-2 border-b p-2.5 text-left last:border-b-0"
+            @click="openDoc = item.doc"
+          >
+            <span class="flex flex-1 flex-col gap-0.5">
+              <span class="text-label2 text-ink-hero-body">{{ item.doc.name }}</span>
+              <span class="text-micro text-ink-muted">
+                {{ item.group }} · {{ item.doc.whyNot }}
+              </span>
+            </span>
+            <AppIcon name="chevron-right" class="text-ink-muted mt-0.5 size-4 shrink-0" />
+          </button>
+        </AppCard>
+
+        <p class="text-micro text-ink-muted px-1">
+          계약·진단에 적어 둔 값으로 갈랐어요. 필요한 서류가 여기 들어가 있으면 그대로 열어서 발급
+          방법을 볼 수 있어요.
+        </p>
+      </template>
     </template>
 
     <DimOverlay v-if="openDoc" @close="openDoc = null">
@@ -453,6 +565,13 @@ const back = () => {
             닫기
           </button>
         </div>
+
+        <p
+          v-if="!applies(openDoc)"
+          class="bg-surface-brand rounded-field text-caption2 text-ink-hero-body p-3.5"
+        >
+          내 상황에는 해당하지 않는 서류예요 — {{ openDoc.whyNot }}
+        </p>
 
         <AppCard class="flex flex-col gap-2">
           <div
