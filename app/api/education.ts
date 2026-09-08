@@ -8,6 +8,8 @@ export interface EducationModuleSummary {
   estimatedMinutes: number | null;
   status: string;
   quizScore: number | null;
+  /** 백엔드에 본문이 있는가. 목록의 '준비 중' 여부를 이 값으로 정한다. */
+  hasContent: boolean;
 }
 
 export interface EducationQuizQuestion {

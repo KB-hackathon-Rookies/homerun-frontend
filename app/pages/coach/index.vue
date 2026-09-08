@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { COACH_MODULES, MODULE_BASES } from '~/components/coach/modules';
+import { COACH_MODULES, MODULE_BASES, type CoachModule } from '~/components/coach/modules';
+import { educationCode, useEducationApi } from '~/api/education';
 import { useCoachProgress } from '~/composables/useCoachProgress';
 
 /**
@@ -9,11 +10,35 @@ import { useCoachProgress } from '~/composables/useCoachProgress';
  * 센다 — 시안이 3루 첫 항목을 7번, 홈 첫 항목을 10번으로 적어 두었다. 사용자에게
  * 열세 개짜리 한 묶음이지 그룹마다 처음부터인 게 아니다.
  *
- * 지금 열 수 있는 건 본문이 있는 것뿐이고, 나머지는 목록에 두되 "준비 중" 으로 둔다.
+ * '준비 중' 은 로컬 번들에 본문이 없고 **백엔드에도 본문이 없을 때만** 붙인다.
+ * 백엔드(GET /education/modules)가 모듈별 hasContent 를 주므로, 번들에 아직 안 담긴
+ * 모듈이라도 서버에 콘텐츠가 있으면 열 수 있다(상세는 서버 본문을 그대로 렌더한다).
  */
 definePageMeta({ middleware: 'auth' });
 
 const { isDone } = useCoachProgress();
+
+/** 슬러그를 백엔드 code(M0…)로 매핑하려면 전체 순서가 필요하다. */
+const orderedIds = COACH_MODULES.map((module) => module.id);
+
+/** 백엔드에 본문이 있는 code 집합. 목록을 못 불러오면 비어 있어 로컬 본문만으로 판단한다. */
+const serverContentCodes = ref<Set<string>>(new Set());
+
+onMounted(async () => {
+  try {
+    const modules = await useEducationApi().list();
+    serverContentCodes.value = new Set(modules.filter((m) => m.hasContent).map((m) => m.code));
+  } catch {
+    // 목록 조회가 안 되면 로컬 본문만으로 '준비 중'을 정한다. 화면은 그대로 뜬다.
+  }
+});
+
+/** 열 수 있는 모듈인가 — 번들에 본문이 있거나 백엔드에 콘텐츠가 있으면. */
+function hasContent(module: CoachModule) {
+  if (module.body) return true;
+  const code = educationCode(module.id, orderedIds);
+  return code !== null && serverContentCodes.value.has(code);
+}
 
 /** 전체 통번호. 그룹으로 나누기 전에 순서를 먼저 매긴다. */
 const numbered = computed(() =>
@@ -86,7 +111,7 @@ const percent = computed(() => Math.round((doneCount.value / COACH_MODULES.lengt
               </span>
               <span class="text-micro text-ink-label font-medium">
                 {{ row.module.minutes }}분<template v-if="isDone(row.module.id)"> · 완료</template>
-                <template v-else-if="!row.module.body"> · 준비 중</template>
+                <template v-else-if="!hasContent(row.module)"> · 준비 중</template>
               </span>
             </span>
 
