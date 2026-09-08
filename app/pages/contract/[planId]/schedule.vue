@@ -96,10 +96,8 @@ async function start() {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="일정 만들기" base="3루" @back="navigateTo(`/contract/${planId}/fixed-date`)" />
-
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
+  <StageShell title="일정 만들기" base="3루" @back="navigateTo(`/contract/${planId}/fixed-date`)">
+    <div class="px-gutter-tight flex flex-col gap-3.5 py-4">
       <CoachTip>잔금일만 알려주면 내가 날짜를 다 계산해서 알려줄게</CoachTip>
 
       <AppCard class="flex flex-col gap-2">
@@ -168,29 +166,31 @@ async function start() {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/fixed-date`)">
-          이전
+    <template #footer>
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/fixed-date`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton
+          variant="strong"
+          :disabled="!balanceDate || pending || saving"
+          @click="fresh ? start() : save()"
+        >
+          {{
+            saving
+              ? '저장 중…'
+              : fresh
+                ? pushNotice
+                  ? '알림 없이 D-30 시작'
+                  : '알림 켜고 D-30 시작'
+                : schedule?.milestones.length
+                  ? '고친 날짜로 다시 계산하기'
+                  : '일정 계산하기'
+          }}
         </AppButton>
-      </div>
-      <AppButton
-        variant="strong"
-        :disabled="!balanceDate || pending || saving"
-        @click="fresh ? start() : save()"
-      >
-        {{
-          saving
-            ? '저장 중…'
-            : fresh
-              ? pushNotice
-                ? '알림 없이 D-30 시작'
-                : '알림 켜고 D-30 시작'
-              : schedule?.milestones.length
-                ? '고친 날짜로 다시 계산하기'
-                : '일정 계산하기'
-        }}
-      </AppButton>
-    </footer>
-  </PhoneFrame>
+      </footer>
+    </template>
+  </StageShell>
 </template>

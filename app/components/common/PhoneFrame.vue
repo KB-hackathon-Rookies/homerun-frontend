@@ -27,11 +27,18 @@ const {
   // 여기서 임의의 루로 채우지 않고 undefined 그대로 둔다.
   coachStage = undefined,
   coachSheets = [],
+  fill = false,
 } = defineProps<{
   /** 경로로 알 수 없는 화면이 직접 넘기는 단계. */
   coachStage?: PlanStage;
   /** 화면이 준비해 둔 코치 TIME 문구. 있으면 FAB 이 이것부터 연다. */
   coachSheets?: CoachSheet[];
+  /**
+   * 높이를 뷰포트에 딱 고정한다(`h-dvh`). 헤더·푸터를 고정하고 가운데만 스크롤하는
+   * 화면(StageShell)이 켠다. 기본값(false)은 기존처럼 `min-h-dvh` 라 내용만큼 늘어난다 —
+   * 아직 내부 스크롤 영역이 없는 화면이 잘리지 않도록.
+   */
+  fill?: boolean;
 }>();
 
 /** 화면 안의 다른 버튼(코치 팁 등)도 같은 시트를 열 수 있게 밖으로 뺀다. */
@@ -43,7 +50,8 @@ const stage = computed(() => coachStage ?? coachStageFor(route.path));
 
 <template>
   <div
-    class="bg-surface max-w-screen rounded-screen mx-auto flex min-h-dvh w-full flex-col overflow-hidden"
+    class="bg-surface max-w-screen rounded-screen mx-auto flex w-full flex-col overflow-hidden"
+    :class="fill ? 'h-dvh' : 'min-h-dvh'"
   >
     <slot />
 
