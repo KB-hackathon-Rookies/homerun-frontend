@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
+import { usePropertyApi, type PropertyPolicyVerdict, type PropertyStep } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 
@@ -20,6 +20,16 @@ const verdicts = ref<PropertyPolicyVerdict[]>([]);
 const pending = ref(true);
 const error = ref('');
 
+/**
+ * 자동조회가 주택유형·전용면적을 못 채우면 워크플로가 STEP 2(BUILDING)에 머문다.
+ * 그때는 STEP 3(위반건축물)으로 바로 못 가고 먼저 직접 입력을 받아야 한다.
+ */
+const step = ref<PropertyStep>('VIOLATION');
+const nextStep = computed(() => (step.value === 'BUILDING' ? 'building' : 'violation'));
+const nextLabel = computed(() =>
+  step.value === 'BUILDING' ? 'STEP 2 주택정보 입력하기' : 'STEP 3 위반건축물 확인하기',
+);
+
 /** "진행중 3개 · 불가 1개". 같은 판정끼리 세어 한 줄로 요약한다. */
 const summary = computed(() => {
   const counts = { NEED_INFO: 0, FAIL: 0, PASS: 0 };
@@ -37,9 +47,14 @@ const summary = computed(() => {
 });
 
 onMounted(async () => {
+  const api = usePropertyApi();
   try {
-    const result = await usePropertyApi().policyVerdicts(planId, propertyId);
+    const [result, workflow] = await Promise.all([
+      api.policyVerdicts(planId, propertyId),
+      api.resume(planId, propertyId),
+    ]);
     verdicts.value = result.results;
+    step.value = workflow.currentStep;
   } catch (cause) {
     error.value = messageFrom(cause, '진단 결과를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -88,9 +103,9 @@ onMounted(async () => {
       <AppButton
         variant="strong"
         :disabled="pending || !!error"
-        @click="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+        @click="navigateTo(`/property/${planId}/${propertyId}/${nextStep}`)"
       >
-        STEP 3 위반건축물 확인하기
+        {{ nextLabel }}
       </AppButton>
     </footer>
   </PhoneFrame>
