@@ -77,10 +77,17 @@ const regionId = ref<string | null>(null);
 /** 서버가 오픈뱅킹으로 확정해 저장한 월 소득(원). STEP 저장에 그대로 실어 보낸다. */
 const openBankingIncome = ref<number | null>(null);
 
-const onlyDigits = (value: string) => Number(value.replace(/\D/g, '')) || 0;
-
-/** 화면은 만 원 단위로 받고 백엔드는 원 단위로 받는다. */
-const toWon = (value: string) => onlyDigits(value) * 10_000;
+/**
+ * 화면은 만 원 단위로 받고 백엔드는 원 단위로 받는다. **검사한 뒤에** 바꾼다.
+ *
+ * 전에는 숫자가 아닌 글자를 지워서 값을 만들었다. `abc` 가 0원(= 무소득·무자산)이 되고
+ * `-100` 이 100만 원으로 뒤집혔다. 진단은 이 값으로 부족자금을 계산하므로 조용히 통과하면
+ * 결과가 통째로 어긋난다.
+ */
+const parsedIncome = computed(() => parseManwon(income.value));
+const parsedAssets = computed(() => parseManwon(assets.value));
+const parsedCash = computed(() => parseManwon(availableCash.value));
+const parsedDeposit = computed(() => parseManwon(deposit.value));
 
 onMounted(async () => {
   // 문진에서 이어 오므로 서버가 들고 있는 판이 이미 여러 번 올라가 있다.
@@ -105,11 +112,21 @@ onMounted(async () => {
 
 const canProceed = computed(() => {
   if (step.value === 'CONFIRM') return !!useOpenBanking.value;
+  // 값이 채워졌는지가 아니라 형식을 통과했는지를 본다. `abc` 는 채워진 것이 아니다.
   if (step.value === 'MANUAL')
-    return !!income.value && !!assets.value && !!availableCash.value && !!existingJeonseLoan.value;
+    return (
+      parsedIncome.value.value !== null &&
+      parsedAssets.value.value !== null &&
+      parsedCash.value.value !== null &&
+      !!existingJeonseLoan.value
+    );
   if (step.value === 'ASSETS')
-    return !!assets.value && !!availableCash.value && !!existingJeonseLoan.value;
-  if (step.value === 'DEPOSIT') return !!deposit.value;
+    return (
+      parsedAssets.value.value !== null &&
+      parsedCash.value.value !== null &&
+      !!existingJeonseLoan.value
+    );
+  if (step.value === 'DEPOSIT') return parsedDeposit.value.value !== null;
   return !!regionId.value;
 });
 
@@ -117,7 +134,7 @@ const isLast = computed(() => step.value === 'REGION');
 
 /** 3억을 넘으면 기금대출이 막힌다. 미리 알려준다. */
 const depositNotice = computed(() =>
-  toWon(deposit.value) > 300_000_000
+  (parsedDeposit.value.value ?? 0) > 300_000_000
     ? '3억 원을 초과하면 정부 지원 전세자금대출(기금대출)은 한정적일 수 있어요. 대신 은행 전세자금대출은 보증금 한도가 없어서 계속 진행할 수 있어요'
     : null,
 );
@@ -168,9 +185,9 @@ async function next() {
 
     if (step.value === 'MANUAL') {
       await save('FINANCIAL', {
-        monthlyIncome: toWon(income.value),
-        netAssets: toWon(assets.value),
-        availableCash: toWon(availableCash.value),
+        monthlyIncome: parsedIncome.value.value ?? 0,
+        netAssets: parsedAssets.value.value ?? 0,
+        availableCash: parsedCash.value.value ?? 0,
         existingJeonseLoan: existingJeonseLoan.value === 'YES',
         prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
         incomeSource: 'MANUAL',
@@ -186,8 +203,8 @@ async function next() {
       // 넣은 값을 쓴다. 계좌 잔액을 순자산으로 자동 저장하지 않는다.
       await save('FINANCIAL', {
         monthlyIncome: openBankingIncome.value ?? undefined,
-        netAssets: toWon(assets.value),
-        availableCash: toWon(availableCash.value),
+        netAssets: parsedAssets.value.value ?? 0,
+        availableCash: parsedCash.value.value ?? 0,
         existingJeonseLoan: existingJeonseLoan.value === 'YES',
         prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
         incomeSource: 'OPEN_BANKING',
@@ -199,7 +216,7 @@ async function next() {
     }
 
     if (step.value === 'DEPOSIT') {
-      await save('HOPE_DEPOSIT', { hopeDeposit: toWon(deposit.value) });
+      await save('HOPE_DEPOSIT', { hopeDeposit: parsedDeposit.value.value ?? 0 });
       step.value = 'REGION';
       return;
     }
@@ -325,18 +342,21 @@ function back() {
         <p class="text-caption2 text-ink-hero-body">오픈뱅킹 조회값이 틀린 경우에만 사용해요</p>
         <AppInput
           v-model="income"
+          :error="parsedIncome.error ?? ''"
           label="월 평균 소득 (만 원)"
           type="tel"
           placeholder="숫자만 입력해주세요"
         />
         <AppInput
           v-model="assets"
+          :error="parsedAssets.error ?? ''"
           label="금융자산 (만 원)"
           type="tel"
           placeholder="숫자만 입력해주세요"
         />
         <AppInput
           v-model="availableCash"
+          :error="parsedCash.error ?? ''"
           label="지금 쓸 수 있는 현금 (만 원)"
           type="tel"
           placeholder="계약금·잔금에 보탤 자기자금"
@@ -379,12 +399,14 @@ function back() {
         </p>
         <AppInput
           v-model="assets"
+          :error="parsedAssets.error ?? ''"
           label="순자산 (만 원)"
           type="tel"
           placeholder="숫자만 입력해주세요"
         />
         <AppInput
           v-model="availableCash"
+          :error="parsedCash.error ?? ''"
           label="지금 쓸 수 있는 현금 (만 원)"
           type="tel"
           placeholder="계약금·잔금에 보탤 자기자금"
@@ -418,6 +440,7 @@ function back() {
         <QuestionCard question="희망하는 전세 보증금을 입력해주세요">
           <AppInput
             v-model="deposit"
+            :error="parsedDeposit.error ?? ''"
             label="희망 보증금 (만 원)"
             type="tel"
             placeholder="숫자만 입력해주세요"

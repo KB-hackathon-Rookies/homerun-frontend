@@ -48,7 +48,11 @@ const rate = ref('');
 const saving = ref(false);
 const error = ref('');
 
-const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
+/**
+ * 검사한 뒤에 단위를 바꾼다. 숫자가 아닌 글자를 지워서 값을 만들면 `abc` 가 0원이 되고
+ * `-100` 이 100만 원으로 뒤집힌다.
+ */
+const parsedLimit = computed(() => parseManwon(limit.value));
 
 /**
  * 적어 넣은 금리. 비워 두면 `null` — 못 들었다는 뜻이다.
@@ -66,7 +70,13 @@ const quotedRate = computed(() =>
 );
 
 const canSave = computed(
-  () => result.value && product.value && collateral.value && !rateInvalid.value,
+  () =>
+    result.value &&
+    product.value &&
+    collateral.value &&
+    !rateInvalid.value &&
+    // 못 들었다고 체크했으면 한도 칸은 보지 않는다. 적었다면 형식이 맞아야 한다.
+    !(!limitNotHeard.value && parsedLimit.value.error),
 );
 
 /**
@@ -99,8 +109,7 @@ async function save() {
       resultStatus: result.value!,
       loanProduct: product.value!,
       collateralMethod: collateral.value!,
-      approvedLimit:
-        limitNotHeard.value || !limit.value.trim() ? null : onlyDigits(limit.value) * 10_000,
+      approvedLimit: limitNotHeard.value ? null : parsedLimit.value.value,
       quotedRate: quotedRate.value,
       consultedAt: today(),
     });
@@ -167,6 +176,7 @@ async function save() {
         <div class="flex items-center gap-2">
           <input
             v-model="limit"
+            :error="limitNotHeard ? '' : (parsedLimit.error ?? '')"
             inputmode="numeric"
             placeholder="14,400"
             class="border-line rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-12 flex-1 px-3.5 outline-none disabled:opacity-50"

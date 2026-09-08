@@ -23,8 +23,19 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const { owner, seizure, leasehold, auction, trust, seniorDebt, mortgageCount, answered, facts } =
-  useRegistrySnapshot();
+const {
+  owner,
+  seizure,
+  leasehold,
+  auction,
+  trust,
+  seniorDebt,
+  mortgageCount,
+  seniorDebtError,
+  mortgageCountError,
+  answered,
+  facts,
+} = useRegistrySnapshot();
 
 const saving = ref(false);
 const error = ref('');
@@ -110,6 +121,7 @@ async function proceed() {
           <p class="text-label2 text-ink-hero font-semibold">채권최고액 (만 원)</p>
           <input
             v-model="seniorDebt"
+            :error="seniorDebtError"
             inputmode="numeric"
             placeholder="없으면 0을 입력하세요"
             class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
@@ -120,6 +132,7 @@ async function proceed() {
           <p class="text-label2 text-ink-hero font-semibold">근저당 건수</p>
           <input
             v-model="mortgageCount"
+            :error="mortgageCountError"
             inputmode="numeric"
             placeholder="없으면 0을 입력하세요"
             class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"

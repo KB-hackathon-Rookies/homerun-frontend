@@ -1,4 +1,5 @@
 import type { RegistryFacts } from '~/api/contract';
+import { parseCount, parseManwon } from '~/utils/amount';
 
 /**
  * 등기부 스냅샷 입력을 모아 서버가 받는 사실값으로 바꾼다.
@@ -16,10 +17,19 @@ export function useRegistrySnapshot() {
   const seniorDebt = ref('');
   const mortgageCount = ref('');
 
-  const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
+  /**
+   * 검사한 뒤에 단위를 바꾼다.
+   *
+   * 전에는 숫자가 아닌 글자를 지워서 값을 만들었다. `abc` 가 0원이 되고 근저당 `1.5` 가
+   * 15건이 됐다 — 못 적은 값과 확인해서 없는 값이 같아진다. 등기부는 잔금 대조의
+   * 근거라서 이 차이가 그대로 판정 오류가 된다.
+   */
+  const parsedSeniorDebt = computed(() => parseManwon(seniorDebt.value));
+  const parsedMortgageCount = computed(() => parseCount(mortgageCount.value));
 
   /** 위험 항목은 없음/있음/모름 셋 중 하나다. 모름은 null 이다. */
-  const presence = (value: string | null) => (value === 'UNKNOWN' || value === null ? null : value === 'FOUND');
+  const presence = (value: string | null) =>
+    value === 'UNKNOWN' || value === null ? null : value === 'FOUND';
 
   /**
    * 일곱 항목을 다 채워야 대조를 요청할 수 있다.
@@ -36,8 +46,8 @@ export function useRegistrySnapshot() {
       !!leasehold.value &&
       !!auction.value &&
       !!trust.value &&
-      !!seniorDebt.value.trim() &&
-      !!mortgageCount.value.trim(),
+      parsedSeniorDebt.value.value !== null &&
+      parsedMortgageCount.value.value !== null,
   );
 
   const facts = computed<RegistryFacts>(() => ({
@@ -47,11 +57,24 @@ export function useRegistrySnapshot() {
     leaseholdRegistered: presence(leasehold.value),
     auctionInProgress: presence(auction.value),
     trustRegistered: presence(trust.value),
-    seniorDebt: seniorDebt.value.trim() ? onlyDigits(seniorDebt.value) * 10_000 : null,
-    mortgageCount: mortgageCount.value.trim() ? onlyDigits(mortgageCount.value) : null,
+    seniorDebt: parsedSeniorDebt.value.value,
+    mortgageCount: parsedMortgageCount.value.value,
   }));
 
-  return { owner, seizure, leasehold, auction, trust, seniorDebt, mortgageCount, answered, facts };
+  return {
+    owner,
+    seizure,
+    leasehold,
+    auction,
+    trust,
+    seniorDebt,
+    mortgageCount,
+    /** 칸에 그대로 붙이는 오류 문구. 비어 있으면 오류가 아니다. */
+    seniorDebtError: computed(() => parsedSeniorDebt.value.error ?? ''),
+    mortgageCountError: computed(() => parsedMortgageCount.value.error ?? ''),
+    answered,
+    facts,
+  };
 }
 
 /** 소유자 대조 선택지. */
