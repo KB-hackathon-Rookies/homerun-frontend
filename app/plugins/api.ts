@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 
 import type { ApiResponse, AuthTokens } from '~/types/api';
+import { useAuthStore } from '~/stores/auth';
 
 /**
  * 백엔드와 통신하는 유일한 통로.
@@ -63,6 +64,24 @@ function createApi(baseURL: string): AxiosInstance {
     queue = [];
   };
 
+  /**
+   * 갱신이 실패하면 세션을 되살릴 방법이 없다. 정리를 한 곳으로 모은다.
+   *
+   * 대기 중이던 요청을 한 번에 깨우고(전부 거절), 액세스 토큰을 지우고,
+   * 메모리에 남은 로그인 상태까지 비운다. 저장소만 지우고 스토어를 두면
+   * 화면은 여전히 로그인한 것처럼 굴어 세션 상태가 어긋난다.
+   *
+   * 마지막으로 로그인으로 보낸다 — 실패한 모든 요청이 같은 경로를 탄다.
+   */
+  const endSession = (error: unknown) => {
+    flushQueue(error, null);
+    tokenStorage.clear();
+    if (import.meta.client) {
+      useAuthStore().clear();
+      navigateTo('/login');
+    }
+  };
+
   api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     if (config.skipAuth) {
       config.headers.delete?.('Authorization');
@@ -114,9 +133,8 @@ function createApi(baseURL: string): AxiosInstance {
         original.headers.set('Authorization', `Bearer ${accessToken}`);
         return api(original);
       } catch (refreshError) {
-        // 갱신까지 실패하면 되돌릴 방법이 없다. 토큰을 지우고 기다리던 요청을 모두 깨운다.
-        flushQueue(refreshError, null);
-        tokenStorage.clear();
+        // 갱신까지 실패하면 되돌릴 방법이 없다. 대기 요청·토큰·로그인 상태를 한 경로로 정리한다.
+        endSession(refreshError);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
