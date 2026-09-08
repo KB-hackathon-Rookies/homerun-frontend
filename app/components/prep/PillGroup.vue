@@ -10,6 +10,8 @@
  * - `block` — 독립 준비의 전세·월세. 답이 둘뿐이고 화면에서 가장 중요한 선택이라
  *   폭을 반씩 갈라 크게 놓는다. 고른 쪽이 흰 바탕 + 파란 테두리고, 안 고른 쪽이
  *   회색 바탕이다 — chip 과 채움 방향이 반대다.
+ * - `small` — 1루 문진. 한 화면에 문항이 셋이고 문항마다 알약이 최대 일곱이라
+ *   작아야 한 카드에 들어간다.
  */
 export interface PillOption {
   value: string;
@@ -18,12 +20,30 @@ export interface PillOption {
 
 const { options, variant = 'chip' } = defineProps<{
   options: PillOption[];
-  variant?: 'chip' | 'block';
+  variant?: 'chip' | 'block' | 'small';
 }>();
 
 const model = defineModel<string | null>({ default: null });
 
 const block = computed(() => variant === 'block');
+
+/** 모양(칠하는 방향)은 chip 과 같고 치수만 작다. */
+const SHAPE = {
+  chip: 'rounded-pill h-pill px-5',
+  small: 'rounded-pill px-3 py-1.5',
+} as const;
+
+const ON = {
+  chip: 'bg-primary-strong text-numeric text-white',
+  small: 'bg-primary text-caption-tight font-bold text-white',
+} as const;
+
+const OFF = {
+  chip: 'bg-surface border-line text-numeric text-ink-hero border font-medium',
+  small: 'bg-surface border-line-list text-caption-tight text-ink-card border font-medium',
+} as const;
+
+const size = computed(() => (variant === 'small' ? 'small' : 'chip'));
 </script>
 
 <template>
@@ -34,14 +54,14 @@ const block = computed(() => variant === 'block');
       type="button"
       class="flex items-center justify-center transition-colors"
       :class="[
-        block ? 'rounded-button h-18 flex-1 px-4' : 'rounded-pill h-pill px-5',
+        block ? 'rounded-button h-18 flex-1 px-4' : SHAPE[size],
         block
           ? model === option.value
             ? 'bg-surface border-primary-strong text-choice text-primary-strong border-hairline'
             : 'bg-surface-muted text-choice text-ink-label'
           : model === option.value
-            ? 'bg-primary-strong text-numeric text-white'
-            : 'bg-surface border-line text-numeric text-ink-hero border font-medium',
+            ? ON[size]
+            : OFF[size],
       ]"
       :aria-pressed="model === option.value"
       @click="model = option.value"
