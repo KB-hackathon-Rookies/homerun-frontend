@@ -35,7 +35,7 @@ const slots = useSlots();
   >
     <span
       class="grid size-5 shrink-0 place-items-center rounded border transition-colors"
-      :class="model ? 'bg-primary border-primary' : 'border-line'"
+      :class="model ? 'bg-primary-strong border-primary-strong' : 'border-line'"
     >
       <AppIcon v-if="model" name="check" class="size-3 text-white" />
     </span>
