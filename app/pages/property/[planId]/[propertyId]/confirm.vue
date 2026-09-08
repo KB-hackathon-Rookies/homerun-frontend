@@ -240,11 +240,7 @@ onMounted(async () => {
       닫는 동작이 곧 3루로 가는 동작이라 여기서 넘긴다.
     -->
     <DimOverlay v-if="arrived" placement="center" @close="navigateTo(`/contract/${planId}/visit`)">
-      <!--
-        시안(`687:16198`)은 깃발 든 호랑이를 쓰는데 그 에셋이 아직 없다. 축하
-        자리라 뜻이 가장 가까운 `tiger/done.png` 로 둔다.
-      -->
-      <img src="/tiger/done.png" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
+      <img src="/tiger/flag.png" alt="" width="150" height="132" class="w-celebrate-art h-auto" />
       <p class="text-heading text-primary-strong">2루 안착!</p>
       <h2 class="text-body-strong text-ink-strong">이 리스트 들고 부동산 가자</h2>
       <p class="text-note-body text-ink-card-body text-center">
