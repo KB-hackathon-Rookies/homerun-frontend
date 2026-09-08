@@ -24,8 +24,28 @@ const saving = ref(false);
 const error = ref('');
 const notice = ref('');
 
-/** 희망 보증금은 1루에서 이미 받았다. 등록 화면에서 다시 묻지 않는다. */
+/**
+ * 1루에서 정한 희망예산. 실제 매물 보증금과 다른 값이라 이걸 그대로 보증금으로 쓰지 않는다 —
+ * 예산 초과 매물을 걸러내려면 두 값을 분리해서 보내야 한다. 여기서는 안내·비교용으로만 읽는다.
+ */
 const hopeDeposit = ref<number | null>(null);
+
+/** 사용자가 이 매물에 실제로 걸린 보증금을 만 원 단위로 적는다. */
+const realDeposit = ref('');
+
+const onlyDigits = (value: string) => Number(value.replace(/\D/g, '') || 0);
+const toWon = (value: string) => (value.trim() ? onlyDigits(value) * 10_000 : null);
+
+/** 입력한 실보증금(원). 아직 안 적었으면 null. */
+const realDepositWon = computed(() => toWon(realDeposit.value));
+
+/** 실보증금이 희망예산을 넘는가. 서버 판정과 별개로 등록 전에 먼저 알려준다. */
+const overBudget = computed(
+  () =>
+    hopeDeposit.value !== null &&
+    realDepositWon.value !== null &&
+    realDepositWon.value > hopeDeposit.value,
+);
 
 /** 실거래 조회 기준 달. 화면에서 묻지 않으므로 이번 달로 본다. */
 const dealYearMonth = () => {
@@ -60,20 +80,16 @@ async function search() {
 
 async function start() {
   if (!chosen.value || saving.value) return;
-  if (hopeDeposit.value === null) {
-    error.value = '희망 보증금을 먼저 입력해야 매물을 등록할 수 있어요.';
+  const deposit = realDepositWon.value;
+  if (deposit === null || deposit <= 0) {
+    error.value = '이 매물의 실제 보증금을 입력해주세요.';
     return;
   }
 
   saving.value = true;
   error.value = '';
   try {
-    const analysis = await usePropertyApi().analyze(
-      planId,
-      chosen.value,
-      hopeDeposit.value,
-      dealYearMonth(),
-    );
+    const analysis = await usePropertyApi().analyze(planId, chosen.value, deposit, dealYearMonth());
     await navigateTo(`/property/${planId}/${analysis.propertyId}`);
   } catch (cause) {
     error.value = messageFrom(cause, '매물을 등록하지 못했어요. 잠시 후 다시 시도해주세요.');
@@ -134,10 +150,33 @@ async function start() {
           {{ result.buildingName || result.jibunAddress }}
         </p>
       </button>
+
+      <AppCard v-if="chosen" class="flex flex-col gap-3">
+        <p class="text-body3 text-ink-hero font-bold">이 매물의 실제 보증금 (만 원)</p>
+        <p class="text-caption2 text-ink-muted">
+          1루에서 정한 희망예산이 아니라, 이 집에 실제로 걸린 보증금을 적어주세요
+        </p>
+        <input
+          v-model="realDeposit"
+          inputmode="numeric"
+          placeholder="보증금 입력"
+          class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"
+        />
+        <p v-if="hopeDeposit !== null" class="text-caption2 text-ink-muted">
+          희망예산: {{ hopeDeposit.toLocaleString() }}원
+        </p>
+        <p v-if="overBudget" class="text-label2 text-danger font-bold">
+          ⚠️ 실제 보증금이 희망예산을 넘어요. 등록은 되지만 예산 초과로 표시돼요.
+        </p>
+      </AppCard>
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!chosen || saving" @click="start">
+      <AppButton
+        variant="strong"
+        :disabled="!chosen || realDepositWon === null || saving"
+        @click="start"
+      >
         {{ saving ? '등록 중…' : '이 매물로 진단 시작하기' }}
       </AppButton>
     </footer>
