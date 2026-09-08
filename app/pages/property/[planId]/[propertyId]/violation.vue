@@ -58,6 +58,10 @@ async function next() {
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <CoachTip
+        >위반건축물은 자동으로 못 봐. 정부24 건축물대장을 직접 열람하고 와야 정확해</CoachTip
+      >
+
       <h2 class="text-headline1 text-ink-hero">
         정부24에서 건축물대장을 열람해서 위반건축물 여부를 확인해주세요
       </h2>

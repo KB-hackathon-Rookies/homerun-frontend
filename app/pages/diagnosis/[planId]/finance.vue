@@ -155,6 +155,8 @@ function back() {
     <StageBar title="사용자 정보 입력" base="1루" @back="back" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
+      <CoachTip>보증금 말고도 이사비·중개비까지, 실제로 필요한 돈을 같이 계산해줄게</CoachTip>
+
       <QuestionCard v-if="step === 'CONFIRM'" question="오픈뱅킹으로 조회한 정보예요. 맞나요?">
         <div class="border-line rounded-field flex gap-8 border p-4">
           <span class="flex flex-col gap-1">

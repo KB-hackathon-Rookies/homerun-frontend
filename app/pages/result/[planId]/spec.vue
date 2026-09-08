@@ -21,6 +21,8 @@ const { pending, error, cards } = useJeonsePolicies(planId);
     <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
+      <CoachTip>네 스펙은 입력값으로 계산한 거야. 숫자를 눌러보면 계산 근거를 보여줄게</CoachTip>
+
       <h2 class="text-headline1 text-ink-hero">받을 수 있는 대출을 모두 찾았어요</h2>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>

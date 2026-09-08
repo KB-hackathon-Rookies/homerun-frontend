@@ -130,6 +130,8 @@ async function save() {
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <CoachTip>본 대로 하나씩 답해줘. 모르는 건 모른다고 둬도 판정에 그대로 반영돼</CoachTip>
+
       <h2 class="text-headline1 text-ink-hero">등기부를 보고 답해주세요</h2>
 
       <AppCard v-for="question in QUESTIONS" :key="question.key" class="flex flex-col gap-3">

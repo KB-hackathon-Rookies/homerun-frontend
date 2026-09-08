@@ -68,6 +68,8 @@ onMounted(async () => {
     <StageBar title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <CoachTip>매물 고르기 전에 미리 거를 수 있어. 여기 자동조회 판정부터 보고 시작하자</CoachTip>
+
       <!--
         주소는 판정과 따로 온다. 판정을 못 받아도 어느 집 이야기인지는
         보여야 한다 — 다시 시도할지 뒤로 갈지를 그걸 보고 정한다.

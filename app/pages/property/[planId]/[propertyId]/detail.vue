@@ -54,6 +54,11 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <CoachTip
+        >전세가가 집값에 바짝 붙었으면 깡통전세 위험이야. 임대인이 진짜 주인인지도 꼭
+        확인해</CoachTip
+      >
+
       <AppCard v-if="property" class="flex flex-col gap-1.5">
         <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid" class="self-start">
           {{ property.trafficLightLabel ?? '확인 중' }}

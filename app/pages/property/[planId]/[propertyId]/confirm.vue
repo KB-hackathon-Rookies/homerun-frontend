@@ -99,6 +99,10 @@ onMounted(async () => {
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+      <CoachTip
+        >계약금은 대출 신청 전에 내는 거야. 순서가 바뀌면 곤란해지니 지금 확인해두자</CoachTip
+      >
+
       <div class="bg-surface-info rounded-field flex flex-col gap-1 p-4">
         <p class="text-body3 text-primary-strong font-bold">축하해!</p>
         <p class="text-label2 text-ink-hero-body">
