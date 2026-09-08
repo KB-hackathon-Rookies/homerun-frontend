@@ -2,6 +2,7 @@
 import { usePropertyApi, type OfficialPriceSource, type RegistryStepPatch } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
+import { propertyStepRoute } from '~/utils/propertyStep';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -84,6 +85,12 @@ const answered = computed(() => QUESTIONS.every((question) => answers.value[ques
 onMounted(async () => {
   try {
     const workflow = await usePropertyApi().resume(planId, propertyId);
+    // STEP 4 는 워크플로가 REGISTRY 일 때만 저장된다. 아직 앞 STEP 이면(또는 이미 끝났으면)
+    // 지금 단계 화면으로 돌려보내 막다른 저장을 막는다.
+    if (workflow.currentStep !== 'REGISTRY') {
+      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), { replace: true });
+      return;
+    }
     revision.value = workflow.revision;
   } catch (cause) {
     error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
