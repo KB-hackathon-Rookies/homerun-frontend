@@ -109,6 +109,19 @@ const pending = ref(false);
 /** 숫자만 남긴 휴대전화. send·confirm·가입에 같은 값을 써야 백엔드 해시가 맞는다. */
 const phoneDigits = computed(() => phone.value.replace(/\D/g, ''));
 
+/**
+ * 인증을 끝낸 뒤 번호를 고치면 그 인증은 더 이상 이 번호의 것이 아니다.
+ *
+ * 서버는 토큰과 번호를 함께 대조해서 결국 거절하지만(`consumeVerifiedToken`), 그 전까지
+ * 화면은 "인증이 완료됐어요" 를 계속 보여준다. 다 채우고 완료를 누른 다음에야 막히는 대신
+ * 번호를 고치는 순간 다시 인증하게 한다.
+ */
+watch(phoneDigits, () => {
+  signup.phoneVerificationToken = '';
+  phoneSent.value = false;
+  phoneCode.value = '';
+});
+
 /** "19990719" · "1999.07.19" · "1999-07-19" 를 모두 yyyy-MM-dd 로 맞춘다. */
 const birthDateIso = computed(() => {
   const d = birthDate.value.replace(/\D/g, '');
