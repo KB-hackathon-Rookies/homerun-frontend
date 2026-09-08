@@ -23,9 +23,9 @@ const BASE = '/api/v1/coach';
 /**
  * 답변이 인용한 문서 한 조각.
  *
- * `source_url` 은 백엔드 응답 그대로다. 코치 서버가 스네이크 케이스로 내보내고
- * 프록시가 그 형태를 유지한다. 화면에서 예쁘게 바꿔 두면 실제 응답과 이름이
- * 갈려서, 필드가 비는 날 원인을 찾기 어려워진다.
+ * 코치 서버(FastAPI)는 `source_url` 로 내보내지만, 스프링 프록시가 `sourceUrl` 로
+ * 바꿔 다른 응답들과 표기를 맞춘다. 화면은 프록시가 주는 이름을 그대로 쓴다 —
+ * 앱의 다른 API(`policy`·`alternative`·`verification`)도 모두 `sourceUrl` 이다.
  */
 export interface CoachSource {
   /** 문서 제목. */
@@ -33,7 +33,7 @@ export interface CoachSource {
   /** 코퍼스에서의 출처 이름(파일·기관). */
   source: string;
   /** 원문 주소. 없는 문서가 있다. */
-  source_url: string | null;
+  sourceUrl: string | null;
   /** 답변이 실제로 끌어온 대목. */
   snippet: string;
 }

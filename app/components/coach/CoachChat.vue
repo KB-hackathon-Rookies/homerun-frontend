@@ -133,8 +133,8 @@ function retry() {
                 <p class="text-caption2 text-ink-hero-body">{{ source.snippet }}</p>
 
                 <a
-                  v-if="source.source_url"
-                  :href="source.source_url"
+                  v-if="source.sourceUrl"
+                  :href="source.sourceUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-caption2 text-primary-strong font-semibold"
