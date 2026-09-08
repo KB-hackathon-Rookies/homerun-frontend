@@ -3,13 +3,13 @@
  * AU-07 회원가입 완료.
  *
  * 이 화면만 글자 크기가 다르다. 축하 화면이라 제목이 조금 작고 본문이 옅다.
- * 이름은 가입 응답으로 받은 닉네임을 쓴다. 없으면 호칭 없이 인사한다.
+ * 이름은 가입 응답으로 받은 이름을 쓴다. 없으면 호칭 없이 인사한다.
  */
 const auth = useAuthStore();
 
 const greeting = computed(() =>
-  auth.user?.nickname
-    ? `${auth.user.nickname}님, 홈런에 오신 걸 환영해요`
+  auth.user?.name
+    ? `${auth.user.name}님, 홈런에 오신 걸 환영해요`
     : '홈런에 오신 걸 환영해요',
 );
 </script>

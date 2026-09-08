@@ -24,7 +24,7 @@ const unread = ref(0);
 const pending = ref(true);
 const error = ref('');
 
-const name = computed(() => auth.user?.nickname ?? '루키');
+const name = computed(() => auth.user?.name ?? '루키');
 const stage = computed(() => displayStage(dashboard.value?.currentStage ?? 'FIRST'));
 
 /** 3루는 잔금일이 걸려 있어 남은 날부터 말한다. */

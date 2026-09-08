@@ -23,7 +23,7 @@ const propertyCount = ref<number | null>(null);
 const pending = ref(true);
 const error = ref('');
 
-const name = computed(() => auth.user?.nickname ?? '루키');
+const name = computed(() => auth.user?.name ?? '루키');
 const chip = computed(() => STAGE_CHIP[displayStage(dashboard.value?.currentStage ?? 'FIRST')]);
 
 /** "2026년 12월 · 서울 강남구". 지역을 못 읽으면 날짜만 보여준다. */
