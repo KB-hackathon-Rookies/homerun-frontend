@@ -2,6 +2,7 @@
 import { usePropertyApi, type PropertyPolicyVerdict, type PropertyStep } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
+import { propertyStepLabel, propertyStepRoute } from '~/utils/propertyStep';
 
 /**
  * 2루 매물 진단 — 자동조회 판정.
@@ -21,14 +22,22 @@ const pending = ref(true);
 const error = ref('');
 
 /**
- * 자동조회가 주택유형·전용면적을 못 채우면 워크플로가 STEP 2(BUILDING)에 머문다.
- * 그때는 STEP 3(위반건축물)으로 바로 못 가고 먼저 직접 입력을 받아야 한다.
+ * 다음으로 갈 곳은 **서버가 정한다**.
+ *
+ * 자동조회가 주택유형·전용면적을 못 채우면 워크플로가 STEP 2(BUILDING)에 머물고,
+ * 등기부까지 답한 매물은 이미 STEP 4 를 지나 있다. 어디쯤인지는 신호등으로도
+ * 면적 값으로도 알 수 없어서 `resume` 이 준 단계를 그대로 표에 넣는다.
+ *
+ * 단계를 받기 전에는 `null` 이다. 그동안 하단 버튼이 잠겨 있어(`pending`) 아무 데도
+ * 못 간다 — 예전처럼 기본값을 찍어 두면 그 값이 곧 잘못된 목적지가 된다.
  */
-const step = ref<PropertyStep>('VIOLATION');
-const nextStep = computed(() => (step.value === 'BUILDING' ? 'building' : 'violation'));
-const nextLabel = computed(() =>
-  step.value === 'BUILDING' ? 'STEP 2 주택정보 입력하기' : 'STEP 3 위반건축물 확인하기',
-);
+const step = ref<PropertyStep | null>(null);
+const nextLabel = computed(() => (step.value ? propertyStepLabel(step.value) : '다음 단계로'));
+
+function goNext() {
+  if (!step.value) return;
+  return navigateTo(propertyStepRoute(planId, propertyId, step.value));
+}
 
 /** "진행중 3개 · 불가 1개". 같은 판정끼리 세어 한 줄로 요약한다. */
 const summary = computed(() => {
@@ -102,9 +111,9 @@ onMounted(async () => {
     </div>
 
     <StepFooter
-      :disabled="pending || !!error"
+      :disabled="pending || !!error || !step"
       @back="navigateTo(`/property/${planId}`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/${nextStep}`)"
+      @next="goNext"
     >
       {{ nextLabel }}
     </StepFooter>

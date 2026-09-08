@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { usePropertyApi, type OfficialPriceSource, type RegistryStepPatch } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
-import { messageFrom } from '~/utils/error';
-import { propertyStepRoute } from '~/utils/propertyStep';
+import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -59,10 +58,17 @@ const seniorDebt = ref('');
 const officialPrice = ref('');
 
 const { property } = useProperty(planId, propertyId);
-const revision = ref(0);
-const pending = ref(true);
 const saving = ref(false);
-const error = ref('');
+
+/**
+ * STEP 4 는 워크플로가 REGISTRY 일 때만 저장된다. 아직 앞 STEP 이면(또는 이미 끝났으면)
+ * 지금 단계 화면으로 돌려보내 막다른 저장을 막는다.
+ */
+const { revision, pending, error, conflict, sync, reportSaveError } = usePropertyStepGuard(
+  planId,
+  propertyId,
+  'registry-check',
+);
 
 /**
  * 검사한 뒤에 만 원을 원으로 바꾼다. 두 값 다 비워 두는 것(모름)은 허용한다.
@@ -88,25 +94,6 @@ const priceSource = computed<OfficialPriceSource>(() => {
 /** 모든 질문에 답해야 넘어간다. "모르겠어요" 도 답이다. */
 const answered = computed(() => QUESTIONS.every((question) => answers.value[question.key]));
 
-onMounted(async () => {
-  try {
-    const workflow = await usePropertyApi().resume(planId, propertyId);
-    // STEP 4 는 워크플로가 REGISTRY 일 때만 저장된다. 아직 앞 STEP 이면(또는 이미 끝났으면)
-    // 지금 단계 화면으로 돌려보내 막다른 저장을 막는다.
-    if (workflow.currentStep !== 'REGISTRY') {
-      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), {
-        replace: true,
-      });
-      return;
-    }
-    revision.value = workflow.revision;
-  } catch (cause) {
-    error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    pending.value = false;
-  }
-});
-
 async function save() {
   if (!answered.value || saving.value) return;
 
@@ -126,11 +113,12 @@ async function save() {
 
   saving.value = true;
   error.value = '';
+  conflict.value = false;
   try {
     await usePropertyApi().saveRegistry(planId, propertyId, revision.value, patch);
     await navigateTo(`/property/${planId}/${propertyId}/consultations`);
   } catch (cause) {
-    error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+    reportSaveError(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     saving.value = false;
   }
@@ -195,7 +183,7 @@ async function save() {
         </p>
       </AppCard>
 
-      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+      <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
     <StepFooter
