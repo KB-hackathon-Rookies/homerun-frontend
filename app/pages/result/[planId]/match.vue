@@ -25,6 +25,39 @@ const { ruleChanged, eligibilityEnding, allPoliciesFailed, inspect } = useResult
 watch(pending, (loading) => {
   if (!loading && !error.value) inspect(results.value, cards.value);
 });
+
+/**
+ * 코치 TIME(시안 1루 4 모달 · 자주 묻는 질문).
+ *
+ * 판정을 보고 나면 "나는 왜 안 되지" 가 먼저 온다. 시안은 그 질문들을 모달에
+ * 모아 둔다. 한 줄짜리 코치 팁만으로는 답이 안 되는 것들이라 따로 편다.
+ *
+ * 내용은 시안 문구 그대로다. 지어내지 않는다.
+ */
+const COACH = {
+  subtitle: '자주 묻는 질문',
+  intro: '판정 결과 보면서 자주 나오는 질문들이야. 네 상황에 걸리는 게 있으면 여기서 확인해',
+  qa: [
+    {
+      title: '부모님이 집을 가지고 있으면?',
+      body: '버팀목은 세대 전원 무주택이라 부모님과 같은 세대면 걸려. 분가하면 내 세대 기준으로 봐. 서울시 이자지원은 신청인 기준이라 부모님 주택과 무관해',
+    },
+    {
+      title: '신용대출이 있는데 전세대출이 돼?',
+      body: '돼. 중복 금지는 기금대출·일반 전세대출·주택담보대출 같은 주택 관련 대출끼리만이야. 신용대출, 마이너스통장, 학자금, 자동차 할부는 괜찮아. 다만 부채가 많으면 은행 심사에서 한도가 줄 수 있어',
+    },
+    {
+      title: '만 35세인데 청년 상품이 없어?',
+      body: '두 가지 길이 있어. 버팀목은 병역 이행 + 중소·중견 재직이면 만 39세까지, HF 청년특례는 2026년 10월부터 조건 없이 만 39세까지 확대돼',
+    },
+    {
+      title: '소득이 5천만원을 넘어서 버팀목이 안 돼',
+      body: '은행 대출로 갈 수 있어. HF 청년특례 보증은 소득 7천만원 이하, 일반 보증은 소득 제한이 없어. 금리는 버팀목보다 높지만 한도는 더 클 수 있어',
+    },
+  ],
+};
+
+const coachOpen = ref(false);
 </script>
 
 <template>
@@ -32,10 +65,13 @@ watch(pending, (loading) => {
     <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-5 py-4">
-      <CoachTip
-        >네 조건에 맞는 정책을 자동으로 매칭했어. 왜 되는지·안 되는지 근거도 같이 볼 수
-        있어</CoachTip
-      >
+      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 시안의 FAB 과 같은 역할이다. -->
+      <button type="button" class="w-full text-left" @click="coachOpen = true">
+        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
+          >네 조건에 맞는 정책을 자동으로 매칭했어. 왜 되는지·안 되는지 근거도 같이 볼 수
+          있어</CoachTip
+        >
+      </button>
 
       <h2 class="text-headline1 text-ink-hero">
         {{
@@ -91,5 +127,30 @@ watch(pending, (loading) => {
         </AppButton>
       </div>
     </footer>
+
+    <!-- 코치 TIME(시안 1루 4 모달). -->
+    <DimOverlay v-if="coachOpen" @close="coachOpen = false">
+      <div class="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
+        <div class="flex flex-col gap-1">
+          <p class="text-caption1 text-primary-strong">⚾ 코치 TIME</p>
+          <h2 class="text-headline1 text-ink-hero">{{ COACH.subtitle }}</h2>
+        </div>
+
+        <p class="text-caption2 text-ink-hero-body">{{ COACH.intro }}</p>
+
+        <div
+          v-for="item in COACH.qa"
+          :key="item.title"
+          class="bg-canvas rounded-field flex flex-col gap-1 p-3.5"
+        >
+          <p class="text-label2 text-ink-hero font-bold">{{ item.title }}</p>
+          <p class="text-caption2 text-ink-hero-body">{{ item.body }}</p>
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <AppButton variant="strong" @click="coachOpen = false">확인했어요</AppButton>
+      </div>
+    </DimOverlay>
   </PhoneFrame>
 </template>
