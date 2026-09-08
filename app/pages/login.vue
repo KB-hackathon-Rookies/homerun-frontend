@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { socialLoginUrl } from '~/api/auth';
+import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
 /**
@@ -26,7 +27,9 @@ async function submit() {
   try {
     await auth.login(email.value, password.value);
     // 인증이 필요해서 밀려난 사람은 원래 가려던 곳으로 돌려보낸다.
-    await navigateTo((route.query.redirect as string) || '/onboarding', { replace: true });
+    // 그 외에는 진행 중인 계획이 있으면 홈으로, 없으면 온보딩으로 보낸다.
+    const redirect = route.query.redirect as string | undefined;
+    await navigateTo(redirect || (currentPlan.get() ? '/home' : '/onboarding'), { replace: true });
   } catch (cause) {
     error.value = messageFrom(cause, '이메일 또는 비밀번호를 확인해주세요.');
   } finally {
