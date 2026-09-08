@@ -10,6 +10,7 @@ import { messageFrom } from '~/utils/error';
  * 다음 화면(본인 확인)에서 한 번에 보낸다. 백엔드가 그 토큰을 요구하기 때문이다.
  */
 const signup = useSignupStore();
+const router = useRouter();
 const { sendVerification, confirmVerification } = useAuthApi();
 
 const email = ref(signup.email);
@@ -131,7 +132,15 @@ function next() {
         <p class="text-caption1 text-ink-subtle text-center">
           이메일 인증을 완료해야 다음 단계로 진행할 수 있어요.
         </p>
-        <AppButton type="submit" variant="strong" :disabled="!canSubmit">다음</AppButton>
+        <!-- 피그마의 하단은 `[이전] [다음]` 두 칸이다. 상단 뒤로가기와 같은 곳으로 간다. -->
+        <div class="flex gap-2.5">
+          <div class="shrink-0 basis-1/3">
+            <AppButton variant="white" @click="router.back()">이전</AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton type="submit" variant="strong" :disabled="!canSubmit">다음</AppButton>
+          </div>
+        </div>
       </div>
     </form>
   </PhoneFrame>

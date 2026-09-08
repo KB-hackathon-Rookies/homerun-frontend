@@ -32,6 +32,7 @@ import { messageFrom } from '~/utils/error';
  */
 const signup = useSignupStore();
 const auth = useAuthStore();
+const router = useRouter();
 const { sendPhoneVerification, confirmPhoneVerification, socialSignup } = useAuthApi();
 const { jeonseOptions } = useRegionApi();
 
@@ -382,9 +383,17 @@ async function submit() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
       <div class="flex flex-1 flex-col justify-end">
-        <AppButton type="submit" variant="strong" :disabled="!canSubmit">
-          {{ pending ? '가입 중…' : '완료' }}
-        </AppButton>
+        <!-- 피그마의 하단은 `[이전] [완료]` 두 칸이다. 상단 뒤로가기와 같은 곳으로 간다. -->
+        <div class="flex gap-2.5">
+          <div class="shrink-0 basis-1/3">
+            <AppButton variant="white" @click="router.back()">이전</AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton type="submit" variant="strong" :disabled="!canSubmit">
+              {{ pending ? '가입 중…' : '완료' }}
+            </AppButton>
+          </div>
+        </div>
       </div>
     </form>
   </PhoneFrame>
