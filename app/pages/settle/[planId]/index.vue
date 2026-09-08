@@ -218,7 +218,11 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
+    <!--
+      아래 탭바가 하단 안전영역 여백(`pb-tabbar-pad`)을 맡으므로 푸터는 `pb-cta-pad` 를
+      쓰지 않는다. 둘 다 주면 여백이 겹쳐 버튼이 붕 뜬다.
+    -->
+    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-2.5">
       <AppButton
         variant="strong"
         :disabled="!settlePath('checkin', planId)"
@@ -227,5 +231,12 @@ onMounted(async () => {
         이번 달 관리 시작하기
       </AppButton>
     </footer>
+
+    <!--
+      정착 화면에서 메인으로 돌아갈 길이 헤더의 뒤로가기 화살표뿐이었다.
+      홈·마이와 같은 탭바를 놓아 어디서든 한 번에 옮겨 갈 수 있게 한다.
+      이 계획의 단계가 홈(4루)이라 `home` 을 현재 탭으로 둔다.
+    -->
+    <TabBar active="home" :plan-id="planId" />
   </PhoneFrame>
 </template>
