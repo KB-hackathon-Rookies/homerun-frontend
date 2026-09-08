@@ -37,6 +37,11 @@ export interface CoachModule {
   minutes: number;
   /** 대시보드 카드에 세우는 모듈만 채운다. */
   featured?: string;
+  /**
+   * 대시보드 카드 색. 시안(메인 1)이 세 장에 각각 다른 색을 줬다.
+   * 순서로 정하면 목록이 바뀔 때 색이 따라 움직이므로 모듈에 붙여 둔다.
+   */
+  tone?: 'contract' | 'fraud' | 'change';
   /** 없으면 준비 중. */
   body?: ContentBlock[];
   /** 있는 문제만 담는다. 시안이 "1/3" 이라도 쓰인 문제가 하나면 하나만 낸다. */
@@ -50,6 +55,7 @@ export const COACH_MODULES: CoachModule[] = [
     title: '안심계약 3·3·3 법칙',
     minutes: 3,
     featured: '계약 전·시·후 9가지',
+    tone: 'contract',
     body: [
       {
         kind: 'coach',
@@ -99,6 +105,18 @@ export const COACH_MODULES: CoachModule[] = [
         explanation:
           '계약 후 즉시 임대차 신고 또는 확정일자를 받아야 해. 대출 신청 서류에도 필요하고, 이사 당일은 정신없어서 잊기 쉬워',
       },
+      {
+        statement: '잔금을 치르기 전에 등기부를 한 번 더 확인해야 한다',
+        answer: 'O',
+        explanation:
+          '계약할 때 깨끗했어도 잔금 전에 근저당이 새로 잡힐 수 있어. 계약 후 3가지에 이게 들어 있는 이유야',
+      },
+      {
+        statement: '계약하러 나온 사람이 등기부상 소유자와 달라도 중개사가 확인했으면 괜찮다',
+        answer: 'X',
+        explanation:
+          '계약 상대방과 임대인이 같은 사람인지 신분증으로 직접 대조해야 해. 대리인이면 위임장까지 확인하고',
+      },
     ],
   },
   {
@@ -113,6 +131,7 @@ export const COACH_MODULES: CoachModule[] = [
     title: '전세사기 유형 5가지',
     minutes: 4,
     featured: '깡통·갭투자·신탁 막는 법',
+    tone: 'fraud',
     body: [
       {
         kind: 'coach',
@@ -153,6 +172,26 @@ export const COACH_MODULES: CoachModule[] = [
         ],
       },
     ],
+    quiz: [
+      {
+        statement: '전세가율이 높아도 확정일자만 받아두면 보증금은 안전하다',
+        answer: 'X',
+        explanation:
+          '확정일자는 순위를 잡아줄 뿐이야. 집값보다 전세금이 높으면(깡통전세) 경매로 넘어가도 받을 돈 자체가 모자라. 반환보증까지 들어야 해',
+      },
+      {
+        statement: '등기부 갑구에 신탁등기가 있으면 신탁원부까지 확인해야 한다',
+        answer: 'O',
+        explanation:
+          '소유권이 신탁회사에 있는데 집주인 행세를 하는 게 신탁사기야. 갑구에 신탁이 보이면 신탁원부에서 누가 임대 권한을 갖는지 확인해',
+      },
+      {
+        statement: '전세사기는 빌라에서만 일어난다',
+        answer: 'X',
+        explanation:
+          '아파트, 오피스텔, 신축까지 번지는 중이야. 유형도 신탁·법인·갭투자·이중계약이 섞여서 진화하고 있어',
+      },
+    ],
   },
   { id: 'building-ledger', base: '2루 · 매물 검증', title: '건축물대장 보는 법', minutes: 3 },
   { id: 'registry-reading', base: '2루 · 매물 검증', title: '등기부등본 보는 법', minutes: 5 },
@@ -169,6 +208,7 @@ export const COACH_MODULES: CoachModule[] = [
     title: '2026년 달라진 것',
     minutes: 3,
     featured: '세입자 보호 강화 6가지',
+    tone: 'change',
   },
 ];
 
