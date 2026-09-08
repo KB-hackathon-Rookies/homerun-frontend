@@ -9,7 +9,7 @@ definePageMeta({ middleware: 'auth' });
 const auth = useAuthStore();
 
 const greeting = computed(() =>
-  auth.user?.nickname ? `${auth.user.nickname}님, 준비는 끝났어요.` : '준비는 끝났어요.',
+  auth.user?.name ? `${auth.user.name}님, 준비는 끝났어요.` : '준비는 끝났어요.',
 );
 </script>
 

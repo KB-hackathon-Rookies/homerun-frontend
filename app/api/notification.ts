@@ -7,7 +7,12 @@ import type { ApiResponse } from '~/types/api';
  */
 const BASE = '/api/v1/notifications';
 
-export type NotificationType = 'CONTRACT_DEADLINE' | 'APPLICATION_RESULT_PENDING';
+export type NotificationType =
+  | 'CONTRACT_DEADLINE'
+  | 'CONTRACT_MILESTONE'
+  | 'APPLICATION_RESULT_PENDING'
+  | 'RETURN_GUARANTEE_REMINDER'
+  | 'LEASE_RENEWAL_WINDOW';
 
 /** 토큰이 어느 기기에서 왔는가. 통계·관리용이고 전송 방식은 같다. */
 export type DevicePlatform = 'ANDROID' | 'IOS' | 'WEB';

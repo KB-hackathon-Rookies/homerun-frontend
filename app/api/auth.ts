@@ -17,7 +17,7 @@ export interface MemberResponse {
   id: number;
   provider: string;
   email: string;
-  nickname: string;
+  name: string;
 }
 
 export interface LoginResponse {
