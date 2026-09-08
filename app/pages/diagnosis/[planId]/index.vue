@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { DiagnosisStep, DiagnosisStepPatch } from '~/api/plan';
+import type { DiagnosisStep, DiagnosisStepPatch, EmploymentType, PlanInput } from '~/api/plan';
+import { usePlanApi } from '~/api/plan';
 import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
 
@@ -122,9 +123,20 @@ const planId = Number(route.params.planId);
 
 const index = ref(0);
 const answers = ref<Record<string, string>>({});
-const { load, saveStep } = useInputRevision(planId);
+const { revision, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
+
+/**
+ * 급여근로자인가. 백엔드 분기(`DiagnosisInputStep.isSalaried`)와 같은 기준이다.
+ * 프리랜서·무직은 회사규모·재직기간을 묻지 않고 바로 재무 단계(재무는 다음 화면)로 간다.
+ */
+const SALARIED: EmploymentType[] = ['FULL_TIME', 'CONTRACT', 'INTERN', 'DAILY_WORKER'];
+const isSalaried = (value: string | null): boolean =>
+  !!value && SALARIED.includes(value as EmploymentType);
+
+/** STEP 이름으로 질문 위치를 찾는다. 이 화면에 없으면(재무 이후) -1. */
+const stepIndex = (step: string | null) => QUESTIONS.findIndex((q) => q.step === step);
 
 const question = computed(() => QUESTIONS[index.value]!);
 const answer = computed({
@@ -133,7 +145,18 @@ const answer = computed({
     if (value) answers.value[question.value.step] = value;
   },
 });
-const isLast = computed(() => index.value === QUESTIONS.length - 1);
+/**
+ * 이 화면의 마지막 질문인가.
+ *
+ * 재직기간이 마지막이지만, 프리랜서·무직은 고용형태에서 회사규모·재직기간을
+ * 건너뛰고 바로 재무 화면으로 넘어가므로 그때는 고용형태가 마지막이다.
+ */
+const isLast = computed(() => {
+  const step = question.value.step;
+  if (step === 'EMPLOYMENT_PERIOD') return true;
+  if (step === 'EMPLOYMENT_TYPE') return !!answer.value && !isSalaried(answer.value);
+  return false;
+});
 
 /** 단계마다 늘 보이는 설명. */
 const notice = computed(() => question.value.note);
@@ -152,7 +175,46 @@ function dismissBlocked() {
   answers.value[question.value.step] = '';
 }
 
-onMounted(load);
+/** 저장된 답을 화면 선택지로 되살린다. 값이 없는 항목은 그대로 둔다. */
+function restore(input: PlanInput | null) {
+  if (!input) return;
+  const set = (step: DiagnosisStep, value: string | number | null) => {
+    if (value !== null && value !== undefined) answers.value[step] = String(value);
+  };
+  set('HOUSEHOLDER', input.householderStatus);
+  if (input.isHomeless !== null && input.isHomeless !== undefined) {
+    answers.value.HOMELESS = input.isHomeless ? 'NONE' : 'OWNED';
+  }
+  set('MARITAL_STATUS', input.maritalStatus);
+  set('EMPLOYMENT_TYPE', input.employmentType);
+  set('COMPANY_SIZE', input.companySize);
+  set('EMPLOYMENT_PERIOD', input.employmentMonths);
+}
+
+/**
+ * 이어하기.
+ *
+ * 서버가 저장된 답·완료 단계·다음 STEP 을 준다. 답을 복원하고 다음 STEP 으로
+ * 자리를 맞춘다. 다음 STEP 이 이 화면에 없으면(재무·희망보증금·지역·검토) 바로
+ * 다음 화면으로 보낸다 — 새 계획을 만들지 않고 기존 planId 를 그대로 쓴다.
+ */
+onMounted(async () => {
+  try {
+    const resumed = await usePlanApi().resume(planId);
+    revision.value = resumed.revision;
+    restore(resumed.input);
+
+    const target = stepIndex(resumed.resumeStep);
+    if (target === -1) {
+      await navigateTo(`/diagnosis/${planId}/finance`, { replace: true });
+      return;
+    }
+    index.value = target;
+  } catch {
+    // 이어할 게 없거나 조회가 막히면 처음부터. 저장은 서버가 소유자·revision 으로 막는다.
+    revision.value = 0;
+  }
+});
 
 async function next() {
   if (!answer.value || pending.value || blocked.value) return;
@@ -160,13 +222,15 @@ async function next() {
   pending.value = true;
   error.value = '';
   try {
-    await saveStep(question.value.step, question.value.toPatch(answer.value));
+    const result = await saveStep(question.value.step, question.value.toPatch(answer.value));
 
-    if (isLast.value) {
+    // 서버가 정한 다음 STEP 을 따른다. 이 화면에 없으면(프리랜서 분기·재무 이후) 다음 화면으로.
+    const target = stepIndex(result.nextStep);
+    if (target === -1) {
       await navigateTo(`/diagnosis/${planId}/finance`);
       return;
     }
-    index.value += 1;
+    index.value = target;
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
