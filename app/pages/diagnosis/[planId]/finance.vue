@@ -240,6 +240,38 @@ async function submitFirstBase() {
   await navigateTo(`/result/${planId}/match`);
 }
 
+/**
+ * 코치 TIME(시안 1루 3 모달 · 실제로 필요한 돈).
+ *
+ * 이 화면에서 보증금을 적는데, 보증금만 준비하면 되는 줄 알고 넘어가는 게
+ * 여기서 제일 자주 나는 사고다. 시안은 부대비용을 모달로 따로 편다.
+ *
+ * 내용은 시안 문구 그대로다. 예시 계정의 금액이 박힌 항목은 빼고 규칙만 남긴다.
+ */
+const COACH = {
+  subtitle: '실제로 필요한 돈',
+  intro:
+    '보증금만 준비하면 되는 게 아니야. 중개보수, 이사비, 보증료 같은 게 따로 들어. 이걸 빼먹으면 잔금일에 돈이 모자라',
+  qa: [
+    {
+      title: '부대비용 네 가지',
+      body: '중개보수(보증금 × 0.3% + 부가세), 인지세(3만 5천~7만 5천원), 보증료(대출금 × 0.04~0.27%), 이사비(30만~100만원)',
+    },
+    {
+      title: '계약금은 먼저 나가',
+      body: '보증금의 5~10%를 계약할 때 내 돈으로 먼저 내. 대출 신청 조건이 보증금의 5% 이상 지급이야',
+    },
+    {
+      title: '보증금이 3억원을 넘으면',
+      body: '정부 지원 전세자금대출은 한정적일 수 있어. 대신 은행 전세자금대출은 보증금 한도가 없어서 계속 진행할 수 있어',
+    },
+  ],
+  /** 시안 `더 알아보기` 칩. 실제로 있는 모듈만 건다. */
+  links: [{ label: '안심계약 3·3·3 법칙', to: '/coach/safe-contract-333' }],
+};
+
+const coachOpen = ref(false);
+
 function back() {
   if (step.value === 'CONFIRM') {
     navigateTo(`/diagnosis/${planId}`);
@@ -263,7 +295,12 @@ function back() {
     <StageBar title="사용자 정보 입력" base="1루" @back="back" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
-      <CoachTip>보증금 말고도 이사비·중개비까지, 실제로 필요한 돈을 같이 계산해줄게</CoachTip>
+      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 시안의 FAB 과 같은 역할이다. -->
+      <button type="button" class="w-full text-left" @click="coachOpen = true">
+        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
+          >보증금 말고도 이사비·중개비까지, 실제로 필요한 돈을 같이 계산해줄게</CoachTip
+        >
+      </button>
 
       <QuestionCard v-if="step === 'CONFIRM'" question="오픈뱅킹으로 조회한 월 평균 소득이에요. 맞나요?">
         <div class="border-line rounded-field flex flex-col gap-1 border p-4">
@@ -415,5 +452,44 @@ function back() {
         </AppButton>
       </div>
     </footer>
+
+    <!-- 코치 TIME(시안 1루 3 모달). -->
+    <DimOverlay v-if="coachOpen" @close="coachOpen = false">
+      <div class="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
+        <div class="flex flex-col gap-1">
+          <p class="text-caption1 text-primary-strong">⚾ 코치 TIME</p>
+          <h2 class="text-headline1 text-ink-hero">{{ COACH.subtitle }}</h2>
+        </div>
+
+        <p class="text-caption2 text-ink-hero-body">{{ COACH.intro }}</p>
+
+        <div
+          v-for="item in COACH.qa"
+          :key="item.title"
+          class="bg-canvas rounded-field flex flex-col gap-1 p-3.5"
+        >
+          <p class="text-label2 text-ink-hero font-bold">{{ item.title }}</p>
+          <p class="text-caption2 text-ink-hero-body">{{ item.body }}</p>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-caption1 text-ink-muted">더 알아보기</p>
+          <div class="flex flex-wrap gap-2">
+            <NuxtLink
+              v-for="link in COACH.links"
+              :key="link.to"
+              :to="link.to"
+              class="border-line rounded-chip text-caption2 text-ink-hero border px-3 py-1.5"
+            >
+              {{ link.label }}
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <AppButton variant="strong" @click="coachOpen = false">확인했어요</AppButton>
+      </div>
+    </DimOverlay>
   </PhoneFrame>
 </template>
