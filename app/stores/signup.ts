@@ -27,6 +27,10 @@ export const useSignupStore = defineStore('signup', {
     regionId: null as number | null,
     /** 도로명 + 상세주소를 합쳐 둔다. 선택값이다. */
     detailAddress: '',
+    /** 약관 화면에서 사용자가 필수를 모두 직접 동의했는가. 코드가 채우지 않는다. */
+    requiredTermsAgreed: false,
+    /** 약관 화면에서 사용자가 선택 약관에 동의했는가. */
+    optionalTermsAgreed: false,
   }),
 
   getters: {
@@ -44,6 +48,14 @@ export const useSignupStore = defineStore('signup', {
 
       if (this.regionId === null) throw new Error('지역이 선택되지 않았습니다.');
 
+      /*
+       * 약관 화면에서 사용자가 필수에 직접 동의하지 않았으면 계정을 만들지
+       * 않는다. 자동 동의를 없앤 뒤로는 이 값이 있어야 가입이 성립한다.
+       */
+      if (!this.requiredTermsAgreed) {
+        throw new Error('필수 약관에 동의해야 가입할 수 있어요.');
+      }
+
       const response = await signup({
         email: this.email,
         password: this.password,
@@ -59,11 +71,14 @@ export const useSignupStore = defineStore('signup', {
       auth.apply(response);
 
       /*
-       * 약관 화면에서 받은 동의를 여기서 서버에 남긴다. 목록 조회에 인증이
-       * 필요해 가입 전에는 부를 수 없어서다. 이걸 빠뜨리면 백엔드가 이후
-       * 요청을 전부 403 으로 막는다.
+       * 약관 화면에서 사용자가 직접 고른 동의를 여기서 서버에 남긴다. 목록
+       * 조회에 인증이 필요해 가입 전에는 부를 수 없어서다. 이걸 빠뜨리면
+       * 백엔드가 이후 요청을 전부 403 으로 막는다.
        */
-      await useRequiredTerms().ensure();
+      await useRequiredTerms().ensure({
+        requiredAgreed: this.requiredTermsAgreed,
+        optionalAgreed: this.optionalTermsAgreed,
+      });
 
       this.$reset();
       return response;

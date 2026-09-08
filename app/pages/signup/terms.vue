@@ -20,20 +20,34 @@ const TERMS: Term[] = [
 
 const { agreed, canProceed } = useTerms(TERMS);
 
+/** 선택 약관을 사용자가 실제로 다 체크했는가. 코드가 대신 정하지 않는다. */
+const optionalAgreed = computed(() =>
+  TERMS.filter((term) => !term.required).every((term) => agreed.value[term.id]),
+);
+
 const auth = useAuthStore();
+const signup = useSignupStore();
 const error = ref('');
 const pending = ref(false);
 
 async function next() {
+  // 사용자가 화면에서 직접 고른 값을 그대로 넘긴다.
+  const consent = { requiredAgreed: canProceed.value, optionalAgreed: optionalAgreed.value };
+
   if (!auth.isAuthenticated) {
+    // 이메일 가입은 아직 계정이 없다. 고른 동의를 들고 갔다가 본인 확인 뒤
+    // 가입과 함께 남긴다.
+    signup.requiredTermsAgreed = consent.requiredAgreed;
+    signup.optionalTermsAgreed = consent.optionalAgreed;
     await navigateTo('/signup');
     return;
   }
 
+  // 소셜 가입은 이미 세션이 있으니 지금 남긴다.
   pending.value = true;
   error.value = '';
   try {
-    await useRequiredTerms().ensure();
+    await useRequiredTerms().ensure(consent);
     await navigateTo('/signup/identity');
   } catch (cause) {
     error.value = messageFrom(cause, '약관 동의를 저장하지 못했어요.');
