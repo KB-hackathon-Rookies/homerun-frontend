@@ -10,6 +10,7 @@ import {
 } from '~/components/settle/rir';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
 
 /**
  * 홈 4-5 · 월간 정착 체크인.
@@ -103,12 +104,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <StageShell title="이번 달 상태" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        매달 얼마가 나가는지 알아야 연체를 막을 수 있어. 첫 달만 잡아두면 그다음은 쉬워
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">이번 달 상태</h1>
 
       <!--
         대출을 아직 안 넣었으면 셀 수 있는 게 없다. 빈 화면 대신 무엇이 없고
@@ -200,25 +202,25 @@ onMounted(() => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <!--
+      <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+        <!--
         관리비가 주거비의 절반을 가른다. 등록 화면(`expenses`)이 이미 있는데
         여기서 잠겨 있어 아무도 닿지 못했다.
       -->
-      <div class="flex gap-2.5">
-        <div class="w-29 shrink-0">
-          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        <div class="flex gap-2.5">
+          <div class="w-29 shrink-0">
+            <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
+              고정지출 등록
+            </AppButton>
+          </div>
         </div>
-        <div class="flex-1">
-          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
-            고정지출 등록
-          </AppButton>
-        </div>
-      </div>
-      <p class="text-micro text-ink-muted text-center">
-        관리비를 넣으면 주거비와 RIR 이 더 정확해져요
-      </p>
-    </footer>
-</template>
+        <p class="text-micro text-ink-muted text-center">
+          관리비를 넣으면 주거비와 RIR 이 더 정확해져요
+        </p>
+      </footer>
+    </template>
   </StageShell>
 </template>

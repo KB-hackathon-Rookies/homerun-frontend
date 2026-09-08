@@ -108,7 +108,6 @@ onMounted(async () => {
 
 <template>
   <StageShell title="홈" base="홈" @back="navigateTo('/home')">
-
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">정착 현황을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -222,16 +221,16 @@ onMounted(async () => {
       쓰지 않는다. 둘 다 주면 여백이 겹쳐 버튼이 붕 뜬다.
     -->
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-2.5">
-      <AppButton
-        variant="strong"
-        :disabled="!settlePath('checkin', planId)"
-        @click="navigateTo(settlePath('checkin', planId)!)"
-      >
-        이번 달 관리 시작하기
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-2.5">
+        <AppButton
+          variant="strong"
+          :disabled="!settlePath('checkin', planId)"
+          @click="navigateTo(settlePath('checkin', planId)!)"
+        >
+          이번 달 관리 시작하기
+        </AppButton>
+      </footer>
+    </template>
 
     <!--
       정착 화면에서 메인으로 돌아갈 길이 헤더의 뒤로가기 화살표뿐이었다.

@@ -3,6 +3,7 @@ import { useSettlementApi, type ExpenseCategory, type FixedExpense } from '~/api
 import { parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
 
 definePageMeta({ middleware: 'auth' });
 
@@ -74,9 +75,13 @@ async function remove(expenseId: number) {
 </script>
 
 <template>
-  <StageShell title="고정지출 등록" base="홈" @back="navigateTo(`/settle/${planId}/checkin`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">고정지출 등록</h1>
       <AppCard class="flex flex-col gap-3">
         <AppInput v-model="name" label="항목 이름" placeholder="예: 관리비" />
         <label class="text-label2 text-ink flex flex-col gap-1.5">
@@ -132,11 +137,11 @@ async function remove(expenseId: number) {
       여기는 값을 넣는 화면이라 등록을 마치고 돌아가는 길이 눈에 보여야 한다.
     -->
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/checkin`)">
-        등록 마치고 돌아가기
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/checkin`)">
+          등록 마치고 돌아가기
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

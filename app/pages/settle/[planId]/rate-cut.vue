@@ -3,6 +3,7 @@ import { usePolicyApi, type PreferentialRateChange } from '~/api/policy';
 import { usePropertyApi } from '~/api/property';
 import { useSettlementApi, type RateCutRight } from '~/api/settlement';
 import { statusFrom } from '~/utils/error';
+import { HOME_STEPS } from '~/components/home/steps';
 
 /**
  * 홈 4-6 · 금리인하요구권.
@@ -61,12 +62,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <StageShell title="금리인하요구권" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        은행 대출을 받은 사람만 해당돼. 버팀목은 국토부 고시 금리라 은행이 깎아줄 권한이 없어
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">금리인하요구권</h1>
 
       <!-- 판정은 실행된 대출 상품에서 나온다. 없으면 대상 여부를 단정하지 않는다. -->
       <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
@@ -148,21 +150,23 @@ onMounted(() => {
       확인으로 둔다.
     -->
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton
-          v-if="eligible"
-          variant="strong"
-          @click="navigateTo(`/settle/${planId}/rate-cut-detail`)"
-        >
-          은행에 신청
-        </AppButton>
-        <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton
+            v-if="eligible"
+            variant="strong"
+            @click="navigateTo(`/settle/${planId}/rate-cut-detail`)"
+          >
+            은행에 신청
+          </AppButton>
+          <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)"
+            >확인</AppButton
+          >
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

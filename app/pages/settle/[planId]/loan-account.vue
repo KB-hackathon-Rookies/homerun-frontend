@@ -11,6 +11,7 @@ import {
 import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
 
 /**
  * 홈 4-0 · 실행 대출 등록.
@@ -224,12 +225,13 @@ async function save() {
 </script>
 
 <template>
-  <StageShell title="실행 대출 등록" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        실제로 실행된 대출을 넣어줘. 이걸 알아야 월 이자랑 주거비를 정확히 계산해줄 수 있어
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">실행 대출 등록</h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">대출 정보를 불러오는 중이에요…</p>
 
@@ -341,14 +343,14 @@ async function save() {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="pending || saving || !ready" @click="save">
-        {{ saving ? '저장 중…' : saved ? '대출 정보 수정하기' : '대출 정보 저장하기' }}
-      </AppButton>
-      <AppButton v-if="saved" variant="white" @click="navigateTo(`/settle/${planId}/checkin`)">
-        이번 달 상태 보러가기
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" :disabled="pending || saving || !ready" @click="save">
+          {{ saving ? '저장 중…' : saved ? '대출 정보 수정하기' : '대출 정보 저장하기' }}
+        </AppButton>
+        <AppButton v-if="saved" variant="white" @click="navigateTo(`/settle/${planId}/checkin`)">
+          이번 달 상태 보러가기
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

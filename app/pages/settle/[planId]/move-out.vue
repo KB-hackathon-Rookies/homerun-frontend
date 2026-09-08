@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { MOVE_OUT_RETURNS, MOVE_OUT_STEPS } from '~/components/settle/lifecycle';
+import { HOME_STEPS } from '~/components/home/steps';
 
 /**
  * 홈 4-10 · 퇴거 준비.
@@ -17,10 +18,13 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <StageShell title="퇴거 준비" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>보증금 받고 대출 갚는 흐름이야. 중간에 꼬이면 곤란해져</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">퇴거 준비</h1>
 
       <h2 class="text-card-title text-ink-hero font-bold">퇴거 순서</h2>
 
@@ -59,16 +63,16 @@ const checked = ref<Record<string, boolean>>({});
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/move-out-detail`)">
-          퇴거 준비
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/move-out-detail`)">
+            퇴거 준비
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>
