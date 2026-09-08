@@ -28,8 +28,10 @@ function safeUrl(value: string) {
 
 function inline(source: string) {
   const codes: string[] = [];
+  // 자리표시자는 마크다운 문법 문자(_, *, ` 등)를 피해 사설영역(PUA) 문자로 감싼다.
+  // 밑줄을 쓰면 뒤의 이탤릭(_..._) 치환에 먹혀 복원이 깨진다.
   let value = escapeHtml(source).replace(/`([^`]+)`/g, (_match, code: string) => {
-    const token = `@@@COACH_CODE_${codes.length}@@@`;
+    const token = `${codes.length}`;
     codes.push(`<code>${code}</code>`);
     return token;
   });
@@ -51,8 +53,12 @@ function inline(source: string) {
     .replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>');
 
   return value
-    .replace(/@@@COACH_CODE_(\d+)@@@/g, (_match, index: string) => codes[Number(index)] ?? '')
-    .replace(/\r?\n/g, '<br />');
+    .replace(/\ue000(\d+)\ue001/g, (_match, index: string) => codes[Number(index)] ?? '')
+    .replace(/\r?\n/g, '<br />')
+    .replace(
+      /[\u2460-\u2473]/g,
+      (ch) => `<span class="num-badge">${ch.charCodeAt(0) - 0x2460 + 1}</span>`,
+    );
 }
 
 function renderMarkdown(source: string) {
@@ -270,5 +276,22 @@ const rendered = computed(() => renderMarkdown(props.content));
   background: var(--color-surface-press);
   color: var(--color-ink-hero);
   font-weight: 700;
+}
+
+/* 본문 속 동그라미 숫자(①②③…). 유니코드 글리프는 얇아 안 보여서, 브랜드색 원 배지로 그린다. */
+.markdown-content :deep(.num-badge) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.15rem;
+  border-radius: 9999px;
+  background: var(--color-primary-strong);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: -0.2em;
 }
 </style>
