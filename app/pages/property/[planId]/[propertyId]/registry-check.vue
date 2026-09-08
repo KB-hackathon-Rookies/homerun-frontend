@@ -2,6 +2,7 @@
 import { usePropertyApi, type OfficialPriceSource, type RegistryStepPatch } from '~/api/property';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루-3 등기부 체크리스트 (STEP 4).
@@ -174,6 +175,8 @@ async function save() {
       </AppCard>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+
+      <CoachTime :sheets="[COACH_TIME.registryChecklist]" />
     </div>
 
     <StepFooter

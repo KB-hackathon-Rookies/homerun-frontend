@@ -3,6 +3,7 @@ import type { LoanCard } from '~/api/policy';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useProperty } from '~/composables/useProperty';
 import { trafficTone } from '~/components/property/trafficLight';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루-4 매물 상세.
@@ -109,6 +110,8 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
           </p>
         </section>
       </template>
+
+      <CoachTime :sheets="[COACH_TIME.emptyJeonse]" />
     </div>
 
     <StepFooter

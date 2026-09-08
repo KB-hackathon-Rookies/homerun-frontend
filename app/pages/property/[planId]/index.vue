@@ -2,6 +2,7 @@
 import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
 import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루 매물 목록.
@@ -111,6 +112,8 @@ onMounted(async () => {
           :verdicts="verdicts[property.propertyId] ?? []"
         />
       </button>
+
+      <CoachTime :sheets="[COACH_TIME.preContract]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">

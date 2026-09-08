@@ -5,6 +5,7 @@ import { usePropertyApi } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루 매물 등록 — 도로명 주소 검색.
@@ -57,6 +58,37 @@ const searchConditions = computed(() =>
     .filter(Boolean)
     .join(' · '),
 );
+
+/**
+ * 임대인이 전세대출에 협조하기로 했는가.
+ *
+ * 시안 `Card/임대인 협조` 다. 법적 의무는 아닌데 실무에서는 협조가 없으면
+ * 대출이 안 나간다 — 계약하고 나서 알면 계약금이 걸린 채로 막힌다. 그래서
+ * 등록 전에 한 번 짚는다.
+ *
+ * **서버로 보내지 않는다.** 등록 API 에 받을 칸이 없다. 저장 못 하는 값을 붙잡고
+ * 등록을 막으면 답을 지어내게 되므로, 여기서는 묻고 알려주기만 한다.
+ */
+type LandlordConsent = 'AGREED' | 'NOT_ASKED' | 'REFUSED';
+
+const CONSENT_OPTIONS: { value: LandlordConsent; label: string }[] = [
+  { value: 'AGREED', label: '확인했고 협조 가능하대요' },
+  { value: 'NOT_ASKED', label: '아직 안 물어봤어요' },
+  { value: 'REFUSED', label: '거부 의사를 밝히셨어요' },
+];
+
+const consent = ref<LandlordConsent | null>(null);
+
+/** 고른 답에 붙는 말. 아직 안 골랐으면 아무 말도 안 한다. */
+const consentNotice = computed(() => {
+  if (consent.value === 'NOT_ASKED') {
+    return '중개사를 통해 먼저 물어보세요. 계약 뒤에 알면 계약금이 걸린 채로 막혀요';
+  }
+  if (consent.value === 'REFUSED') {
+    return '거부해도 매물이 바로 불가가 되진 않아요. 다만 이대로면 대출 실행이 어려우니 다른 매물도 같이 보세요';
+  }
+  return '';
+});
 
 /** 실보증금이 희망예산을 넘는가. 서버 판정과 별개로 등록 전에 먼저 알려준다. */
 const overBudget = computed(
@@ -195,6 +227,20 @@ async function start() {
           ⚠️ 실제 보증금이 희망예산을 넘어요. 등록은 되지만 예산 초과로 표시돼요.
         </p>
       </AppCard>
+
+      <!--
+        협조 여부는 서버에 보낼 칸이 없어 저장하지 않는다. 그래도 묻는 이유는,
+        계약하고 나서 알면 계약금이 걸린 채로 막히기 때문이다.
+      -->
+      <AppCard class="flex flex-col gap-3">
+        <p class="text-body3 text-ink-hero font-bold">
+          임대인에게 전세대출 협조를 확인하셨나요?
+        </p>
+        <PillGroup v-model="consent" :options="CONSENT_OPTIONS" />
+        <p v-if="consentNotice" class="text-caption2 text-ink-hero-body">{{ consentNotice }}</p>
+      </AppCard>
+
+      <CoachTime :sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">

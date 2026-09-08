@@ -13,6 +13,7 @@ import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루-4d 은행 상담 카드 리스트.
@@ -268,6 +269,8 @@ onMounted(async () => {
           {{ note }}
         </p>
       </div>
+
+      <CoachTime :sheets="[COACH_TIME.bankConsult]" />
     </div>
 
     <StepFooter

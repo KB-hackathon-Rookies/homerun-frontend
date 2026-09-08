@@ -11,6 +11,7 @@ import {
   RESULT_OPTIONS,
 } from '~/components/property/consultation';
 import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루-6b 상담 결과 입력.
@@ -215,6 +216,8 @@ async function save() {
       </p>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+
+      <CoachTime :sheets="[COACH_TIME.rejected]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">

@@ -12,6 +12,7 @@ import {
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루-7 최종 확정.
@@ -86,6 +87,15 @@ const rows = computed(() => {
 });
 
 /**
+ * 2루 안착 축하. 시안 `2루 15 · 안착 (딤 · 축하)` 이다.
+ *
+ * 서버가 완료를 받아준 **뒤에** 뜬다. 저장하기 전에 띄우면 실패했는데 축하를
+ * 본 꼴이 된다. 여기서 3루가 시작되는 걸 알려주지 않으면 화면이 소리 없이
+ * 바뀌어, 2루를 끝냈다는 것도 모르고 넘어간다.
+ */
+const arrived = ref(false);
+
+/**
  * 확정을 서버에 남기고 3루로 넘어간다.
  *
  * 화면에 "확정된 조건" 을 그려 놓고 넘어가기만 하면, 3루가 계약 초안을
@@ -109,7 +119,8 @@ async function proceed() {
     if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
     await useSecondBaseApi().complete(planId, decision.decisionRevision, plan.ruleVersion);
 
-    await navigateTo(`/contract/${planId}/visit`);
+    // 서버가 완료를 받아준 뒤에만 축하한다. 3루로는 사용자가 눌러서 넘어간다.
+    arrived.value = true;
   } catch (cause) {
     saveError.value = messageFrom(cause, '확정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -201,6 +212,8 @@ onMounted(async () => {
       </p>
 
       <p class="text-caption2 text-ink-muted">{{ title }}</p>
+
+      <CoachTime :sheets="[COACH_TIME.depositOrder]" />
     </div>
 
     <StepFooter
@@ -223,5 +236,26 @@ onMounted(async () => {
 
       3루 진행 (부동산 계약)
     </StepFooter>
+
+    <!--
+      2루 안착. 닫으면 확정 화면에 그대로 남는다 — 축하를 놓쳤다고 3루로
+      못 가는 건 아니어야 한다.
+    -->
+    <DimOverlay v-if="arrived" @close="arrived = false">
+      <div class="flex flex-col items-center gap-2.5 text-center">
+        <p class="text-caption1 text-primary-strong">2루 안착!</p>
+        <h2 class="text-headline1 text-ink-hero">이 리스트 들고 부동산 가자</h2>
+        <p class="text-label2 text-ink-hero-body">
+          매물 진단부터 은행 사전상담까지 끝났어. 부동산에서 집을 정하면 3루가 시작돼
+        </p>
+        <p class="bg-surface-info rounded-pill text-caption2 text-primary-strong px-3.5 py-2">
+          ⚾ 다음은 3루 · 실행
+        </p>
+      </div>
+
+      <AppButton variant="strong" class="mt-5" @click="navigateTo(`/contract/${planId}/visit`)">
+        부동산 가기
+      </AppButton>
+    </DimOverlay>
   </PhoneFrame>
 </template>
