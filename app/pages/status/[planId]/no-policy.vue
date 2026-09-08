@@ -64,7 +64,7 @@ onMounted(async () => {
       title="적용 가능한 정책이 없습니다"
       :badge="`${causes.length}건`"
       base="2루"
-      @back="navigateTo(`/result/${planId}/match`)"
+      @back="navigateTo('/home')"
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
@@ -95,7 +95,7 @@ onMounted(async () => {
             :key="item.policyCode"
             :label="item.policyName"
             :description="`${item.conditionLabel} · ${formatDotDate(item.eligibleFrom)}부터 · ${item.daysRemaining}일 남음`"
-            @select="navigateTo(`/result/${planId}/match`)"
+            @select="navigateTo(`/result/${planId}/match?from=no-policy`)"
           />
         </SectionCard>
 
@@ -122,8 +122,16 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton @click="navigateTo(`/result/${planId}/match`)">판정 결과 보러 가기</AppButton>
+    <!--
+      결과 화면으로 돌아갈 때는 `from=no-policy` 를 붙인다. 이 표시가 없으면
+      결과 화면의 guard 가 같은 판정으로 다시 이 화면으로 밀어내 무한 루프가 된다.
+      홈으로 나가는 길도 함께 둔다 — 뒤로가기만으로는 빠져나오지 못했다.
+    -->
+    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+      <AppButton @click="navigateTo(`/result/${planId}/match?from=no-policy`)">
+        판정 결과 보러 가기
+      </AppButton>
+      <AppButton variant="white" @click="navigateTo('/home')">홈으로</AppButton>
     </footer>
   </PhoneFrame>
 </template>
