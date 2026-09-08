@@ -53,6 +53,8 @@ export interface DiagnosisStepPatch {
   employmentMonths?: number;
   monthlyIncome?: number;
   netAssets?: number;
+  /** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 시 확인 대상이라 실제 값을 받아야 한다. */
+  availableCash?: number;
   incomeSource?: FinancialValueSource;
   assetSource?: FinancialValueSource;
   financialDataConfirmed?: boolean;
@@ -213,10 +215,15 @@ export function usePlanApi() {
       return data.data;
     },
 
-    /** 한 단계만 저장한다. 서버가 다음 단계와 새 `revision` 을 돌려준다. */
+    /**
+     * 한 단계만 저장한다. 서버가 다음 단계와 새 `revision` 을 돌려준다.
+     *
+     * REVIEW 는 문진 마지막 확인 단계다. 저장하면 서버가 1루 완료 필수 입력이 다
+     * 찼는지 검증하므로, 1루 최종 제출 직전에 이 단계를 남긴다.
+     */
     async saveStep(
       planId: number,
-      step: DiagnosisStep,
+      step: DiagnosisStep | 'REVIEW',
       expectedRevision: number,
       patch: DiagnosisStepPatch,
     ) {
@@ -225,6 +232,18 @@ export function usePlanApi() {
         { expectedRevision, ...patch },
       );
       return data.data;
+    },
+
+    /**
+     * 계획 단계(관문)를 완료한다. 서버가 완료를 승인해야 다음 단계가 열린다.
+     *
+     * BENCH_ONBOARDING 을 완료하지 않으면 계획이 BENCH 에 남아, 진단을 진행해도
+     * 대시보드 단계·이어하기와 화면이 어긋난다. 준비 문진을 마친 뒤 이걸 부른다.
+     */
+    async completeStep(planId: number, stepCode: string, ruleVersion: string) {
+      await $api.post<ApiResponse<unknown>>(`${BASE}/${planId}/steps/${stepCode}/complete`, {
+        ruleVersion,
+      });
     },
   };
 }
