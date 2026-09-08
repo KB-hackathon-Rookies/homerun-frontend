@@ -4,7 +4,7 @@ import { needsResidentCert } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
 
 /**
- * 3루 7 · 전입세대확인서 (D-12).
+ * 3루 8 · 전입세대확인서 (D-12).
  *
  * **다가구·단독 + 안심전세일 때만** 필요하다. 다세대면 건너뛴다 — 한
  * 건물에 세대가 여럿인 집만 앞선 임차인을 확인해야 하기 때문이다.
@@ -48,7 +48,7 @@ onMounted(async () => {
     <StageBar
       title="D-12 전입세대확인서"
       base="3루"
-      @back="navigateTo(`/contract/${planId}/bank-visit`)"
+      @back="navigateTo(`/contract/${planId}/docs`)"
     />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
