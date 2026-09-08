@@ -67,6 +67,26 @@ const notified = ref(false);
  */
 const created = ref<PlanResponse | null>(null);
 
+/*
+ * 앞선 시도가 계획을 만든 뒤에 끊겼으면 그 계획을 이어 쓴다.
+ *
+ * 같은 화면 안에서의 재시도는 `created` 가 막아 준다. 그런데 새로고침하거나 화면을
+ * 나갔다 오면 그 기억이 사라져서, 다시 문진을 마치는 순간 계획이 하나 더 생긴다.
+ * 서버 `create` 에는 중복 방지가 없어 부르는 대로 만들고, `GET /plans/active` 는
+ * 가장 최근 것을 주므로 **앞서 만든 계획이 그대로 가려진다.**
+ *
+ * 벤치에 남아 있는 계획만 이어 쓴다. 진단을 이미 시작한 계획까지 여기서 집어 오면
+ * 새로 시작하려던 사람의 계획을 덮어쓰게 된다.
+ */
+onMounted(async () => {
+  try {
+    const active = await usePlanApi().getActive();
+    if (active.stage === 'BENCH') created.value = active;
+  } catch {
+    // 진행 중인 계획이 없으면 404 다. 그때는 새로 만드는 게 맞다.
+  }
+});
+
 /** 처음 독립하면 보증금 질문이 의미가 없다. */
 const asksDeposit = computed(() => situation.value === 'RENTING');
 /*
