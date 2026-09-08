@@ -109,6 +109,10 @@ export interface PlanInput {
   employmentType: EmploymentType | null;
   companySize: CompanySize | null;
   employmentMonths: number | null;
+  /** 기존 전세자금대출 유무. 서버가 돌려주는데 타입에 없어서 이어하기가 복원하지 못했다. */
+  existingJeonseLoan: boolean | null;
+  /** 세대원·배우자 대출까지 없음을 사용자가 확인했는가. */
+  prohibitedLoanConfirmed: boolean | null;
   /** 오픈뱅킹에서 읽어온 값인가, 사용자가 적은 값인가. */
   incomeSource: FinancialValueSource | null;
   /** 조회값을 사용자가 확인했는가. 확인 전에는 판정에 쓰지 않는다. */

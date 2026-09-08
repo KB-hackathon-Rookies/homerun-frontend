@@ -73,3 +73,16 @@ export const parseManwon = (input: string): Parsed<number> => parse(wonFromManwo
 
 /** 건수. 빈 값은 `{ value: null, error: null }` 이다. */
 export const parseCount = (input: string): Parsed<number> => parse(countFromInput, input);
+
+/**
+ * 저장된 원 단위 금액을 만 원 입력칸에 되돌려 놓는다.
+ *
+ * **버리지 않는다.** 3,456,789원을 `345` 로 잘라 보여주면 사용자가 다른 값을 고치고
+ * 저장하는 순간 6,789원이 사라진다. `345.6789` 로 그대로 보여주고, 위 파서가 소수
+ * 넷째 자리까지 받으므로 다시 저장해도 값이 같다.
+ */
+export function manwonFromWon(won: number | null | undefined): string {
+  if (won === null || won === undefined) return '';
+  // 소수점 뒤 남는 0 은 떼어 낸다. 300 만 원을 `300.0000` 으로 보여줄 이유가 없다.
+  return String(Number((won / 10_000).toFixed(4)));
+}

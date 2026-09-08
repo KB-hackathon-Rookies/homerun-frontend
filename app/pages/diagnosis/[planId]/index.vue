@@ -242,14 +242,28 @@ function restore(input: PlanInput | null) {
  * 자리를 맞춘다. 다음 STEP 이 이 화면에 없으면(재무·희망보증금·지역·검토) 바로
  * 다음 화면으로 보낸다 — 새 계획을 만들지 않고 기존 planId 를 그대로 쓴다.
  */
+/** 뒤 화면에서 앞 답을 고치러 돌아왔는가. 이어하기와 구분해야 제자리를 돌지 않는다. */
+const editing = route.query.edit === '1';
+
 onMounted(async () => {
   try {
     const resumed = await usePlanApi().resume(planId);
     revision.value = resumed.revision;
     restore(resumed.input);
 
+    /*
+     * 이어하기면 서버가 정한 자리로 간다. 다음 STEP 이 이 화면에 없으면 다음 화면으로.
+     *
+     * 다만 뒤 화면에서 **고치러 돌아온 것**이라면(`?edit=1`) 밀어내지 않는다. 그러면
+     * 이전을 눌러도 곧장 되돌려 보내져 앞 답을 고칠 수 없다. 그때는 이 화면의 마지막
+     * 질문에 세운다 — 방금 지나온 자리가 거기다.
+     */
     const target = stepIndex(resumed.resumeStep);
     if (target === -1) {
+      if (editing) {
+        index.value = QUESTIONS.length - 1;
+        return;
+      }
       await navigateTo(`/diagnosis/${planId}/finance`, { replace: true });
       return;
     }
