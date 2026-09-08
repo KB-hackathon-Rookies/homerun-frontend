@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
-import { useSettlementApi, type SettlementDashboard } from '~/api/settlement';
+import { useSettlementApi, type LoanAccount, type SettlementDashboard } from '~/api/settlement';
 import { PRODUCT_LABEL } from '~/components/contract/labels';
 import type { BadgeTone } from '~/components/settle/StatusBadge.vue';
-import { messageFrom } from '~/utils/error';
+import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { SETTLE_TOPICS, TASK_TOPIC, ddayLabel, settlePath, urgencyOf } from '~/utils/settle';
 
@@ -23,8 +23,17 @@ const planId = Number(route.params.planId);
 const dashboard = ref<Dashboard | null>(null);
 const decision = ref<PropertyDecision | null>(null);
 const settlement = ref<SettlementDashboard | null>(null);
+/**
+ * 등록된 실행 대출. 4루 계산의 뿌리다 — 없으면 체크인·금리인하요구권·
+ * 사후자산심사가 통째로 빈다. 그래서 정착 첫 화면이 이걸 먼저 챙긴다.
+ */
+const loan = ref<LoanAccount | null>(null);
+const loanChecked = ref(false);
 const pending = ref(true);
 const error = ref('');
+
+/** 아직 등록 전인가. 확인이 끝나기 전엔 없다고 단정하지 않는다. */
+const needsLoan = computed(() => loanChecked.value && !loan.value);
 
 /** 실제 전입 완료일을 기준으로 백엔드가 계산한 정착 기간이다. */
 const settledDays = computed(() => settlement.value?.daysSinceIndependence ?? null);
@@ -50,8 +59,14 @@ const todos = computed(() =>
     })),
 );
 
-/** 이자는 확정한 대출 조건에서만 나온다. 한도나 금리를 못 들었으면 계산하지 않는다. */
+/**
+ * 이번 달 이자.
+ *
+ * 등록된 실행 대출이 있으면 서버가 센 값을 그대로 쓴다. 없을 때만 확정 상담
+ * 조건으로 추정하고, 그것도 없으면 계산하지 않는다.
+ */
 const monthlyInterest = computed(() => {
+  if (loan.value) return loan.value.monthlyInterest;
   const found = decision.value?.consultation;
   if (!found?.approvedLimit || !found.quotedRate) return null;
   return Math.round((found.approvedLimit * found.quotedRate) / 100 / 12);
@@ -76,6 +91,18 @@ onMounted(async () => {
     .decision(planId)
     .then((found) => (decision.value = found))
     .catch(() => {});
+
+  // 등록 전이면 404 다. 다른 실패는 "없다" 가 아니라 "모른다" 라, 이때는
+  // 등록 안내를 띄우지 않는다 -- 이미 넣은 사람에게 또 넣으라고 하면 안 된다.
+  useSettlementApi()
+    .loanAccount(planId)
+    .then((found) => {
+      loan.value = found;
+      loanChecked.value = true;
+    })
+    .catch((cause) => {
+      if (statusFrom(cause) === 404) loanChecked.value = true;
+    });
 });
 </script>
 
@@ -113,9 +140,40 @@ onMounted(async () => {
           <MetricCard
             label="이번 달 이자"
             :value="monthlyInterest === null ? '—' : formatKoreanMoney(monthlyInterest)"
-            :note="monthlyInterest === null ? '확정한 대출 조건이 없어요' : '확정 조건 기준 추정'"
+            :note="
+              loan
+                ? '등록한 실행 대출 기준'
+                : monthlyInterest === null
+                  ? '확정한 대출 조건이 없어요'
+                  : '확정 조건 기준 추정'
+            "
           />
         </div>
+
+        <!--
+          4루 계산이 전부 실행 대출 한 건에 달려 있다. 등록 전에는 할 일보다
+          이걸 먼저 보여야 다음 화면들이 비어 있는 이유를 알 수 있다.
+        -->
+        <AppCard v-if="needsLoan" radius="button" class="flex flex-col gap-2">
+          <p class="text-card-title text-ink-hero font-bold">실행된 대출을 등록해주세요</p>
+          <p class="text-caption-tight text-ink-hero-body font-normal">
+            월 이자·주거비, 금리인하요구권, 사후자산심사가 모두 이 정보로 계산돼요. 상담 때 값은
+            미리 채워둘게요
+          </p>
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/loan-account`)">
+            실행 대출 등록하기
+          </AppButton>
+        </AppCard>
+
+        <!-- 등록한 뒤에도 조건은 바뀐다(연장·금리인하). 고치러 갈 길을 남긴다. -->
+        <button
+          v-else-if="loan"
+          type="button"
+          class="text-caption-tight text-primary-strong self-start font-semibold"
+          @click="navigateTo(`/settle/${planId}/loan-account`)"
+        >
+          실행 대출 정보 수정하기 →
+        </button>
 
         <h2 class="text-card-title text-ink-hero font-bold">지금 해야 할 일</h2>
 

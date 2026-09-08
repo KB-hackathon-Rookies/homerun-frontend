@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSettlementApi, type PostAssetReview } from '~/api/settlement';
 import { MISSED_ASSETS } from '~/components/settle/aftercare';
+import { statusFrom } from '~/utils/error';
 
 /**
  * 홈 4-3 · 사후자산심사.
@@ -17,6 +18,8 @@ const planId = Number(route.params.planId);
 
 const guide = ref<PostAssetReview | null>(null);
 const checked = ref<Record<string, boolean>>({});
+/** 대출이 아직 등록되지 않았는가(404). 대상 여부가 실행된 상품에서 나온다. */
+const needsLoan = ref(false);
 
 /** 기금대출(버팀목)만 대상이다. 못 읽었으면 단정하지 않는다. */
 const applies = computed(() => guide.value?.applicable ?? null);
@@ -25,7 +28,10 @@ onMounted(() => {
   useSettlementApi()
     .postAssetReview(planId)
     .then((found) => (guide.value = found))
-    .catch(() => {});
+    .catch((cause) => {
+      // 대출 미등록이면 404 다. 대상인지 아닌지 지어내지 않고 등록부터 안내한다.
+      if (statusFrom(cause) === 404) needsLoan.value = true;
+    });
 });
 </script>
 
@@ -34,7 +40,22 @@ onMounted(() => {
     <StageBar title="사후자산심사" base="홈" @back="navigateTo(`/settle/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <div v-if="applies !== false" class="bg-caution rounded-field flex flex-col gap-1 p-4">
+      <!-- 대상 여부는 실행된 대출 상품이 정한다. 없으면 어느 쪽으로도 단정하지 않는다. -->
+      <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
+        <p class="text-card-title text-primary-strong font-bold">대출 정보를 먼저 등록해주세요</p>
+        <p class="text-step text-ink-hero-body font-normal">
+          실행된 대출 상품을 알아야 사후자산심사 대상인지 알려드릴 수 있어요
+        </p>
+        <button
+          type="button"
+          class="bg-surface rounded-chip text-label2 text-primary-strong self-start px-3.5 py-2.5 font-semibold"
+          @click="navigateTo(`/settle/${planId}/loan-account`)"
+        >
+          실행 대출 등록하러 가기 →
+        </button>
+      </div>
+
+      <div v-else-if="applies !== false" class="bg-caution rounded-field flex flex-col gap-1 p-4">
         <p class="text-card-title font-bold text-white">대출 실행 후에도 심사가 남아 있어요</p>
         <p class="text-step font-normal text-white">
           기금대출은 사후자산심사를 해요. 부적격이 나오면 가산금리가 붙어요
