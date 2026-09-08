@@ -94,13 +94,18 @@ const STEPS: Step[] = [
   },
 ];
 
+const auth = useAuthStore();
+
 const index = ref(0);
 const step = computed(() => STEPS[index.value]!);
 const isLast = computed(() => index.value === STEPS.length - 1);
 
 function next() {
   if (isLast.value) {
-    navigateTo('/signup/terms');
+    // 이미 로그인한 사람은 회원가입이 아니라 곧바로 계획을 만들러 간다.
+    // (prep 에서 plan 을 생성하고 currentPlan 에 적어 홈이 그것을 읽는다.)
+    if (!auth.isAuthenticated) auth.restore();
+    navigateTo(auth.isAuthenticated ? '/prep' : '/signup/terms');
     return;
   }
   index.value += 1;
