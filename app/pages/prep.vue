@@ -10,8 +10,9 @@ import { messageFrom } from '~/utils/error';
  * 그래서 파일을 셋으로 쪼개지 않고 한 화면에서 단계를 넘긴다. 답이 쌓여야
  * 하고 뒤로 가기도 자연스럽게 붙는다.
  *
- * 마지막 답(전세·월세)이 나와야 플랜을 만들 수 있다. `leaseType` 이 생성
- * 파라미터라서다. 그래서 세 답을 모아 두었다가 끝에서 한 번에 보낸다.
+ * 플랜은 임대차 유형(`leaseType`)이 생성 파라미터다. 이번 대회는 전세 전용이라
+ * 월세는 선택지에서 빼고 전세(`JEONSE`)로 고정한다 — 월세 플랜이 만들어져 전세
+ * 판정에서 400 이 나던 경로 자체를 없앤다. 나머지 답은 모아 두었다가 끝에서 함께 보낸다.
  *
  * 처음 독립하는 사람에게는 지금 걸린 보증금이 없다. 그 경우 2단계를 건너뛴다.
  */
@@ -32,14 +33,11 @@ const SITUATIONS = [
 
 type Situation = (typeof SITUATIONS)[number]['value'];
 
-const LEASE_OPTIONS = [
-  { value: 'JEONSE', label: '전세' },
-  { value: 'WOLSE', label: '월세' },
-];
+/** 이번 대회는 전세 전용이라 임대차 유형을 전세로 고정한다. 월세는 노출하지 않는다. */
+const LEASE_TYPE: LeaseType = 'JEONSE';
 
 const situation = ref<Situation | null>(null);
 const deposit = ref('');
-const leaseType = ref<string | null>(null);
 
 const step = ref(0);
 const pending = ref(false);
@@ -52,7 +50,7 @@ const lastStep = computed(() => (skipsDeposit.value ? 1 : 2));
 const canProceed = computed(() => {
   if (step.value === 0) return !!situation.value;
   if (step.value === 1 && !skipsDeposit.value) return !!deposit.value;
-  return !!leaseType.value;
+  return true;
 });
 
 /** 숫자만 남긴다. "3,000" 처럼 쳐도 받는다. */
@@ -81,7 +79,7 @@ async function submit() {
   pending.value = true;
   error.value = '';
   try {
-    const plan = await create(leaseType.value as LeaseType);
+    const plan = await create(LEASE_TYPE);
     // 홈이 이 번호로 대시보드를 읽는다. 캐시로 적어 두고, 없으면 서버에서 되살린다.
     currentPlan.set(plan.id);
 
@@ -158,8 +156,11 @@ async function submit() {
       </QuestionCard>
 
       <template v-else>
-        <QuestionCard question="전세로 진행하시나요, 월세로 진행하시나요?">
-          <PillGroup v-model="leaseType" :options="LEASE_OPTIONS" />
+        <QuestionCard question="전세로 진행할게요">
+          <p class="text-label2 text-ink-hero-body">
+            지금은 전세 계약을 기준으로 안내해드려요. 월세는 아직 준비 중이라, 전세로 이어서
+            도와드릴게요.
+          </p>
         </QuestionCard>
 
         <div class="bg-surface border-line rounded-field border p-4">
