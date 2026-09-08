@@ -123,8 +123,8 @@ export default defineNuxtConfig({
     },
 
     devOptions: {
-      // 개발 중에 서비스워커가 끼면 고친 것이 바로 안 보인다.
-      enabled: false,
+      // 로컬에서도 FCM 권한·토큰 등록을 검증할 수 있도록 서비스워커를 등록한다.
+      enabled: true,
     },
   },
 

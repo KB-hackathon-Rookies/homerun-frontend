@@ -24,6 +24,7 @@ const balanceDate = ref('');
 const pending = ref(true);
 const saving = ref(false);
 const error = ref('');
+const pushNotice = ref('');
 
 /** 저장된 일정이 지금 화면의 날짜로 계산된 것인가. 날짜를 고치면 어긋난다. */
 const fresh = computed(
@@ -57,21 +58,39 @@ async function save() {
 
   saving.value = true;
   error.value = '';
+  pushNotice.value = '';
   try {
     await useContractApi().saveBalanceDate(planId, balanceDate.value);
     await load();
-    /*
-     * 마감이 실제로 생긴 순간이다. 여기서 묻는다.
-     *
-     * 첫 화면에서 물으면 대부분 거절하고, 한 번 거절하면 브라우저 설정에
-     * 들어가야 되돌릴 수 있다. 잔금일은 하루만 밀려도 되돌릴 수 없어서
-     * 알림이 실제로 쓸모 있어지는 이 자리에서 묻는 게 맞다.
-     */
-    await push.enable();
   } catch (cause) {
     error.value = messageFrom(cause, '일정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     saving.value = false;
+  }
+}
+
+/** D-30을 실제로 시작할 때 알림 권한을 받고, 결과를 숨기지 않는다. */
+async function start() {
+  // 한 번 실패한 뒤에도 일정 진행은 막지 않는다. 안내를 읽은 사용자는 다음 클릭으로 이어 간다.
+  if (pushNotice.value) {
+    await navigateTo(`/contract/${planId}/company-docs`);
+    return;
+  }
+
+  const enabled = await push.enable();
+  if (enabled) {
+    await navigateTo(`/contract/${planId}/company-docs`);
+    return;
+  }
+
+  if (push.permission.value === 'denied') {
+    pushNotice.value = '알림이 차단되어 있어요. 브라우저 사이트 설정에서 알림을 허용해주세요.';
+  } else if (push.permission.value === 'granted') {
+    pushNotice.value = '알림은 허용됐지만 기기 등록에 실패했어요. 잠시 후 다시 시도해주세요.';
+  } else if (push.permission.value === 'unsupported') {
+    pushNotice.value = '이 브라우저에서는 푸시 알림을 받을 수 없어요.';
+  } else {
+    pushNotice.value = '알림 권한을 허용하지 않았어요. 설정에서 언제든 다시 켤 수 있어요.';
   }
 }
 </script>
@@ -96,6 +115,12 @@ async function save() {
       </AppCard>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+      <p
+        v-else-if="pushNotice"
+        class="bg-badge-warning rounded-chip text-caption2 text-ink-hero p-3"
+      >
+        {{ pushNotice }}
+      </p>
       <p v-else-if="pending" class="text-label2 text-ink-muted">계약 정보를 불러오는 중이에요…</p>
 
       <template v-if="schedule?.milestones.length">
@@ -152,13 +177,15 @@ async function save() {
       <AppButton
         variant="strong"
         :disabled="!balanceDate || pending || saving"
-        @click="fresh ? navigateTo(`/contract/${planId}/company-docs`) : save()"
+        @click="fresh ? start() : save()"
       >
         {{
           saving
             ? '저장 중…'
             : fresh
-              ? '일정 저장하고 D-30 시작'
+              ? pushNotice
+                ? '알림 없이 D-30 시작'
+                : '알림 켜고 D-30 시작'
               : schedule?.milestones.length
                 ? '고친 날짜로 다시 계산하기'
                 : '일정 계산하기'
