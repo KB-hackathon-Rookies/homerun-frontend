@@ -6,7 +6,7 @@ import { usePush } from '~/composables/usePush';
 import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
-import { displayStage, resumePath } from '~/utils/stage';
+import { displayStage, laterStage, resumePath } from '~/utils/stage';
 
 /**
  * 홈 대시보드. 시안 0-3 · 메인 1~5.
@@ -150,7 +150,10 @@ const push = usePush();
 function resume() {
   const found = dashboard.value;
   if (!found || !planId.value) return;
-  navigateTo(resumePath(found.resume?.stage ?? found.currentStage, planId.value));
+  // 계획이 다음 단계로 넘어갔는데 마지막 방문 단계가 그 이전이면(예: 1루 완료 → 2루),
+  // 완료된 단계로 되돌리지 않고 현재 단계로 이어간다.
+  const target = laterStage(found.resume?.stage ?? found.currentStage, found.currentStage);
+  navigateTo(resumePath(target, planId.value));
 }
 
 onMounted(async () => {
@@ -225,7 +228,8 @@ async function recoverPlan() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-stage="dashboard?.currentStage">
+    <!-- 대시보드는 경로로 루를 알 수 없다. 계획이 오면 그 단계를 코치 FAB 에 넘긴다. -->
     <div class="h-statusbar bg-surface shrink-0" />
 
     <BrandBar bordered />

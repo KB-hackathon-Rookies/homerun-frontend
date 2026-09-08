@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyApi } from '~/api/property';
 import { messageFrom } from '~/utils/error';
+import { propertyStepRoute } from '~/utils/propertyStep';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -26,7 +27,13 @@ const error = ref('');
 
 onMounted(async () => {
   try {
-    revision.value = (await usePropertyApi().resume(planId, propertyId)).revision;
+    const workflow = await usePropertyApi().resume(planId, propertyId);
+    // STEP 3 은 워크플로가 VIOLATION 일 때만 저장된다. 앞 STEP 이거나 이미 지났으면 지금 단계로 보낸다.
+    if (workflow.currentStep !== 'VIOLATION') {
+      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), { replace: true });
+      return;
+    }
+    revision.value = workflow.revision;
   } catch (cause) {
     error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -51,7 +58,7 @@ async function next() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.buildingLedger]">
     <StageBar
       title="매물 등록"
       base="2루"
@@ -100,8 +107,6 @@ async function next() {
       </div>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
-      <CoachTime :sheets="[COACH_TIME.buildingLedger]" />
     </div>
 
     <StepFooter

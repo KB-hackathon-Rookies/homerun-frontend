@@ -108,7 +108,11 @@ async function proceed() {
   saving.value = true;
   saveError.value = '';
   try {
-    const decision = await usePropertyApi().decide(planId, propertyId, settled.value.consultationId);
+    const decision = await usePropertyApi().decide(
+      planId,
+      propertyId,
+      settled.value.consultationId,
+    );
 
     /*
      * 확정을 저장하는 것만으로는 계획이 2루에 남는다. 2루 최종 제출을 불러 서버가
@@ -140,7 +144,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.depositOrder]">
     <StageBar
       title="이걸로 진행할게요"
       base="2루"
@@ -170,8 +174,8 @@ onMounted(async () => {
       <AppCard v-else-if="incomplete.length" class="flex flex-col gap-3 p-5">
         <h2 class="text-body3 text-ink-hero font-bold">아직 확정할 수 없어요</h2>
         <p class="text-label2 text-ink-hero-body">
-          2루를 닫으려면 한 은행에서 <strong>상품 · 담보 · 승인한도 · 금리</strong> 를 모두 듣고 와야
-          해요. "가능" 은 들었지만 아래 항목을 아직 못 들은 상담뿐이에요
+          2루를 닫으려면 한 은행에서 <strong>상품 · 담보 · 승인한도 · 금리</strong> 를 모두 듣고
+          와야 해요. "가능" 은 들었지만 아래 항목을 아직 못 들은 상담뿐이에요
         </p>
 
         <ul class="flex flex-col gap-1.5">
@@ -212,8 +216,6 @@ onMounted(async () => {
       </p>
 
       <p class="text-caption2 text-ink-muted">{{ title }}</p>
-
-      <CoachTime :sheets="[COACH_TIME.depositOrder]" />
     </div>
 
     <StepFooter

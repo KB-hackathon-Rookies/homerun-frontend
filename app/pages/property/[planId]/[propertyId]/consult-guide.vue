@@ -39,7 +39,7 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.guaranteeAgency]">
     <StageBar
       title="은행 사전상담"
       base="2루"
@@ -81,8 +81,6 @@ const checked = ref<Record<string, boolean>>({});
           인쇄물이면 충분해요)
         </p>
       </div>
-
-      <CoachTime :sheets="[COACH_TIME.guaranteeAgency]" />
     </div>
 
     <StepFooter

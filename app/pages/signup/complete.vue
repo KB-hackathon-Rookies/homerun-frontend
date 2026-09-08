@@ -19,9 +19,9 @@ const greeting = computed(() =>
     <div class="h-statusbar shrink-0" />
 
     <div class="flex flex-1 flex-col items-center justify-center gap-4 px-6">
-      <!-- 피그마의 캐릭터 자리. 에셋이 들어오면 이 자리를 이미지로 바꾼다. -->
-      <span class="bg-surface-info size-hero grid place-items-center rounded-full">
-        <BrandMark tilted :wordmark="false" class="scale-150" />
+      <!-- AI 코치 백호. 축하 화면이라 글자보다 먼저 눈에 들어와야 한다. -->
+      <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
+        <img src="/mascot.png" alt="" class="h-25 w-auto" />
       </span>
 
       <h1 class="text-title3 text-ink-hero">가입 완료!</h1>

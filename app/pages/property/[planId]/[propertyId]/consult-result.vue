@@ -126,7 +126,7 @@ async function save() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.rejected]">
     <StageBar
       title="상담 결과 입력"
       base="2루"
@@ -211,13 +211,11 @@ async function save() {
         v-if="result === 'POSSIBLE' && incompleteTerms.length"
         class="bg-surface-brand rounded-chip text-caption2 text-ink-hero-body p-3"
       >
-        {{ incompleteTerms.join(' · ') }} 을(를) 못 들으면 이 상담으로는 2루를 닫을 수 없어요. 저장은
-        되니 나중에 확인해서 다시 남겨도 괜찮아요
+        {{ incompleteTerms.join(' · ') }} 을(를) 못 들으면 이 상담으로는 2루를 닫을 수 없어요.
+        저장은 되니 나중에 확인해서 다시 남겨도 괜찮아요
       </p>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
-      <CoachTime :sheets="[COACH_TIME.rejected]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
