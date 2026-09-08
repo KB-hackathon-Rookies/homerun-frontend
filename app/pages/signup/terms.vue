@@ -31,6 +31,7 @@ const optionalAgreed = computed(() =>
 
 const auth = useAuthStore();
 const signup = useSignupStore();
+const router = useRouter();
 const error = ref('');
 const pending = ref(false);
 
@@ -78,7 +79,15 @@ async function next() {
       <p class="text-caption1 text-ink-subtle text-center">
         선택항목에 동의하지 않아도 서비스 이용이 가능합니다.
       </p>
-      <AppButton :disabled="!canProceed || pending" @click="next">동의하고 계속하기</AppButton>
+      <!-- 피그마의 하단은 `[이전] [가입하기]` 두 칸이다. 상단 뒤로가기와 같은 곳으로 간다. -->
+      <div class="flex gap-2.5">
+        <div class="shrink-0 basis-1/3">
+          <AppButton variant="white" @click="router.back()">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton :disabled="!canProceed || pending" @click="next">동의하고 계속하기</AppButton>
+        </div>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

@@ -106,10 +106,18 @@ function social(provider: 'kakao' | 'google') {
         <AppButton variant="white" @click="social('google')">Google로 계속하기</AppButton>
       </div>
 
-      <p class="text-label2 text-ink-muted flex justify-center gap-1 pt-2">
+    </form>
+
+    <!--
+      피그마는 이 줄을 위쪽 구분선이 있는 고정 하단 바에 둔다. 폼 안에 흘려 넣으면
+      입력이 길어질수록 스크롤 아래로 밀려, 계정이 없는 사람이 가입하는 길을 찾지
+      못한다. 로그인 화면에서 가장 자주 눌리는 두 번째 길이라 바깥으로 뺀다.
+    -->
+    <footer class="px-gutter border-line bg-surface shrink-0 border-t pt-3 pb-cta-pad">
+      <p class="text-label2 text-ink-muted flex justify-center gap-1">
         아직 계정이 없나요?
         <NuxtLink to="/signup/terms" class="text-primary-deep font-medium">회원가입</NuxtLink>
       </p>
-    </form>
+    </footer>
   </PhoneFrame>
 </template>
