@@ -16,3 +16,12 @@ export function messageFrom(cause: unknown, fallback: string) {
   }
   return fallback;
 }
+
+/**
+ * 실패의 HTTP 상태 코드. 화면이 상태별로 다르게 대응해야 할 때 쓴다(예: 남의
+ * 리소스라 403·404 면 에러 대신 없는 셈 친다). axios 에러가 아니거나 응답이
+ * 오기 전에 끊겼으면 `null`.
+ */
+export function statusFrom(cause: unknown): number | null {
+  return axios.isAxiosError(cause) ? (cause.response?.status ?? null) : null;
+}
