@@ -54,12 +54,17 @@ onMounted(async () => {
         청년이면 낸 보증료를 전액 돌려받을 수 있어. 예산이 소진되면 마감이라 서두르는 게 좋아
       </CoachTip>
 
+      <!--
+        판정 문구가 금액 라벨 자리를 덮고 있었다. 그러면 "최대 40만원" 이 무슨
+        돈인지가 화면에서 사라진다 -- 라벨은 남기고 판정은 한 줄 더 붙인다.
+      -->
       <div class="bg-primary-strong rounded-field flex flex-col gap-1.5 p-4.5">
-        <p class="text-caption-tight text-on-brand font-normal">
-          {{ pending ? '자격을 판정하는 중이에요…' : verdict ? HEADLINE[verdict] : '예상 환급액' }}
-        </p>
+        <p class="text-caption-tight text-on-brand font-normal">예상 환급액 (청년 100%)</p>
         <p class="text-amount text-on-brand">최대 40만원</p>
         <p class="text-step text-on-brand font-normal">2025. 3. 31. 이전 가입은 30만원 한도</p>
+        <p v-if="pending || verdict" class="text-step text-on-brand font-semibold">
+          {{ pending ? '자격을 판정하는 중이에요…' : HEADLINE[verdict!] }}
+        </p>
       </div>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -101,10 +106,18 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
-        정부24로 신청하러 가기
-      </AppButton>
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <!-- 필수 요소 2번. 앞 단계는 반환보증 가입이다. -->
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}/return-guarantee`)">
+          이전
+        </AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
+          정부24로 신청
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>

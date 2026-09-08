@@ -228,14 +228,24 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        :disabled="!settlePath('fee-support', planId)"
-        @click="navigateTo(settlePath('fee-support', planId)!)"
-      >
-        보증료 지원 신청으로 가기
-      </AppButton>
+    <!--
+      필수 요소 넷은 반환보증 → 보증료 지원 → 사후자산심사 → 중개보수 순서다.
+      시안 하단 CTA 가 `[이전][다음]` 두 칸인 이유가 이 순서인데, 앞으로 가는
+      버튼만 두면 되돌아갈 길이 헤더 화살표뿐이 된다.
+    -->
+    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+      <div class="w-29 shrink-0">
+        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+      </div>
+      <div class="flex-1">
+        <AppButton
+          variant="strong"
+          :disabled="!settlePath('fee-support', planId)"
+          @click="navigateTo(settlePath('fee-support', planId)!)"
+        >
+          보증료 지원 신청
+        </AppButton>
+      </div>
     </footer>
   </PhoneFrame>
 </template>
