@@ -64,6 +64,17 @@ export function coachStageFor(path: string): PlanStage | null {
 }
 
 /**
+ * 두 단계 중 더 진행된(뒤에 있는) 단계.
+ *
+ * 계획이 서버에서 다음 단계로 넘어갔는데(예: 1루 완료 → 2루) 사용자가 아직 그 화면에
+ * 실제로 들어가지 않아 "마지막 방문 단계" 가 뒤처지는 경우가 있다. 이어하기가 이미 끝난
+ * 단계로 되돌아가지 않도록, 마지막 방문 단계와 현재 단계 중 더 앞선 쪽으로 보낸다.
+ */
+export function laterStage(a: PlanStage, b: PlanStage): PlanStage {
+  return STAGE_NODES.indexOf(displayStage(a)) >= STAGE_NODES.indexOf(displayStage(b)) ? a : b;
+}
+
+/**
  * 이어서 진행할 화면.
  *
  * 백엔드는 단계 말고 `locationCode` 도 주는데, 그 코드와 라우트를 짝지어 둔 표가

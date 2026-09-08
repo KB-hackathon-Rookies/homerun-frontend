@@ -7,7 +7,7 @@ import { usePush } from '~/composables/usePush';
 import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
-import { displayStage, resumePath } from '~/utils/stage';
+import { displayStage, laterStage, resumePath } from '~/utils/stage';
 
 /**
  * 홈 대시보드.
@@ -85,7 +85,10 @@ async function countUnread() {
 function resume() {
   const found = dashboard.value;
   if (!found || !planId.value) return;
-  navigateTo(resumePath(found.resume?.stage ?? found.currentStage, planId.value));
+  // 계획이 다음 단계로 넘어갔는데 마지막 방문 단계가 그 이전이면(예: 1루 완료 → 2루),
+  // 완료된 단계로 되돌리지 않고 현재 단계로 이어간다.
+  const target = laterStage(found.resume?.stage ?? found.currentStage, found.currentStage);
+  navigateTo(resumePath(target, planId.value));
 }
 
 onMounted(async () => {
