@@ -120,8 +120,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="반환보증 가입" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="반환보증 가입" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
@@ -233,7 +232,8 @@ onMounted(async () => {
       시안 하단 CTA 가 `[이전][다음]` 두 칸인 이유가 이 순서인데, 앞으로 가는
       버튼만 두면 되돌아갈 길이 헤더 화살표뿐이 된다.
     -->
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
       </div>
@@ -247,5 +247,6 @@ onMounted(async () => {
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

@@ -47,12 +47,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="반환보증 안내"
-      base="3루"
-      @back="navigateTo(`/contract/${planId}/settlement`)"
-    />
+  <StageShell title="반환보증 안내"
+   base="3루"
+   @back="navigateTo(`/contract/${planId}/settlement`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <CoachTip>잔금·전입신고 완료! 어떤 보증서로 받았느냐에 따라 할 일이 하나 더 있어</CoachTip>
@@ -100,7 +97,8 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
           이전
@@ -108,6 +106,7 @@ onMounted(async () => {
       </div>
       <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
     </footer>
+</template>
 
     <!-- 3루 안착 축하(시안 3루 13). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">
@@ -127,5 +126,5 @@ onMounted(async () => {
         </div>
       </div>
     </DimOverlay>
-  </PhoneFrame>
+  </StageShell>
 </template>

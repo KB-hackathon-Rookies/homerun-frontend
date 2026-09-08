@@ -103,8 +103,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="이번 달 상태" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="이번 달 상태" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <CoachTip>
@@ -200,7 +199,8 @@ onMounted(() => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <!--
         관리비가 주거비의 절반을 가른다. 등록 화면(`expenses`)이 이미 있는데
         여기서 잠겨 있어 아무도 닿지 못했다.
@@ -219,5 +219,6 @@ onMounted(() => {
         관리비를 넣으면 주거비와 RIR 이 더 정확해져요
       </p>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

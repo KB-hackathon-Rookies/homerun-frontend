@@ -44,12 +44,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="D-12 전입세대확인서"
-      base="3루"
-      @back="navigateTo(`/contract/${planId}/docs`)"
-    />
+  <StageShell title="D-12 전입세대확인서"
+   base="3루"
+   @back="navigateTo(`/contract/${planId}/docs`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">불러오는 중이에요…</p>
@@ -91,7 +88,8 @@ onMounted(async () => {
       </template>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/docs`)">
           이전
@@ -105,5 +103,6 @@ onMounted(async () => {
         {{ applies ? '발급 완료 처리' : '다음 단계로' }}
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

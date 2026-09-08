@@ -50,12 +50,9 @@ const PARTS: Part[] = [
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="등기부등본이란?"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
-    />
+  <StageShell title="등기부등본이란?"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/registry`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 pt-5 pb-6">
       <CoachTip>등기부등본은 을구의 근저당·가압류를 봐야 해. 발급부터 같이 안내해줄게</CoachTip>
@@ -83,7 +80,8 @@ const PARTS: Part[] = [
       </AppCard>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         @click="navigateTo(`/property/${planId}/${propertyId}/registry-cautions`)"
@@ -91,5 +89,6 @@ const PARTS: Part[] = [
         다음 — 주의사항 보기
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

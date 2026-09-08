@@ -14,8 +14,7 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="교육과 예방" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="교육과 예방" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>꾸준히 볼 것들이야. 필요할 때마다 꺼내서 다시 봐도 좋아</CoachTip>
@@ -37,7 +36,8 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <!--
         모듈 내용이 아직 없다. 목록은 보여주되 시작은 잠가 둔다. 다만 주 버튼이
         잠긴 화면이라 헤더 화살표 말고는 나갈 길이 없었다 -- `이전` 을 둔다.
@@ -52,5 +52,6 @@ const planId = Number(route.params.planId);
       </div>
       <p class="text-micro text-ink-muted text-center">교육 콘텐츠는 아직 준비 중이에요</p>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

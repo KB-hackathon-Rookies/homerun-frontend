@@ -144,12 +144,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.depositOrder]">
-    <StageBar
-      title="이걸로 진행할게요"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
-    />
+  <StageShell :coach-sheets="[COACH_TIME.depositOrder]" title="이걸로 진행할게요"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip
@@ -259,5 +256,5 @@ onMounted(async () => {
         부동산 가기
       </AppButton>
     </DimOverlay>
-  </PhoneFrame>
+  </StageShell>
 </template>

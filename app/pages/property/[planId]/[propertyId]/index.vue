@@ -73,8 +73,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)" />
+  <StageShell title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>매물 고르기 전에 미리 거를 수 있어. 여기 자동조회 판정부터 보고 시작하자</CoachTip>
@@ -117,5 +116,5 @@ onMounted(async () => {
     >
       {{ nextLabel }}
     </StepFooter>
-  </PhoneFrame>
+  </StageShell>
 </template>

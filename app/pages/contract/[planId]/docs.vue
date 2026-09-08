@@ -138,12 +138,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="D-14 서류 일괄 발급"
-      base="3루"
-      @back="navigateTo(`/contract/${planId}/bank-visit`)"
-    />
+  <StageShell title="D-14 서류 일괄 발급"
+   base="3루"
+   @back="navigateTo(`/contract/${planId}/bank-visit`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip v-if="pending || needsVisit">
@@ -254,7 +251,8 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/bank-visit`)">
           이전
@@ -264,5 +262,6 @@ onMounted(async () => {
         다음
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

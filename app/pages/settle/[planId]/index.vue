@@ -107,8 +107,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="홈" base="홈" @back="navigateTo('/home')" />
+  <StageShell title="홈" base="홈" @back="navigateTo('/home')">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">정착 현황을 불러오는 중이에요…</p>
@@ -222,7 +221,8 @@ onMounted(async () => {
       아래 탭바가 하단 안전영역 여백(`pb-tabbar-pad`)을 맡으므로 푸터는 `pb-cta-pad` 를
       쓰지 않는다. 둘 다 주면 여백이 겹쳐 버튼이 붕 뜬다.
     -->
-    <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-2.5">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-2.5">
       <AppButton
         variant="strong"
         :disabled="!settlePath('checkin', planId)"
@@ -231,6 +231,7 @@ onMounted(async () => {
         이번 달 관리 시작하기
       </AppButton>
     </footer>
+</template>
 
     <!--
       정착 화면에서 메인으로 돌아갈 길이 헤더의 뒤로가기 화살표뿐이었다.
@@ -238,5 +239,5 @@ onMounted(async () => {
       이 계획의 단계가 홈(4루)이라 `home` 을 현재 탭으로 둔다.
     -->
     <TabBar active="home" :plan-id="planId" />
-  </PhoneFrame>
+  </StageShell>
 </template>

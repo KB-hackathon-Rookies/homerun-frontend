@@ -35,8 +35,8 @@ const coachOpen = defineModel<boolean>('coachOpen', { default: false });
   >
     <StageBar :title="title" :base="base" @back="$emit('back')" />
 
-    <!-- 가운데만 스크롤한다. flex 자식이 넘칠 수 있게 min-h-0 이 필요하다. -->
-    <main class="min-h-0 flex-1 overflow-y-auto">
+    <!-- 가운데만 스크롤한다. flex 자식이 넘칠 수 있게 min-h-0 이 필요하다. 스크롤바는 숨긴다. -->
+    <main class="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
       <slot />
     </main>
 

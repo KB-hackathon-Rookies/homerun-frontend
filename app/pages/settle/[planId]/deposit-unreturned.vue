@@ -17,8 +17,7 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="보증금 미반환 대응" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="보증금 미반환 대응" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <div class="bg-surface border-danger-deep rounded-field flex flex-col gap-1 border p-4">
@@ -62,7 +61,8 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
       </div>
@@ -75,5 +75,6 @@ const planId = Number(route.params.planId);
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

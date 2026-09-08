@@ -46,12 +46,9 @@ async function next() {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.buildingLedger]">
-    <StageBar
-      title="매물 등록"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}`)"
-    />
+  <StageShell :coach-sheets="[COACH_TIME.buildingLedger]" title="매물 등록"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip
@@ -104,5 +101,5 @@ async function next() {
     >
       {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
     </StepFooter>
-  </PhoneFrame>
+  </StageShell>
 </template>

@@ -67,8 +67,7 @@ async function proceed() {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="계약" base="3루" @back="navigateTo(`/contract/${planId}/visit`)" />
+  <StageShell title="계약" base="3루" @back="navigateTo(`/contract/${planId}/visit`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
@@ -147,7 +146,8 @@ async function proceed() {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/visit`)">이전</AppButton>
       </div>
@@ -155,5 +155,6 @@ async function proceed() {
         {{ saving ? '기록 중…' : '확정일자 받기' }}
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

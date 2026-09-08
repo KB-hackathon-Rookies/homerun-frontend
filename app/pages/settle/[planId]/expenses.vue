@@ -74,8 +74,7 @@ async function remove(expenseId: number) {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="고정지출 등록" base="홈" @back="navigateTo(`/settle/${planId}/checkin`)" />
+  <StageShell title="고정지출 등록" base="홈" @back="navigateTo(`/settle/${planId}/checkin`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <AppCard class="flex flex-col gap-3">
@@ -132,10 +131,12 @@ async function remove(expenseId: number) {
       푸터가 없는 나머지 화면은 전부 `*-detail`(상세·딤)이라 뒤로가기만으로 충분하지만,
       여기는 값을 넣는 화면이라 등록을 마치고 돌아가는 길이 눈에 보여야 한다.
     -->
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/checkin`)">
         등록 마치고 돌아가기
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

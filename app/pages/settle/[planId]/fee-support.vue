@@ -46,8 +46,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="보증료 지원 신청" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="보증료 지원 신청" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <CoachTip>
@@ -106,7 +105,8 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <!-- 필수 요소 2번. 앞 단계는 반환보증 가입이다. -->
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}/return-guarantee`)">
@@ -119,5 +119,6 @@ onMounted(async () => {
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

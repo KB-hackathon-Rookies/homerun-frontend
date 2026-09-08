@@ -73,8 +73,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.preContract]">
-    <StageBar title="매물" base="2루" @back="navigateTo(`/result/${planId}/spec`)" />
+  <StageShell :coach-sheets="[COACH_TIME.preContract]" title="매물" base="2루" @back="navigateTo(`/result/${planId}/spec`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">매물을 불러오는 중이에요…</p>
@@ -123,7 +122,8 @@ onMounted(async () => {
       </button>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
       <!-- 잠긴 버튼만 두면 왜 안 눌리는지 모른다. 이유를 버튼 위에 적는다. -->
       <p v-if="full" class="text-caption2 text-ink-muted text-center">
         매물은 최대 {{ MAX_PROPERTIES }}개까지 등록할 수 있어요
@@ -145,5 +145,6 @@ onMounted(async () => {
         다음 — 최종 확정
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

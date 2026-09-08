@@ -306,8 +306,7 @@ function back() {
 </script>
 
 <template>
-  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[coach]">
-    <StageBar title="사용자 정보 입력" base="1루" @back="back" />
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[coach]" title="사용자 정보 입력" base="1루" @back="back">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
       <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
@@ -331,7 +330,8 @@ function back() {
       엄지가 닿는 자리에 되돌아갈 길이 없다. 첫 질문은 되돌아갈 앞 단계가 이
       화면에 없어서 시안대로 다음만 세운다.
     -->
-    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div v-if="index > 0" class="w-28 shrink-0">
         <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
       </div>
@@ -342,6 +342,7 @@ function back() {
         </AppButton>
       </div>
     </footer>
+</template>
 
     <!--
       준비 중 경로 안내(1루 7). 기혼·유주택·무직을 고르면 흐름을 멈추고 딤으로
@@ -359,5 +360,5 @@ function back() {
         </div>
       </div>
     </DimOverlay>
-  </PhoneFrame>
+  </StageShell>
 </template>

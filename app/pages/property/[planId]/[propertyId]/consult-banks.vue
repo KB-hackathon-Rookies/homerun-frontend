@@ -33,12 +33,9 @@ const start = () =>
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="상담 결과 입력"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
-    />
+  <StageShell title="상담 결과 입력"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <AppCard class="flex flex-col gap-2.5">
@@ -76,5 +73,5 @@ const start = () =>
     >
       {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
     </StepFooter>
-  </PhoneFrame>
+  </StageShell>
 </template>
