@@ -1,3 +1,4 @@
+import type { PlanInput } from '~/api/plan';
 import type { ApiResponse } from '~/types/api';
 
 /**
@@ -87,9 +88,42 @@ export type OpenBankingIncomeSyncStatus =
   | 'CONFIRMED_VALUE_PRESERVED';
 
 export interface PlanFinancialSync {
-  /** 서버가 오픈뱅킹으로 확정해 저장한 월 소득. 확정하지 못하면 `null`. */
+  /**
+   * 오픈뱅킹 거래내역에서 뽑은 월 소득 **추정값**. 급여를 못 찾으면 `null`.
+   *
+   * **저장된 값이 아니다.** 사용자가 직접 적어 둔 소득이 있거나 이미 확인을 마친
+   * 값이 있으면 서버는 그것을 지키고 이 추정값을 버린다. 그래서 화면에 올릴 금액은
+   * 여기가 아니라 `input` 에서 읽어야 한다.
+   */
   suggestedMonthlyIncome: number | null;
+  /** 서버가 추정값을 실제로 반영했는지, 무엇을 지켰는지. 다음 행동이 여기서 갈린다. */
   monthlyIncomeSyncStatus: OpenBankingIncomeSyncStatus;
+  /** 동기화 뒤 서버가 들고 있는 계획 입력. 적용할 소득도 기존 입력도 없으면 `null`. */
+  input: PlanInput | null;
+}
+
+/**
+ * 동기화 결과로 화면이 무엇을 해야 하는가.
+ *
+ * - `CONFIRM` — 추정값이 반영됐지만 아직 미확인이다. 확인을 받고 다음으로 간다.
+ * - `READY` — 이미 확인된 오픈뱅킹 소득이 있다. **다시 확인하면 서버가 409 로 거절한다.**
+ * - `MANUAL` — 오픈뱅킹 소득을 쓸 수 없다. 직접 입력으로 보낸다.
+ */
+export type IncomeSyncOutcome = 'CONFIRM' | 'READY' | 'MANUAL';
+
+export function incomeSyncOutcome(sync: PlanFinancialSync): IncomeSyncOutcome {
+  switch (sync.monthlyIncomeSyncStatus) {
+    case 'APPLIED':
+    case 'UNCHANGED':
+      return 'CONFIRM';
+    case 'CONFIRMED_VALUE_PRESERVED':
+      // 확인은 끝났지만 출처가 오픈뱅킹이 아니면 STEP 저장에서 출처 검증에 걸린다.
+      return sync.input?.incomeSource === 'OPEN_BANKING' ? 'READY' : 'MANUAL';
+    default:
+      // MANUAL_VALUE_PRESERVED — 사용자가 적은 값을 서버가 지켰다.
+      // NOT_APPLICABLE — 급여를 못 찾았다.
+      return 'MANUAL';
+  }
 }
 
 /** 계획 입력 엔드포인트. 오픈뱅킹 동기화·소득 확인은 여기에 붙는다. */

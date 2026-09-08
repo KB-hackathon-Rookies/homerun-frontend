@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFirstBaseApi } from '~/api/firstBase';
-import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
+import { incomeSyncOutcome, useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
 import {
   type DiagnosisResumeStep,
   type DiagnosisStep,
@@ -84,6 +84,9 @@ const regionId = ref<string | null>(null);
 
 /** 서버가 오픈뱅킹으로 확정해 저장한 월 소득(원). STEP 저장에 그대로 실어 보낸다. */
 const openBankingIncome = ref<number | null>(null);
+
+/** 오픈뱅킹을 골랐는데 직접 입력으로 되돌아온 이유. 없으면 빈 문자열. */
+const preservedIncomeNotice = ref('');
 
 /**
  * 화면은 만 원 단위로 받고 백엔드는 원 단위로 받는다. **검사한 뒤에** 바꾼다.
@@ -210,23 +213,39 @@ async function save(code: DiagnosisStep, patch: DiagnosisStepPatch) {
 /**
  * 오픈뱅킹 소득을 서버에 동기화하고 확인받는다.
  *
- * 서버가 소득을 확정하지 못하면(연동 실패·급여 미확인 등) 오픈뱅킹 소득을 쓸 수
- * 없으므로 직접 입력으로 돌린다. 확정했으면 그 값을 확인 처리하고 순자산 입력으로
- * 넘어간다.
+ * **서버가 늘 추정값을 저장하지는 않는다.** 사용자가 직접 적어 둔 소득이 있거나
+ * 이미 확인을 마친 값이 있으면 서버는 그것을 지키고 추정값을 버린다. 무엇을 했는지는
+ * `monthlyIncomeSyncStatus` 가 말하고, 실제로 저장된 값은 `input` 에 실려 온다.
+ *
+ * 전에는 상태를 보지 않고 추정값을 저장값처럼 쓰면서 확인을 무조건 호출했다. 그래서
+ * 수동 입력이 보존된 사용자는 확인 요청이 409(`PLAN_017`)로 튕겨 나가 이유도 모른 채
+ * 막혔고, 이미 확인된 사용자는 저장값과 다른 추정값을 다음 단계로 실어 보냈다.
  */
 async function confirmOpenBankingIncome() {
   const { syncPlanIncome, confirmPlanIncome } = useOpenBankingApi();
 
   const synced = await syncPlanIncome(planId);
-  if (synced.suggestedMonthlyIncome === null) {
+  const stored = synced.input;
+
+  // 서버가 들고 있는 값이 기준이다. 추정값은 반영됐을 때만 이 안에 들어 있다.
+  restore(stored);
+
+  const outcome = incomeSyncOutcome(synced);
+
+  if (outcome === 'MANUAL') {
+    // 왜 직접 입력으로 왔는지 말해 준다. 적어 둔 값이 그대로 있는데 설명이 없으면
+    // 오픈뱅킹이 실패한 것으로 읽힌다.
+    preservedIncomeNotice.value =
+      synced.monthlyIncomeSyncStatus === 'MANUAL_VALUE_PRESERVED'
+        ? '직접 입력해 두신 소득이 있어 그대로 두었어요. 오픈뱅킹 값으로 바꾸시려면 아래에서 고쳐주세요'
+        : '';
     useOpenBanking.value = 'MANUAL';
-    income.value = '';
     step.value = 'MANUAL';
     return;
   }
 
-  await confirmPlanIncome(planId);
-  openBankingIncome.value = synced.suggestedMonthlyIncome;
+  preservedIncomeNotice.value = '';
+  if (outcome === 'CONFIRM') await confirmPlanIncome(planId);
   // 동기화·확인으로 서버 revision 이 올라갔으니 최신값을 물려받는다.
   await load();
   step.value = 'ASSETS';
@@ -409,7 +428,12 @@ function back() {
       </QuestionCard>
 
       <QuestionCard v-else-if="step === 'MANUAL'" question="아래 정보를 직접 입력해주세요">
-        <p class="text-caption2 text-ink-hero-body">오픈뱅킹 조회값이 틀린 경우에만 사용해요</p>
+        <p v-if="preservedIncomeNotice" class="text-caption2 text-ink-hero-body">
+          {{ preservedIncomeNotice }}
+        </p>
+        <p v-else class="text-caption2 text-ink-hero-body">
+          오픈뱅킹 조회값이 틀린 경우에만 사용해요
+        </p>
         <AppInput
           v-model="income"
           :error="parsedIncome.error ?? ''"
