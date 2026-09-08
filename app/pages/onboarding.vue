@@ -3,7 +3,6 @@ import type { Base } from '~/components/common/StepIndicator.vue';
 import type { MatchRow } from '~/components/onboarding/MatchCard.vue';
 import type { SettleRow } from '~/components/onboarding/SettleCard.vue';
 import type { Task } from '~/components/onboarding/TaskCard.vue';
-import { useAuthStore } from '~/stores/auth';
 
 /**
  * OB-01 ~ OB-04 온보딩.
@@ -95,18 +94,15 @@ const STEPS: Step[] = [
   },
 ];
 
-const auth = useAuthStore();
-
 const index = ref(0);
 const step = computed(() => STEPS[index.value]!);
 const isLast = computed(() => index.value === STEPS.length - 1);
 
 function next() {
   if (isLast.value) {
-    // 이미 로그인한 사람은 회원가입이 아니라 곧바로 계획을 만들러 간다.
-    // (prep 에서 plan 을 생성하고 currentPlan 에 적어 홈이 그것을 읽는다.)
-    if (!auth.isAuthenticated) auth.restore();
-    navigateTo(auth.isAuthenticated ? '/prep' : '/signup/terms');
+    // 이 화면은 웰컴의 "시작하기" 로 들어오는 로그인 전 소개다. 서비스가 무엇을 하는지
+    // 보여줬으면 다음은 로그인이다. 계정이 없는 사람은 로그인 화면의 회원가입으로 간다.
+    navigateTo('/login');
     return;
   }
   index.value += 1;
