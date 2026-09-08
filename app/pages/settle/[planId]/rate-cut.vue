@@ -2,6 +2,7 @@
 import { usePolicyApi, type PreferentialRateChange } from '~/api/policy';
 import { usePropertyApi } from '~/api/property';
 import { useSettlementApi, type RateCutRight } from '~/api/settlement';
+import { statusFrom } from '~/utils/error';
 
 /**
  * 홈 4-6 · 금리인하요구권.
@@ -21,6 +22,8 @@ const product = ref<string | null>(null);
 /** 새로 채운 우대금리 조건. 기금대출 쪽의 대안이다. */
 const changes = ref<PreferentialRateChange[]>([]);
 const guide = ref<RateCutRight | null>(null);
+/** 대출이 아직 등록되지 않았는가(404). 판정이 실행된 대출 상품에서 나온다. */
+const needsLoan = ref(false);
 
 const eligible = computed(() => guide.value?.applicable ?? null);
 
@@ -45,7 +48,10 @@ onMounted(() => {
   useSettlementApi()
     .rateCutRight(planId)
     .then((found) => (guide.value = found))
-    .catch(() => {});
+    .catch((cause) => {
+      // 대출 미등록이면 404 다. 판정을 지어내지 않고 등록부터 안내한다.
+      if (statusFrom(cause) === 404) needsLoan.value = true;
+    });
 
   usePolicyApi()
     .preferentialRateChanges(planId)
@@ -62,6 +68,21 @@ onMounted(() => {
       <CoachTip>
         은행 대출을 받은 사람만 해당돼. 버팀목은 국토부 고시 금리라 은행이 깎아줄 권한이 없어
       </CoachTip>
+
+      <!-- 판정은 실행된 대출 상품에서 나온다. 없으면 대상 여부를 단정하지 않는다. -->
+      <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
+        <p class="text-card-title text-primary-strong font-bold">대출 정보를 먼저 등록해주세요</p>
+        <p class="text-step text-ink-hero-body font-normal">
+          실행된 대출 상품을 알아야 금리인하요구권 대상인지 판단할 수 있어요
+        </p>
+        <button
+          type="button"
+          class="bg-surface rounded-chip text-label2 text-primary-strong self-start px-3.5 py-2.5 font-semibold"
+          @click="navigateTo(`/settle/${planId}/loan-account`)"
+        >
+          실행 대출 등록하러 가기 →
+        </button>
+      </div>
 
       <div
         v-if="eligible !== null"

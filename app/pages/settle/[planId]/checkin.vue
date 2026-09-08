@@ -35,6 +35,8 @@ const rate = ref<number | null>(null);
 const summary = ref<CashFlowSummary | null>(null);
 const pending = ref(true);
 const error = ref('');
+/** 대출이 아직 등록되지 않았는가(404). 에러가 아니라 다음에 할 일이다. */
+const needsLoan = ref(false);
 
 const checked = ref<Record<string, boolean>>({});
 
@@ -83,9 +85,15 @@ onMounted(() => {
       summary.value = found;
     })
     .catch((cause) => {
-      // 대출 미등록이면 404 -- 에러가 아니라 "아직 값이 없음" 으로 두고 빈 상태를 보인다.
-      if (statusFrom(cause) !== 404) {
-        error.value = messageFrom(cause, '정착 지표를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      // 대출 미등록이면 404 -- 에러가 아니라 "아직 값이 없음" 이다. 빈 화면으로
+      // 두면 뭘 해야 할지 알 수 없어서, 등록 화면으로 가는 길을 보여준다.
+      if (statusFrom(cause) === 404) {
+        needsLoan.value = true;
+      } else {
+        error.value = messageFrom(
+          cause,
+          '정착 지표를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+        );
       }
     })
     .finally(() => {
@@ -102,6 +110,24 @@ onMounted(() => {
       <CoachTip>
         매달 얼마가 나가는지 알아야 연체를 막을 수 있어. 첫 달만 잡아두면 그다음은 쉬워
       </CoachTip>
+
+      <!--
+        대출을 아직 안 넣었으면 셀 수 있는 게 없다. 빈 화면 대신 무엇이 없고
+        어디로 가면 되는지를 말한다.
+      -->
+      <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
+        <p class="text-card-title text-primary-strong font-bold">대출 정보를 먼저 등록해주세요</p>
+        <p class="text-step text-ink-hero-body font-normal">
+          실행된 대출을 넣어야 월 이자·주거비·RIR 을 계산할 수 있어요
+        </p>
+        <button
+          type="button"
+          class="bg-surface rounded-chip text-label2 text-primary-strong self-start px-3.5 py-2.5 font-semibold"
+          @click="navigateTo(`/settle/${planId}/loan-account`)"
+        >
+          실행 대출 등록하러 가기 →
+        </button>
+      </div>
 
       <div class="bg-surface border-line rounded-button flex flex-col gap-2 border p-4.5">
         <div class="flex items-center justify-between">
@@ -135,6 +161,9 @@ onMounted(() => {
             {{ formatKoreanMoney(maintenanceFee) }} = {{ formatKoreanMoney(housingCost) }} (÷ 월소득
             {{ formatKoreanMoney(monthlyIncome) }})
           </template>
+          <template v-else-if="needsLoan">
+            등록된 실행 대출이 없어요. 위에서 대출을 먼저 등록해주세요.
+          </template>
           <template v-else>
             확정한 대출 조건과 월 소득·관리비가 모두 있어야 셀 수 있어요. 아직 하나가 비어 있어요.
           </template>
@@ -167,9 +196,16 @@ onMounted(() => {
     </div>
 
     <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <!-- 고정지출을 저장할 API 도 화면도 아직 없다. 자리만 두고 잠가 둔다. -->
-      <AppButton variant="strong" disabled>고정지출 등록하러 가기</AppButton>
-      <p class="text-micro text-ink-muted text-center">고정지출 등록은 아직 준비 중이에요</p>
+      <!--
+        관리비가 주거비의 절반을 가른다. 등록 화면(`expenses`)이 이미 있는데
+        여기서 잠겨 있어 아무도 닿지 못했다.
+      -->
+      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
+        고정지출 등록하러 가기
+      </AppButton>
+      <p class="text-micro text-ink-muted text-center">
+        관리비를 넣으면 주거비와 RIR 이 더 정확해져요
+      </p>
     </footer>
   </PhoneFrame>
 </template>

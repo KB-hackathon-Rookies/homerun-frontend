@@ -2,13 +2,18 @@
 import { usePolicyApi } from '~/api/policy';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
 import { useGuaranteeApi, type GuaranteeAgency } from '~/api/guarantee';
-import { useSettlementApi, type ReturnGuaranteeGuide } from '~/api/settlement';
+import {
+  useSettlementApi,
+  type ReturnGuaranteeEnrollment,
+  type ReturnGuaranteeGuide,
+} from '~/api/settlement';
 import {
   JOIN_ROUTES,
   RETURN_GUARANTEE_COLLATERALS,
   collateralName,
   includedInCollateral,
 } from '~/components/settle/guarantee';
+import { messageFrom, statusFrom } from '~/utils/error';
 import { collateralLabel } from '~/utils/labels';
 import { settlePath } from '~/utils/settle';
 
@@ -33,11 +38,63 @@ const agencies = ref<GuaranteeAgency[]>([]);
 const collateral = computed(() => decision.value?.consultation?.collateralMethod ?? null);
 const included = computed(() => !!collateral.value && includedInCollateral(collateral.value));
 
+/**
+ * 가입·납부 사실.
+ *
+ * 정착 대시보드가 이 기록을 보고 반환보증 칸을 채운다 — 기록이 없으면 가입
+ * 안 한 게 아니라 "추적 못 함" 이라, 화면이 남겨 주지 않으면 영영 미가입으로
+ * 보인다. 보증료 지원(4-2)도 가입 ∧ 납부라야 열린다.
+ */
+const api = useSettlementApi();
+const enrollment = ref<ReturnGuaranteeEnrollment | null>(null);
+const enrolled = ref(false);
+const feePaid = ref(false);
+const enrolledAt = ref('');
+const saving = ref(false);
+const saveError = ref('');
+const savedOnce = ref(false);
+
+async function saveEnrollment() {
+  if (saving.value) return;
+  saving.value = true;
+  saveError.value = '';
+  try {
+    enrollment.value = await api.saveReturnGuaranteeEnrollment(planId, {
+      enrolled: enrolled.value,
+      feePaid: feePaid.value,
+      enrolledAt: enrolledAt.value || null,
+    });
+    savedOnce.value = true;
+  } catch (cause) {
+    saveError.value = messageFrom(
+      cause,
+      '가입 상태를 저장하지 못했어요. 잠시 후 다시 시도해주세요.',
+    );
+  } finally {
+    saving.value = false;
+  }
+}
+
 onMounted(async () => {
   useSettlementApi()
     .returnGuarantee(planId)
     .then((found) => (guide.value = found))
     .catch(() => {});
+
+  // 기록이 없으면 404 다. 처음 저장하는 것으로 보고 빈 값에서 시작한다.
+  api
+    .returnGuaranteeEnrollment(planId)
+    .then((found) => {
+      enrollment.value = found;
+      enrolled.value = found.enrolled;
+      feePaid.value = found.feePaid;
+      enrolledAt.value = found.enrolledAt ?? '';
+    })
+    .catch((cause) => {
+      if (statusFrom(cause) !== 404) {
+        saveError.value = messageFrom(cause, '가입 상태를 불러오지 못했어요.');
+      }
+    });
   useGuaranteeApi()
     .agencies()
     .then((found) => (agencies.value = found))
@@ -95,6 +152,39 @@ onMounted(async () => {
           }}
         </p>
       </div>
+
+      <!--
+        가입했다는 사실은 여기서만 남길 수 있다. 안 남기면 정착 대시보드가
+        계속 "추적 못 함" 으로 두고, 보증료 지원도 열리지 않는다.
+      -->
+      <h2 class="text-card-title text-ink-hero font-bold">내 가입 상태</h2>
+
+      <AppCard class="flex flex-col gap-3">
+        <AppCheckbox v-model="enrolled">반환보증에 가입했어요</AppCheckbox>
+        <AppCheckbox v-model="feePaid">보증료를 납부했어요</AppCheckbox>
+
+        <div class="flex flex-col gap-1.5">
+          <p class="text-label2 text-ink">가입일 (선택)</p>
+          <input
+            v-model="enrolledAt"
+            type="date"
+            class="bg-canvas rounded-chip text-body3 text-ink-hero h-11 px-3.5 outline-none"
+          />
+        </div>
+
+        <AppButton :disabled="saving" @click="saveEnrollment">
+          {{ saving ? '저장 중…' : '가입 상태 저장하기' }}
+        </AppButton>
+
+        <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
+        <p v-else-if="enrollment" class="text-micro text-ink-hero-body">
+          {{
+            enrollment.feeSupportApplicable
+              ? '가입·납부가 모두 확인돼 보증료 지원을 신청할 수 있어요'
+              : '가입과 보증료 납부가 모두 끝나야 보증료 지원을 신청할 수 있어요'
+          }}{{ savedOnce ? ' · 저장했어요' : '' }}
+        </p>
+      </AppCard>
 
       <h2 class="text-card-title text-ink-hero font-bold">담보별 가입 필요 여부</h2>
 

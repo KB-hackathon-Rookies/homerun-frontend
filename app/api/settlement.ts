@@ -1,3 +1,4 @@
+import type { CollateralMethod, ConsultedProduct } from '~/api/consultation';
 import type { ApiResponse } from '~/types/api';
 
 /**
@@ -10,6 +11,11 @@ import type { ApiResponse } from '~/types/api';
 const BASE = '/api/v1/plans';
 
 const settlement = (planId: number) => `${BASE}/${planId}/settlement`;
+
+/** 실행 대출은 정착 계산의 뿌리다. 계획당 1건이라 경로에 식별자가 없다. */
+const loanAccount = (planId: number) => `${BASE}/${planId}/loan-account`;
+
+const enrollment = (planId: number) => `${BASE}/${planId}/return-guarantee/enrollment`;
 
 /** 월간 지표(BR-28). 계획값이든 실제값이든 같은 공식으로 서버가 센다. */
 export interface MonthlyMetrics {
@@ -88,6 +94,60 @@ export interface FixedExpenseList {
   delinquencyAlertActive: boolean;
 }
 
+/**
+ * 대출 상환 방식(DR-20).
+ *
+ * 전세대출 대부분은 만기일시상환이라 매달 이자만 낸다. 연말정산 소득공제
+ * (BR-29)가 이 값으로 갈려서 "모름" 을 따로 둔다 — 창구에서 못 들었으면
+ * 원리금균등으로 지어내지 않는다.
+ */
+export type RepaymentType = 'MATURITY_LUMP_SUM' | 'EQUAL_INSTALLMENT' | 'UNKNOWN';
+
+/**
+ * 실행 대출 등록 입력(DR-20). 계획당 1건이라 다시 보내면 덮어쓴다.
+ *
+ * 상담(2루)에서 들은 조건과 **실제로 실행된 조건은 다를 수 있다**. 그래서
+ * 이 값들을 상담에서 가져와 미리 채우되 사용자가 전부 고칠 수 있게 둔다.
+ */
+export interface LoanAccountPayload {
+  product: ConsultedProduct;
+  /** 보증 방식. 못 들었거나 해당 없으면 `null`. */
+  guarantee: CollateralMethod | null;
+  /** 대출 원금(원). 화면은 만 원 단위로 받아 ×10,000 해서 보낸다. */
+  principal: number;
+  /** 연 금리(퍼센트). 2.2% 는 `2.2` — 금액이 아니라 비율이라 그대로 보낸다. */
+  rate: number;
+  repaymentType: RepaymentType;
+  /** 대출 실행일(YYYY-MM-DD). */
+  executedAt: string;
+  maturityAt: string | null;
+  preferentialUntil: string | null;
+  extensionCount: number | null;
+}
+
+/** 저장된 실행 대출. 월 이자(원금 × 금리 ÷ 12, BR-28)는 서버가 세 준다. */
+export interface LoanAccount extends Omit<LoanAccountPayload, 'extensionCount'> {
+  planId: number;
+  extensionCount: number;
+  /** 월 이자(원). 화면에서 다시 계산하지 않는다. */
+  monthlyInterest: number;
+}
+
+/**
+ * 반환보증 가입 상태 입력(FR-H1-03). 계획당 1건이라 다시 보내면 덮어쓴다.
+ */
+export interface ReturnGuaranteeEnrollmentPayload {
+  enrolled: boolean;
+  feePaid: boolean;
+  /** 가입일(YYYY-MM-DD). 아직 안 들었으면 `null`. */
+  enrolledAt: string | null;
+}
+
+export interface ReturnGuaranteeEnrollment extends ReturnGuaranteeEnrollmentPayload {
+  /** 보증료 지원(4-2) 신청이 열리는가 = 가입 ∧ 납부. 서버가 판단한다. */
+  feeSupportApplicable: boolean;
+}
+
 export interface SettlementDashboard {
   daysSinceIndependence: number | null;
   items: { code: string; label: string; status: 'DONE' | 'PENDING' | 'UNTRACKED' }[];
@@ -103,6 +163,38 @@ export function useSettlementApi() {
       const { data } = await $api.get<ApiResponse<CashFlowSummary>>(
         `${settlement(planId)}/cash-flow`,
       );
+      return data.data;
+    },
+
+    /**
+     * 실행된 대출을 등록한다(계획당 1건, 덮어쓰기).
+     *
+     * 정착 화면 대부분이 이 한 건에 매달려 있다 — 현금흐름·금리인하요구권·
+     * 사후자산심사가 모두 대출이 없으면 404 다.
+     */
+    async saveLoanAccount(planId: number, payload: LoanAccountPayload) {
+      const { data } = await $api.put<ApiResponse<LoanAccount>>(loanAccount(planId), payload);
+      return data.data;
+    },
+
+    /** 저장된 실행 대출과 월 이자. 등록 전이면 404(`LOAN_ACCOUNT_NOT_FOUND`). */
+    async loanAccount(planId: number) {
+      const { data } = await $api.get<ApiResponse<LoanAccount>>(loanAccount(planId));
+      return data.data;
+    },
+
+    /** 반환보증 가입·보증료 납부 사실을 남긴다(계획당 1건, 덮어쓰기). */
+    async saveReturnGuaranteeEnrollment(planId: number, payload: ReturnGuaranteeEnrollmentPayload) {
+      const { data } = await $api.put<ApiResponse<ReturnGuaranteeEnrollment>>(
+        enrollment(planId),
+        payload,
+      );
+      return data.data;
+    },
+
+    /** 저장된 반환보증 가입 상태. 기록 전이면 404(`RETURN_GUARANTEE_NOT_FOUND`). */
+    async returnGuaranteeEnrollment(planId: number) {
+      const { data } = await $api.get<ApiResponse<ReturnGuaranteeEnrollment>>(enrollment(planId));
       return data.data;
     },
 
