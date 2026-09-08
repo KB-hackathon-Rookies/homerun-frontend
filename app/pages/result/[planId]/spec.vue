@@ -99,8 +99,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[COACH]">
-    <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)" />
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
@@ -135,7 +134,8 @@ onMounted(() => {
     </div>
 
     <!-- 시안(1루 5)은 이전·2루로를 하단 CTA 줄에 나란히 둔다. -->
-    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/result/${planId}/match`)">이전</AppButton>
       </div>
@@ -150,6 +150,7 @@ onMounted(() => {
         </AppButton>
       </div>
     </footer>
+</template>
 
     <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">
@@ -169,5 +170,5 @@ onMounted(() => {
         </div>
       </div>
     </DimOverlay>
-  </PhoneFrame>
+  </StageShell>
 </template>

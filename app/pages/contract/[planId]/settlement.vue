@@ -131,8 +131,7 @@ async function finish() {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="D-day 잔금일" base="3루" @back="navigateTo(`/contract/${planId}/review`)" />
+  <StageShell title="D-day 잔금일" base="3루" @back="navigateTo(`/contract/${planId}/review`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <div class="bg-surface border-danger rounded-field flex flex-col gap-1 border p-3.5">
@@ -242,7 +241,8 @@ async function finish() {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/review`)">
           이전
@@ -263,5 +263,6 @@ async function finish() {
         {{ saving ? '대조 중…' : '대조 완료 · 잔금 송금하기' }}
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

@@ -55,12 +55,9 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.emptyJeonse]">
-    <StageBar
-      title="매물 상세"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
-    />
+  <StageShell :coach-sheets="[COACH_TIME.emptyJeonse]" title="매물 상세"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/violation`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip
@@ -126,5 +123,5 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
     >
       등기부등본 확인하러 가기
     </StepFooter>
-  </PhoneFrame>
+  </StageShell>
 </template>

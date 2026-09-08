@@ -15,8 +15,7 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="확정일자" base="3루" @back="navigateTo(`/contract/${planId}/sign`)" />
+  <StageShell title="확정일자" base="3루" @back="navigateTo(`/contract/${planId}/sign`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>축하해! 계약 완료. 계약하고 바로 확정일자를 받아. 미루지 않는 게 좋아</CoachTip>
@@ -34,7 +33,8 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/sign`)">
           이전
@@ -44,5 +44,6 @@ const planId = Number(route.params.planId);
         일정 만들기로
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

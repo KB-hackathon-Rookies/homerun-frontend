@@ -155,8 +155,7 @@ async function start() {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]">
-    <StageBar title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)" />
+  <StageShell :coach-sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]" title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <h2 class="text-headline1 text-ink-hero">
@@ -244,7 +243,8 @@ async function start() {
       </AppCard>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         :disabled="!chosen || realDepositWon === null || saving"
@@ -253,5 +253,6 @@ async function start() {
         {{ saving ? '등록 중…' : '이 매물로 진단 시작하기' }}
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

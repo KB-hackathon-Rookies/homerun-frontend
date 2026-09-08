@@ -22,12 +22,9 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="D-3 심사 확인"
-      base="3루"
-      @back="navigateTo(`/contract/${planId}/loan-apply`)"
-    />
+  <StageShell title="D-3 심사 확인"
+   base="3루"
+   @back="navigateTo(`/contract/${planId}/loan-apply`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
@@ -55,7 +52,8 @@ const checked = ref<Record<string, boolean>>({});
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/loan-apply`)">
           이전
@@ -65,5 +63,6 @@ const checked = ref<Record<string, boolean>>({});
         심사 정상 · D-day 준비
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

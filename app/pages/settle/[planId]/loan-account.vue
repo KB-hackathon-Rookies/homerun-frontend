@@ -224,8 +224,7 @@ async function save() {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="실행 대출 등록" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="실행 대출 등록" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <CoachTip>
@@ -341,7 +340,8 @@ async function save() {
       </template>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="pending || saving || !ready" @click="save">
         {{ saving ? '저장 중…' : saved ? '대출 정보 수정하기' : '대출 정보 저장하기' }}
       </AppButton>
@@ -349,5 +349,6 @@ async function save() {
         이번 달 상태 보러가기
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

@@ -128,12 +128,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.bankConsult]">
-    <StageBar
-      title="은행 상담"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-    />
+  <StageShell :coach-sheets="[COACH_TIME.bankConsult]" title="은행 상담"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <AppCard v-if="property" class="flex flex-col gap-2">
@@ -305,5 +302,5 @@ onMounted(async () => {
     >
       {{ cta.label }}
     </StepFooter>
-  </PhoneFrame>
+  </StageShell>
 </template>

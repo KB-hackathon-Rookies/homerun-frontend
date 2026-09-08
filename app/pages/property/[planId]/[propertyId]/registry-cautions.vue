@@ -20,12 +20,9 @@ const CAUTIONS = [
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="주의사항 4가지"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry-guide`)"
-    />
+  <StageShell title="주의사항 4가지"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/registry-guide`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 pt-5 pb-6">
       <h2 class="text-option text-ink-hero">등기부등본 볼 때 주의사항 4가지</h2>
@@ -53,7 +50,8 @@ const CAUTIONS = [
       </AppCard>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton
         variant="strong"
         @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
@@ -61,5 +59,6 @@ const CAUTIONS = [
         확인 완료, 체크리스트로
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

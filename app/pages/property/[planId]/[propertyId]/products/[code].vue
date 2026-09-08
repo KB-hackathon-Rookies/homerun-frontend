@@ -34,12 +34,9 @@ const alternative = computed(
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      :title="doc?.title ?? verdict?.policyName ?? '상품 상세'"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
-    />
+  <StageShell :title="doc?.title ?? verdict?.policyName ?? '상품 상세'"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/detail`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
@@ -171,10 +168,12 @@ const alternative = computed(
       </p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" @click="navigateTo(`/property/${planId}/${propertyId}/detail`)">
         확인
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

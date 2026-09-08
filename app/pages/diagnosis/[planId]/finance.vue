@@ -396,8 +396,7 @@ function back() {
 </script>
 
 <template>
-  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[COACH]">
-    <StageBar title="사용자 정보 입력" base="1루" @back="back" />
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="사용자 정보 입력" base="1루" @back="back">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
       <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
@@ -560,7 +559,8 @@ function back() {
     </div>
 
     <!-- 시안(1루 3)은 이전·다음을 하단 CTA 줄에 나란히 둔다. -->
-    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
       </div>
@@ -571,5 +571,6 @@ function back() {
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

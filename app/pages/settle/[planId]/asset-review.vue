@@ -36,8 +36,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="사후자산심사" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="사후자산심사" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <!-- 대상 여부는 실행된 대출 상품이 정한다. 없으면 어느 쪽으로도 단정하지 않는다. -->
@@ -97,7 +96,8 @@ onMounted(() => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <!-- 필수 요소 3번. 앞 단계는 보증료 지원 신청이다. -->
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}/fee-support`)">
@@ -108,5 +108,6 @@ onMounted(() => {
         <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

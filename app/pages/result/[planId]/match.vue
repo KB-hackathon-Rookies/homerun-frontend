@@ -61,8 +61,7 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <PhoneFrame v-model:coach-open="coachOpen" :coach-sheets="[COACH]">
-    <StageBar title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)" />
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-5 py-4">
       <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
@@ -112,7 +111,8 @@ const coachOpen = ref(false);
     </div>
 
     <!-- 시안(1루 4)은 이전·내 스펙 보기를 하단 CTA 줄에 나란히 둔다. -->
-    <footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/diagnosis/${planId}`)">이전</AppButton>
       </div>
@@ -127,5 +127,6 @@ const coachOpen = ref(false);
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

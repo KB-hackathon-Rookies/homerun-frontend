@@ -41,12 +41,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar
-      title="D-21 은행 예약"
-      base="3루"
-      @back="navigateTo(`/contract/${planId}/company-docs`)"
-    />
+  <StageShell title="D-21 은행 예약"
+   base="3루"
+   @back="navigateTo(`/contract/${planId}/company-docs`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>2루 사전상담에서 확정된 은행으로 가면 돼. 사전상담 받았던 그 지점이 좋아</CoachTip>
@@ -83,7 +80,8 @@ onMounted(async () => {
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
       <div class="w-28 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
           이전
@@ -93,5 +91,6 @@ onMounted(async () => {
         방문 예약 완료
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

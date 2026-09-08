@@ -20,8 +20,7 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="중개보수·이사비 지원" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="중개보수·이사비 지원" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
@@ -61,7 +60,8 @@ const planId = Number(route.params.planId);
       </DetailLink>
     </div>
 
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <!-- 필수 요소 4번(마지막). 앞 단계는 사후자산심사다. -->
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}/asset-review`)">
@@ -74,5 +74,6 @@ const planId = Number(route.params.planId);
         </AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

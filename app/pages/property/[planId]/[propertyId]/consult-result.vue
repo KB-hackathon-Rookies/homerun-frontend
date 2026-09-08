@@ -136,12 +136,9 @@ async function save() {
 </script>
 
 <template>
-  <PhoneFrame :coach-sheets="[COACH_TIME.rejected]">
-    <StageBar
-      title="상담 결과 입력"
-      base="2루"
-      @back="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-    />
+  <StageShell :coach-sheets="[COACH_TIME.rejected]" title="상담 결과 입력"
+   base="2루"
+   @back="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip>상담 결과를 남겨줘. 거절돼도 다른 은행·상품으로 다시 도전할 수 있어</CoachTip>
@@ -229,10 +226,12 @@ async function save() {
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
-    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
       <AppButton variant="strong" :disabled="!canSave || saving" @click="save">
         {{ saving ? '저장 중…' : isLast ? '저장하고 끝내기' : '저장하고 다음 은행' }}
       </AppButton>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>

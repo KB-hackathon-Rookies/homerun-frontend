@@ -61,8 +61,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PhoneFrame>
-    <StageBar title="금리인하요구권" base="홈" @back="navigateTo(`/settle/${planId}`)" />
+  <StageShell title="금리인하요구권" base="홈" @back="navigateTo(`/settle/${planId}`)">
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
@@ -148,7 +147,8 @@ onMounted(() => {
       띄우면 헛걸음을 시킨다 -- 대상일 때만 신청 방법으로 보내고, 그 밖에는
       확인으로 둔다.
     -->
-    <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+    <template #footer>
+<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
       <div class="w-29 shrink-0">
         <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
       </div>
@@ -163,5 +163,6 @@ onMounted(() => {
         <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
       </div>
     </footer>
-  </PhoneFrame>
+</template>
+  </StageShell>
 </template>
