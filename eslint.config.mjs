@@ -14,4 +14,9 @@ export default withNuxt({
     // 이 규칙은 닫지 말라고 해서, 켜 두면 저장할 때마다 둘이 서로 되돌린다.
     'vue/html-self-closing': 'off',
   },
+}).append({
+  // CLI 스크립트는 표준출력이 곧 화면이다. 메뉴를 console.error 로 찍으면
+  // stderr 로 새 나가서 파이프로 넘길 때 사라진다.
+  files: ['scripts/**'],
+  rules: { 'no-console': 'off' },
 });
