@@ -131,9 +131,9 @@ onMounted(load);
     <div class="h-statusbar shrink-0" />
 
     <div class="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-6 py-6">
-      <!-- AI 코치 백호. 축하 화면이라 글자보다 먼저 눈에 들어와야 한다. -->
+      <!-- 완료 배지. 배지에도 파란 원이 있어 둘레에 옅은 고리가 생긴다. -->
       <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
-        <img src="/mascot.png" alt="" class="h-25 w-auto" />
+        <img src="/complete.png" alt="" class="h-25 w-auto" />
       </span>
 
       <h1 class="text-title3 text-ink-hero">오픈뱅킹 연동 완료!</h1>

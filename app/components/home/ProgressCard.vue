@@ -28,10 +28,10 @@ defineEmits<{ resume: [] }>();
 
     <button
       type="button"
-      class="bg-surface rounded-cta text-card-title text-primary-strong self-start px-4 py-3"
+      class="bg-surface rounded-cta text-card-title text-primary-strong w-full px-4 py-3"
       @click="$emit('resume')"
     >
-      이어서 진행하기 →
+      이어서 진행 →
     </button>
   </div>
 </template>

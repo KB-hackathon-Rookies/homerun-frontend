@@ -26,6 +26,27 @@ const picked = ref<'O' | 'X' | null>(null);
 const correctCount = ref(0);
 
 const quizTotal = computed(() => module.value?.quiz?.length ?? 0);
+
+/** 상단 제목. 퀴즈로 넘어가면 무엇을 푸는 중인지 밝힌다(시안 메인 9). */
+const pageTitle = computed(() => {
+  if (!module.value) return '코치 교육';
+  if (phase.value === 'quiz') return `퀴즈 · ${module.value.title}`;
+  if (phase.value === 'done') return '모듈 완료';
+  return module.value.title;
+});
+
+/** 다음 모듈이 목록에서 몇 번째인가. 허브와 같은 전체 통번호를 쓴다. */
+const nextOrder = computed(() => index.value + 2);
+
+/**
+ * 완료 화면 그림.
+ *
+ * 많이 틀렸을 때까지 활짝 웃는 얼굴을 띄우면 남의 일 같다. 1개 이하로 맞히면
+ * 머쓱해하는 쪽으로 바꾼다. 문제가 아예 없는 모듈은 성적이랄 게 없으니 기본.
+ */
+const doneImage = computed(() =>
+  quizTotal.value && correctCount.value <= 1 ? '/tiger-done_low.png' : '/tiger-done.png',
+);
 const question = computed(() => module.value?.quiz?.[quizAt.value]);
 const isLastQuestion = computed(() => quizTotal.value > 0 && quizAt.value === quizTotal.value - 1);
 
@@ -77,7 +98,9 @@ onMounted(async () => {
 
 <template>
   <PhoneFrame>
-    <PageBar :title="serverModule?.title ?? module?.title ?? '코치 교육'" />
+    <div class="h-statusbar bg-surface shrink-0" />
+    <BrandBar />
+    <PageBar :title="pageTitle" />
 
     <!-- 없는 모듈: 목록에서 지운 뒤에도 주소로 들어올 수 있다. -->
     <div v-if="!module" class="px-gutter flex flex-1 flex-col items-center justify-center gap-3">
@@ -99,80 +122,142 @@ onMounted(async () => {
 
     <!-- 학습 -->
     <template v-else-if="phase === 'read'">
-      <div class="px-gutter-tight flex flex-1 flex-col gap-4 overflow-y-auto py-4">
-        <p class="text-step text-ink-muted px-1">{{ module.base }} · {{ module.minutes }}분</p>
+      <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+        <p class="text-caption-tight text-ink-label font-medium">
+          {{ module.base }} · 모듈 {{ index + 1 }}/{{ COACH_MODULES.length }} ·
+          {{ module.minutes }}분
+        </p>
 
         <AppCard v-if="serverModule">
           <MarkdownContent :content="serverModule.body" />
         </AppCard>
 
-        <template v-for="(block, i) in serverModule ? [] : module.body" :key="i">
-          <CoachTip v-if="block.kind === 'coach'" label="코치 TIME" tone="plain">
-            {{ block.text }}
-          </CoachTip>
-
-          <AppCard v-else-if="block.kind === 'steps'" class="flex flex-col gap-3">
-            <h2 class="text-body3 text-ink-hero font-bold">{{ block.heading }}</h2>
-            <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
-              <span
-                class="bg-primary-soft text-primary-strong rounded-pill text-micro flex size-5 shrink-0 items-center justify-center font-bold"
-              >
-                {{ n + 1 }}
-              </span>
-              <span class="text-caption2 text-ink-hero-body">{{ item }}</span>
+        <template v-else>
+          <template v-for="(block, i) in module.body" :key="i">
+            <!-- 코치가 말하는 자리. 아바타와 함께 파란 말풍선으로 띄운다. -->
+            <div
+              v-if="block.kind === 'coach'"
+              class="bg-surface-active rounded-button flex gap-3 p-4"
+            >
+              <img
+                src="/tiger-face_coach.png"
+                alt=""
+                width="44"
+                height="44"
+                class="rounded-pill size-11 shrink-0 object-cover select-none"
+              />
+              <div class="flex flex-1 flex-col gap-1">
+                <p class="text-caption-tight text-primary-strong font-bold">코치 TIME</p>
+                <p class="text-label2 text-ink-card font-normal">{{ block.text }}</p>
+              </div>
             </div>
-          </AppCard>
 
-          <AppCard v-else-if="block.kind === 'cases'" class="flex flex-col gap-3">
-            <div v-for="(item, n) in block.items" :key="n" class="flex flex-col gap-1">
-              <span class="text-row text-ink-hero">{{ item.title }}</span>
-              <span class="text-caption2 text-ink-hero-body">{{ item.body }}</span>
+            <div
+              v-else-if="block.kind === 'steps'"
+              class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
+            >
+              <h2 class="text-stage text-ink-card font-bold">{{ block.heading }}</h2>
+              <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
+                <span
+                  class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
+                >
+                  {{ n + 1 }}
+                </span>
+                <span class="text-label2 text-ink-card font-bold">{{ item }}</span>
+              </div>
             </div>
-          </AppCard>
 
-          <div
-            v-else-if="block.kind === 'note'"
-            class="bg-surface-caution rounded-field flex flex-col gap-1.5 p-3.5"
-          >
-            <p class="text-caption1 text-ink-hero">{{ block.heading }}</p>
-            <p v-for="(item, n) in block.items" :key="n" class="text-caption2 text-ink-hero-body">
-              · {{ item }}
-            </p>
-          </div>
+            <div
+              v-else-if="block.kind === 'cases'"
+              class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
+            >
+              <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
+                <span
+                  class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
+                >
+                  {{ n + 1 }}
+                </span>
+                <span class="flex flex-1 flex-col gap-0.5">
+                  <span class="text-label2 text-ink-card font-bold">{{ item.title }}</span>
+                  <span class="text-caption-tight text-ink-card-body">{{ item.body }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-else-if="block.kind === 'note'"
+              class="bg-surface-note text-ink-note rounded-button flex flex-col gap-2.5 p-4"
+            >
+              <p class="text-label2 font-bold">{{ block.heading }}</p>
+              <p v-for="(item, n) in block.items" :key="n" class="text-caption-tight">
+                · {{ item }}
+              </p>
+            </div>
+          </template>
         </template>
       </div>
 
-      <p v-if="error" class="text-label2 text-danger px-gutter-tight">{{ error }}</p>
+      <p v-if="error" class="text-label2 text-danger px-4">{{ error }}</p>
 
-      <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
+      <footer
+        class="border-line bg-surface pb-cta-pad flex shrink-0 flex-col gap-2.5 border-t px-4 pt-3"
+      >
+        <p v-if="quizTotal" class="text-caption-tight text-ink-label text-center font-medium">
+          {{ quizTotal }}문제 · 1분이면 끝나
+        </p>
         <AppButton variant="strong" @click="afterRead">
-          {{ quizTotal ? '퀴즈 풀고 완료하기' : '완료하기' }}
+          {{ quizTotal ? '퀴즈 풀기' : '완료하기' }}
         </AppButton>
       </footer>
     </template>
 
     <!-- 퀴즈 -->
     <template v-else-if="phase === 'quiz' && question">
-      <div class="px-gutter-tight flex flex-1 flex-col gap-4 overflow-y-auto py-4">
-        <p class="text-step text-ink-muted px-1">{{ quizAt + 1 }} / {{ quizTotal }}</p>
+      <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+        <!-- 문제 수만큼 칸을 나눈다. 지금까지 온 칸이 파랗다. -->
+        <div class="flex items-center gap-1.5">
+          <span
+            v-for="n in quizTotal"
+            :key="n"
+            class="rounded-pill h-1.5 flex-1"
+            :class="n <= quizAt + 1 ? 'bg-primary-strong' : 'bg-track'"
+          />
+        </div>
 
-        <AppCard class="flex flex-col gap-1.5">
-          <h2 class="text-body3 text-ink-hero font-bold">{{ question.statement }}</h2>
-          <p class="text-caption2 text-ink-muted">맞으면 O, 틀리면 X를 골라주세요.</p>
-        </AppCard>
+        <p class="text-caption-tight text-ink-label font-medium">
+          {{ quizAt + 1 }} / {{ quizTotal }}
+        </p>
 
-        <div class="flex gap-2.5">
+        <div
+          class="bg-surface border-line-list rounded-button flex flex-col items-center gap-3.5 border px-4 py-6"
+        >
+          <img
+            src="/tiger-face_quiz.png"
+            alt=""
+            width="56"
+            height="56"
+            class="rounded-pill size-14 object-cover select-none"
+          />
+          <h2 class="text-option text-ink-card text-center">{{ question.statement }}</h2>
+          <p class="text-caption-tight text-ink-label">맞으면 O, 틀리면 X를 골라</p>
+        </div>
+
+        <!--
+          고른 뒤에는 잠근다. 맞으면 파랑, 틀리면 빨강 — 시안에는 정답을 고른
+          모습만 있어서 틀린 경우는 기존 색 규칙을 이어 쓴다.
+        -->
+        <div class="flex gap-3">
           <button
             v-for="opt in ['O', 'X'] as const"
             :key="opt"
             type="button"
-            class="rounded-field text-hero h-20 flex-1 border font-bold"
+            class="rounded-card text-title1 flex h-24 flex-1 items-center justify-center border-2"
             :class="{
-              'border-primary-strong bg-primary-soft text-primary-strong':
+              'border-primary-strong bg-primary-strong text-on-brand':
                 picked === opt && opt === question.answer,
-              'border-danger bg-danger-soft text-danger': picked === opt && opt !== question.answer,
-              'border-line text-ink-hero': !picked,
-              'border-line text-ink-disabled': picked && picked !== opt,
+              'border-danger bg-danger text-on-brand': picked === opt && opt !== question.answer,
+              'border-line-list bg-surface text-ink-card': !picked,
+              'border-line-list bg-surface text-ink-subtle': picked && picked !== opt,
             }"
             :disabled="!!picked"
             @click="pick(opt)"
@@ -181,19 +266,18 @@ onMounted(async () => {
           </button>
         </div>
 
-        <AppCard v-if="picked" class="flex flex-col gap-1.5">
-          <span
-            class="text-card-title"
-            :class="picked === question.answer ? 'text-success' : 'text-danger'"
-          >
-            {{ picked === question.answer ? '정답' : `아쉬워요 · 정답은 ${question.answer}` }} ·
-            코치 설명
-          </span>
-          <p class="text-caption2 text-ink-hero-body">{{ question.explanation }}</p>
-        </AppCard>
+        <div v-if="picked" class="bg-surface-active rounded-button flex flex-col gap-2.5 p-4">
+          <p class="text-caption-tight text-primary-strong font-bold">
+            정답 {{ question.answer }} · 코치 설명
+          </p>
+          <p class="text-label2 text-ink-card font-normal">{{ question.explanation }}</p>
+        </div>
       </div>
 
-      <footer v-if="picked" class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
+      <footer
+        v-if="picked"
+        class="border-line bg-surface pb-cta-pad flex shrink-0 border-t px-4 pt-3"
+      >
         <AppButton variant="strong" @click="nextQuestion">
           {{ isLastQuestion ? '완료하기' : '다음 문제' }}
         </AppButton>
@@ -202,34 +286,78 @@ onMounted(async () => {
 
     <!-- 완료 -->
     <template v-else>
-      <div class="px-gutter flex flex-1 flex-col items-center gap-4 py-10 text-center">
-        <p class="text-hero text-ink-hero">
+      <div
+        class="bg-canvas-soft flex flex-1 flex-col items-center justify-center gap-4 px-4 pt-4 pb-6"
+      >
+        <img
+          :src="doneImage"
+          alt=""
+          width="120"
+          height="120"
+          class="rounded-pill size-30 object-cover select-none"
+        />
+
+        <p class="text-hero text-ink-card">
           <template v-if="quizTotal && correctCount === quizTotal">
-            {{ quizTotal }}문제 다 맞혔어요!
+            {{ quizTotal }}문제 다 맞혔어!
           </template>
           <template v-else-if="quizTotal">
-            {{ quizTotal }}문제 중 {{ correctCount }}개 맞혔어요
+            {{ quizTotal }}문제 중 {{ correctCount }}개 맞혔어
           </template>
-          <template v-else>모듈을 끝냈어요!</template>
-        </p>
-        <p class="text-caption2 text-ink-hero-body">
-          {{ module.title }} 모듈을 끝냈어요. 헷갈리면 여기로 다시 돌아와요.
+          <template v-else>모듈을 끝냈어!</template>
         </p>
 
-        <span class="bg-surface-brand text-primary-strong rounded-chip text-caption1 px-3 py-1.5">
-          🏅 {{ module.base }} 모듈 완료
+        <p class="text-label2 text-ink-card-body text-center font-normal">
+          {{ module.title }} 모듈을 끝냈어.<br />
+          <template v-if="module.featured">{{ module.featured }}, </template>헷갈리면 여기로 돌아와
+        </p>
+
+        <span
+          class="bg-surface-active text-primary-strong rounded-pill text-caption-tight px-3 py-1.5 font-bold"
+        >
+          🏅 {{ module.base }} 모듈 완료 · {{ index + 1 }}/{{ COACH_MODULES.length }}
         </span>
+
+        <!-- 다음 모듈로 바로 넘어가는 자리. 마지막 모듈이면 보여줄 게 없다. -->
+        <button
+          v-if="nextModule"
+          type="button"
+          class="bg-surface border-line-list rounded-button flex w-full items-center gap-3 border p-4 text-left"
+          @click="navigateTo(`/coach/${nextModule.id}`)"
+        >
+          <span
+            class="bg-surface-active text-primary-strong rounded-pill text-caption-tight flex size-7 shrink-0 items-center justify-center font-bold"
+          >
+            {{ nextOrder }}
+          </span>
+          <span class="flex flex-1 flex-col gap-0.5">
+            <span class="text-micro text-ink-label font-medium">다음 모듈</span>
+            <span class="text-card-title text-ink-card font-bold">
+              {{ nextModule.title }} · {{ nextModule.minutes }}분
+            </span>
+          </span>
+          <AppIcon name="chevron-right" class="text-ink-chevron size-4 shrink-0" />
+        </button>
       </div>
 
-      <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+      <footer
+        class="border-line bg-surface pb-cta-pad flex shrink-0 flex-col gap-2.5 border-t px-4 pt-3"
+      >
+        <button
+          type="button"
+          class="text-caption-tight text-ink-label text-center font-medium"
+          @click="navigateTo('/coach')"
+        >
+          허브로 돌아가기
+        </button>
         <AppButton
           v-if="nextModule"
           variant="strong"
           @click="navigateTo(`/coach/${nextModule.id}`)"
         >
-          다음 모듈 · {{ nextModule.title }}
+          다음 모듈
         </AppButton>
-        <AppButton variant="white" @click="navigateTo('/coach')">교육 목록으로</AppButton>
+        <AppButton v-else variant="strong" @click="navigateTo('/coach')">교육 목록으로</AppButton>
       </footer>
     </template>
   </PhoneFrame>
