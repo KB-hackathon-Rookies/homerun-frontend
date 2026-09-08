@@ -58,7 +58,7 @@ async function save() {
   saving.value = true;
   error.value = '';
   try {
-    await useContractApi().saveBalanceDate(planId, entry.value, balanceDate.value);
+    await useContractApi().saveBalanceDate(planId, balanceDate.value);
     await load();
     /*
      * 마감이 실제로 생긴 순간이다. 여기서 묻는다.
