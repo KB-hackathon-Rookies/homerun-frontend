@@ -41,7 +41,5 @@ defineEmits<{ back: [] }>();
     </button>
   </header>
 
-  <div class="px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b py-2">
-    <StepIndicator :current="base" spread />
-  </div>
+  <BaseStrip :base="base" />
 </template>

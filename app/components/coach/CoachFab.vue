@@ -21,8 +21,8 @@
  *
  * ## 캐릭터
  *
- * 시안이 원 안에 넣는 호랑이가 AI 코치 백호다. 버튼에 `aria-label` 이 있으므로
- * 이미지는 장식으로 둔다 — 둘 다 읽히면 스크린리더가 같은 말을 두 번 한다.
+ * 시안이 원 안에 넣는 호랑이가 AI 코치 백호다(`Tiger/기본`, 44). 버튼에 `aria-label`
+ * 이 있으므로 이미지는 장식으로 둔다 — 둘 다 읽히면 스크린리더가 같은 말을 두 번 한다.
  */
 defineEmits<{ open: [] }>();
 </script>
@@ -36,7 +36,7 @@ defineEmits<{ open: [] }>();
         class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight bottom-fab-lift pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
         @click="$emit('open')"
       >
-        <img src="/mascot-mark.png" alt="" class="size-9" />
+        <img src="/tiger/face-default.png" alt="" class="size-11 rounded-full object-cover" />
       </button>
     </div>
   </div>

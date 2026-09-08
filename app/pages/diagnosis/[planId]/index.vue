@@ -3,17 +3,16 @@ import type { DiagnosisStep, DiagnosisStepPatch, PlanInput } from '~/api/plan';
 import { usePlanApi } from '~/api/plan';
 import type { CoachSheet } from '~/components/coach/sheet';
 import { useInputRevision } from '~/composables/useInputRevision';
+import { useAuthStore } from '~/stores/auth';
 import { messageFrom } from '~/utils/error';
 
 /**
- * 1루 진단 문진.
+ * 1루 진단 문진 — 기본 정보 · 회사 정보(시안 1루 1·2).
  *
- * 껍데기가 여섯 다 같다 — 상단 바 · 진행 표시 · 질문 카드 · 안내 · 버튼.
- * 카드 안 선택지만 다르다. 그래서 한 화면에서 단계를 넘긴다.
- *
- * 단계마다 바로 저장한다. 백엔드가 부분 저장을 받고(`.../input/steps/{code}`)
- * 다음 단계와 새 `revision` 을 돌려준다. 그 값을 다음 저장에 그대로 실어야
- * 다른 기기가 먼저 고친 걸 서버가 알아챈다.
+ * 시안은 여섯 문항을 **두 묶음**으로 묶는다. 예전에는 한 화면에 한 문항씩 여섯
+ * 화면이었는데, 세대주·주택·혼인은 서로 붙어 다니는 짧은 질문이라 한 장에서
+ * 훑는 편이 빠르다. 서버는 여전히 문항 단위로 저장하므로 다음을 누를 때
+ * 그 묶음의 문항을 순서대로 보낸다 — `saveStep` 이 `revision` 을 이어 받는다.
  *
  * 시작값은 서버에서 읽어야 한다. `prep` 이 계획을 만들면서 이미 한 번
  * 저장하기 때문에, 0 에서 시작하면 첫 답부터 어긋난다.
@@ -34,8 +33,8 @@ interface Question {
   step: DiagnosisStep;
   title: string;
   choices: Choice[];
-  /** 고르기 전에도 늘 보이는 설명. */
-  note?: string;
+  /** 앞 답에 따라 이어지는 문항. 파란 카드로 그리고 조건이 맞을 때만 보인다. */
+  follow?: { hint: string; when: () => boolean };
   /** 고른 값을 요청 본문으로 바꾼다. */
   toPatch: (value: string) => DiagnosisStepPatch;
 }
@@ -51,14 +50,26 @@ const BLOCKED_NOTICE = {
   body: '지금은 미혼·무주택·재직 중인 청년의 전세 경로만 도와드릴 수 있어요. 기혼, 유주택, 무직 경로는 곧 열려요',
 };
 
+const answers = ref<Record<string, string>>({});
+
+/**
+ * 회사 정보를 이어 물을 고용 형태.
+ *
+ * 시안이 카드에 적어 둔 그대로다 — "정규직·계약직·일용직·인턴을 고르면 이어져요".
+ * 프리랜서는 소속 회사가 없어서 규모·재직기간을 물을 수 없고, 무직은 아예 준비 중
+ * 경로다. 둘 다 여기서 빠진다.
+ */
+const COMPANY_TYPES = ['FULL_TIME', 'CONTRACT', 'DAILY_WORKER', 'INTERN'];
+const employed = () => COMPANY_TYPES.includes(answers.value.EMPLOYMENT_TYPE ?? '');
+
 const QUESTIONS: Question[] = [
   {
     step: 'HOUSEHOLDER',
-    title: '현재 세대주이신가요?',
+    title: '지금 세대주이신가요?',
     choices: [
-      { value: 'CURRENT', label: '네, 세대주입니다' },
-      { value: 'EXPECTED', label: '곧 세대주가 될 예정입니다 (예비 세대주)' },
-      { value: 'NOT_HOUSEHOLDER', label: '아니요, 세대원입니다' },
+      { value: 'CURRENT', label: '세대주예요' },
+      { value: 'EXPECTED', label: '곧 세대주가 될 예정이에요 (예비세대주)' },
+      { value: 'NOT_HOUSEHOLDER', label: '아니요, 세대원이에요' },
     ],
     toPatch: (value) => ({ householderStatus: value as never }),
   },
@@ -66,24 +77,23 @@ const QUESTIONS: Question[] = [
     step: 'HOMELESS',
     title: '본인 명의로 소유한 주택이 있나요?',
     choices: [
-      { value: 'OWNED', label: '있습니다', blocked: true },
-      { value: 'NONE', label: '없습니다' },
+      { value: 'NONE', label: '없어요' },
+      { value: 'OWNED', label: '있어요', blocked: true },
     ],
-    note: '함께 사는 가족(부모님 등)의 주택 소유 여부는 상관없습니다 — 독립 후 본인 명의 기준입니다',
     toPatch: (value) => ({ isHomeless: value === 'NONE' }),
   },
   {
     step: 'MARITAL_STATUS',
-    title: '혼인 여부를 알려주세요',
+    title: '혼인하셨나요?',
     choices: [
-      { value: 'MARRIED', label: '기혼', blocked: true },
       { value: 'SINGLE', label: '미혼' },
+      { value: 'MARRIED', label: '기혼', blocked: true },
     ],
     toPatch: (value) => ({ maritalStatus: value as never }),
   },
   {
     step: 'EMPLOYMENT_TYPE',
-    title: '현재 고용 형태를 선택해주세요',
+    title: '지금 하시는 일의 고용 형태를 알려주세요',
     choices: [
       { value: 'FULL_TIME', label: '정규직' },
       { value: 'CONTRACT', label: '계약직' },
@@ -96,7 +106,7 @@ const QUESTIONS: Question[] = [
   },
   {
     step: 'COMPANY_SIZE',
-    title: '재직 중인 회사 규모를 알려주세요',
+    title: '재직 중인 회사의 규모를 알려주세요',
     choices: [
       { value: 'LARGE', label: '대기업' },
       { value: 'MID_SIZE', label: '중견기업' },
@@ -105,42 +115,62 @@ const QUESTIONS: Question[] = [
       { value: 'STARTUP', label: '스타트업' },
       { value: 'OTHER', label: '기타' },
     ],
+    follow: { hint: '정규직·계약직·일용직·인턴을 고르면 이어져요', when: employed },
     toPatch: (value) => ({ companySize: value as never }),
   },
   {
     step: 'EMPLOYMENT_PERIOD',
-    title: '현재 회사에서 근무한 기간을 알려주세요',
+    title: '지금 회사에서 재직한 기간이 얼마나 되셨나요?',
     choices: [
       { value: '12', label: '1년 이상' },
       { value: '6', label: '1년 미만' },
     ],
-    note: '1년 미만 근무 시 소득은 최근 급여×12로 환산되며, 급여통장 사본·거래내역서가 추가로 필요합니다. 대출 한도는 2천만 원입니다',
+    follow: {
+      hint: '회사 규모 다음에 이어져요',
+      when: () => employed() && !!answers.value.COMPANY_SIZE,
+    },
     toPatch: (value) => ({ employmentMonths: Number(value) }),
   },
 ];
 
+/** 시안이 나눈 두 묶음. 문항 순서는 서버가 기대하는 STEP 순서 그대로다. */
+const GROUPS = [
+  {
+    label: '기본 정보',
+    overline: '1루 · 기본 정보',
+    title: '기본 정보를 알려주세요',
+    steps: ['HOUSEHOLDER', 'HOMELESS', 'MARITAL_STATUS'] as DiagnosisStep[],
+  },
+  {
+    label: '회사 정보',
+    overline: '1루 · 회사 정보',
+    title: '회사 정보를 알려주세요',
+    steps: ['EMPLOYMENT_TYPE', 'COMPANY_SIZE', 'EMPLOYMENT_PERIOD'] as DiagnosisStep[],
+  },
+] as const;
+
+/** 진행 표시. 뒤 두 칸은 이 화면이 아니라 다음 화면들이 채운다. */
+const SUB_STEPS = ['기본 정보', '회사 정보', '추가 정보', '예상 진단'];
+
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const index = ref(0);
-const answers = ref<Record<string, string>>({});
+const group = ref(0);
 const { revision, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
 
-/** STEP 이름으로 질문 위치를 찾는다. 이 화면에 없으면(재무 이후) -1. */
-const stepIndex = (step: string | null) => QUESTIONS.findIndex((q) => q.step === step);
+const current = computed(() => GROUPS[group.value]!);
 
-const question = computed(() => QUESTIONS[index.value]!);
-const answer = computed({
-  get: () => answers.value[question.value.step] ?? null,
-  set: (value: string | null) => {
-    if (value) answers.value[question.value.step] = value;
-  },
-});
+/** 이 묶음에서 지금 보이는 문항. 이어지는 문항은 조건이 맞아야 낀다. */
+const visible = computed(() =>
+  QUESTIONS.filter((q) => current.value.steps.includes(q.step) && (!q.follow || q.follow.when())),
+);
 
-/** 단계마다 늘 보이는 설명. */
-const notice = computed(() => question.value.note);
+/** 답을 고른다. 알약은 되돌리기(선택 해제)가 없어서 빈 값은 오지 않는다. */
+function choose(step: DiagnosisStep, value: string | null) {
+  if (value) answers.value[step] = value;
+}
 
 /**
  * 준비 중 경로를 골랐다. 딤 안내를 띄운다.
@@ -148,20 +178,23 @@ const notice = computed(() => question.value.note);
  * 닫으면 그 답을 지운다 — 실수로 눌렀을 수 있으니 다른 답을 다시 고를 수
  * 있어야 하고, 지우지 않으면 다음 버튼이 막힌 답으로 열려 버린다.
  */
-const blocked = computed(() =>
-  question.value.choices.find((c) => c.value === answer.value && c.blocked),
-);
+const blocked = computed(() => {
+  for (const q of visible.value) {
+    const hit = q.choices.find((c) => c.value === answers.value[q.step] && c.blocked);
+    if (hit) return { step: q.step, choice: hit };
+  }
+  return null;
+});
 
 function dismissBlocked() {
-  answers.value[question.value.step] = '';
+  if (blocked.value) answers.value[blocked.value.step] = '';
 }
+
+/** 보이는 문항이 다 채워져야 넘어간다. */
+const canProceed = computed(() => visible.value.every((q) => !!answers.value[q.step]));
 
 /**
  * 코치 TIME(시안 1루 1·2 모달).
- *
- * 시안은 이 화면을 기본 정보와 회사 정보 두 묶음으로 나누고, 묶음마다 왜 묻는지
- * 알려주는 모달을 따로 둔다. 코드는 한 화면에서 단계를 넘기므로 지금 질문이
- * 어느 묶음인지 보고 고른다.
  *
  * 내용은 시안 문구 그대로다. 지어내지 않는다.
  */
@@ -210,14 +243,42 @@ const COMPANY_COACH: CoachSheet = {
   related: [{ id: 'changes-2026', label: '2026년 달라진 것' }],
 };
 
-/** 시안이 회사 정보로 묶은 질문들. 나머지는 기본 정보다. */
-const COMPANY_STEPS: DiagnosisStep[] = ['EMPLOYMENT_TYPE', 'COMPANY_SIZE', 'EMPLOYMENT_PERIOD'];
-
-const coach = computed(() =>
-  COMPANY_STEPS.includes(question.value.step) ? COMPANY_COACH : BASIC_COACH,
-);
-
+const coach = computed(() => (group.value === 0 ? BASIC_COACH : COMPANY_COACH));
 const coachOpen = ref(false);
+
+/**
+ * 회원정보에서 가져온 값(시안 1루 1).
+ *
+ * 가입 때 받은 것만 보여준다. 서버가 값을 안 주면 그 조각을 뺀다 — 자리를 비워
+ * 두면 빈 구분자만 남는다.
+ */
+const auth = useAuthStore();
+const prefill = ref<{ birthDate: string | null; militaryMonths: number | null }>({
+  birthDate: null,
+  militaryMonths: null,
+});
+
+/** 생일이 지났는지까지 보고 센다. 만 나이는 생일 전후로 한 살 다르다. */
+function ageFrom(birthDate: string) {
+  const born = new Date(birthDate);
+  const now = new Date();
+  let age = now.getFullYear() - born.getFullYear();
+  const before =
+    now.getMonth() < born.getMonth() ||
+    (now.getMonth() === born.getMonth() && now.getDate() < born.getDate());
+  if (before) age -= 1;
+  return age;
+}
+
+const memberFacts = computed(() => {
+  const facts: string[] = [];
+  if (auth.user?.name) facts.push(auth.user.name);
+  const { birthDate, militaryMonths } = prefill.value;
+  if (birthDate) facts.push(`${birthDate.replaceAll('-', '.')} (만 ${ageFrom(birthDate)}세)`);
+  // 시안은 병역을 일 수로 적었지만 서버가 주는 것은 개월이다. 없는 정밀도를 지어내지 않는다.
+  if (militaryMonths) facts.push(`병역 ${militaryMonths}개월`);
+  return facts;
+});
 
 /** 저장된 답을 화면 선택지로 되살린다. 값이 없는 항목은 그대로 둔다. */
 function restore(input: PlanInput | null) {
@@ -235,10 +296,14 @@ function restore(input: PlanInput | null) {
   set('EMPLOYMENT_PERIOD', input.employmentMonths);
 }
 
+/** 서버가 준 다음 STEP 이 든 묶음. 이 화면에 없으면 -1. */
+const groupOf = (step: string | null) =>
+  GROUPS.findIndex((g) => (g.steps as readonly string[]).includes(step ?? ''));
+
 /**
  * 이어하기.
  *
- * 서버가 저장된 답·완료 단계·다음 STEP 을 준다. 답을 복원하고 다음 STEP 으로
+ * 서버가 저장된 답·다음 STEP 을 준다. 답을 복원하고 그 STEP 이 든 묶음으로
  * 자리를 맞춘다. 다음 STEP 이 이 화면에 없으면(재무·희망보증금·지역·검토) 바로
  * 다음 화면으로 보낸다 — 새 계획을 만들지 않고 기존 planId 를 그대로 쓴다.
  */
@@ -246,8 +311,10 @@ function restore(input: PlanInput | null) {
 const editing = route.query.edit === '1';
 
 onMounted(async () => {
+  const api = usePlanApi();
+
   try {
-    const resumed = await usePlanApi().resume(planId);
+    const resumed = await api.resume(planId);
     revision.value = resumed.revision;
     restore(resumed.input);
 
@@ -256,39 +323,59 @@ onMounted(async () => {
      *
      * 다만 뒤 화면에서 **고치러 돌아온 것**이라면(`?edit=1`) 밀어내지 않는다. 그러면
      * 이전을 눌러도 곧장 되돌려 보내져 앞 답을 고칠 수 없다. 그때는 이 화면의 마지막
-     * 질문에 세운다 — 방금 지나온 자리가 거기다.
+     * 묶음에 세운다 — 방금 지나온 자리가 거기다.
      */
-    const target = stepIndex(resumed.resumeStep);
+    const target = groupOf(resumed.resumeStep);
     if (target === -1) {
       if (editing) {
-        index.value = QUESTIONS.length - 1;
+        group.value = GROUPS.length - 1;
         return;
       }
       await navigateTo(`/diagnosis/${planId}/finance`, { replace: true });
       return;
     }
-    index.value = target;
+    group.value = target;
   } catch {
     // 이어할 게 없거나 조회가 막히면 처음부터. 저장은 서버가 소유자·revision 으로 막는다.
     revision.value = 0;
   }
+
+  try {
+    const profile = await api.profilePrefill(planId);
+    prefill.value = {
+      birthDate: profile.birthDate.value,
+      militaryMonths: profile.militaryMonths.value,
+    };
+  } catch {
+    // 프로필을 못 읽어도 문진은 진행한다. 카드만 안 보인다.
+  }
 });
 
+/**
+ * 이 묶음의 답을 순서대로 저장한다.
+ *
+ * 서버는 문항 하나씩 받는다. 한 번에 묶어 보내는 길이 없으므로 순서대로 부르고,
+ * 마지막이 알려준 다음 STEP 으로 자리를 옮긴다. 중간에서 실패하면 거기까지는
+ * 저장된 채로 멈춘다 — 다시 누르면 같은 값을 다시 보내므로 덧나지 않는다.
+ */
 async function next() {
-  if (!answer.value || pending.value || blocked.value) return;
+  if (!canProceed.value || pending.value || blocked.value) return;
 
   pending.value = true;
   error.value = '';
   try {
-    const result = await saveStep(question.value.step, question.value.toPatch(answer.value));
+    let nextStep: string | null = null;
+    for (const q of visible.value) {
+      const result = await saveStep(q.step, q.toPatch(answers.value[q.step]!));
+      nextStep = result.nextStep;
+    }
 
-    // 서버가 정한 다음 STEP 을 따른다. 이 화면에 없으면(프리랜서 분기·재무 이후) 다음 화면으로.
-    const target = stepIndex(result.nextStep);
-    if (target === -1) {
+    const target = groupOf(nextStep);
+    if (target === -1 || target === group.value) {
       await navigateTo(`/diagnosis/${planId}/finance`);
       return;
     }
-    index.value = target;
+    group.value = target;
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -297,68 +384,75 @@ async function next() {
 }
 
 function back() {
-  if (index.value === 0) {
+  if (group.value === 0) {
     navigateTo('/prep');
     return;
   }
-  index.value -= 1;
+  group.value -= 1;
 }
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[coach]" title="사용자 정보 입력" base="1루" @back="back">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[coach]" brand base="1루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-2.5 px-4 pt-4 pb-6">
+      <SubStep :steps="SUB_STEPS" :current="group" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
-      <button type="button" class="w-full text-left" @click="coachOpen = true">
-        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기">{{ coach.title }}</CoachTip>
-      </button>
+      <p class="text-caption1 text-ink-label font-medium">{{ current.overline }}</p>
+      <h1 class="text-question text-ink-card">{{ current.title }}</h1>
 
-      <QuestionCard :question="question.title">
-        <PillGroup v-model="answer" :options="question.choices" />
-      </QuestionCard>
+      <MemberFactCard v-if="group === 0 && memberFacts.length" :facts="memberFacts" />
 
-      <div v-if="notice" class="bg-surface border-line rounded-field border p-3.5">
-        <p class="text-caption2 text-ink-hero-body font-medium">{{ notice }}</p>
-      </div>
+      <QuestionBlock
+        v-for="q in visible"
+        :key="q.step"
+        :question="q.title"
+        :follow="!!q.follow"
+        :hint="q.follow?.hint"
+        @info="coachOpen = true"
+      >
+        <PillGroup
+          :model-value="answers[q.step] ?? null"
+          :options="q.choices"
+          variant="small"
+          @update:model-value="(value: string | null) => choose(q.step, value)"
+        />
+      </QuestionBlock>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
     <!--
-      시안(1루 1·2)은 이전·다음을 하단 CTA 줄에 나란히 둔다. 헤더 셰브론만 두면
-      엄지가 닿는 자리에 되돌아갈 길이 없다. 첫 질문은 되돌아갈 앞 단계가 이
-      화면에 없어서 시안대로 다음만 세운다.
+      시안(1루 1·2)은 이전·다음을 하단 CTA 줄에 나란히 둔다. 상단 바에 뒤로가기가
+      없어서 엄지가 닿는 자리에 되돌아갈 길이 여기뿐이다. 첫 묶음은 시안대로
+      다음만 세운다.
     -->
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div v-if="index > 0" class="w-28 shrink-0">
-        <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
-      </div>
+      <footer class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 gap-2.5 border-t">
+        <div v-if="group > 0" class="w-29 shrink-0">
+          <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
+        </div>
 
-      <div class="flex-1">
-        <AppButton variant="strong" :disabled="!answer || pending" @click="next">
+        <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
           {{ pending ? '저장 중…' : '다음' }}
         </AppButton>
-      </div>
-    </footer>
-</template>
+      </footer>
+    </template>
 
     <!--
       준비 중 경로 안내(1루 7). 기혼·유주택·무직을 고르면 흐름을 멈추고 딤으로
       알린다. 바깥이나 처음으로 돌아가기로 닫는다.
     -->
-    <DimOverlay v-if="blocked" @close="dismissBlocked">
-      <div class="flex flex-col items-center gap-3 text-center">
-        <h2 class="text-headline1 text-ink-hero">{{ BLOCKED_NOTICE.title }}</h2>
-        <p class="text-caption2 text-ink-hero-body">{{ BLOCKED_NOTICE.body }}</p>
-
-        <div class="mt-3 flex w-full flex-col gap-2">
-          <!-- 알림 신청을 받아 둘 API 가 아직 없다. 자리는 두되 눌리지 않게 한다. -->
-          <AppButton variant="strong" disabled>열리면 알림 받기</AppButton>
-          <AppButton variant="white" @click="navigateTo('/')">처음으로 돌아가기</AppButton>
-        </div>
-      </div>
+    <DimOverlay v-if="blocked" placement="center" @close="dismissBlocked">
+      <!--
+        시안은 여기를 "처음으로 돌아가기" 로 두었지만 그러면 지금까지 채운 답이
+        통째로 날아간다. 막힌 건 이 문항 하나뿐이라, 그 답만 지우고 이어서 고르게 한다.
+      -->
+      <PreparingNotice
+        :title="BLOCKED_NOTICE.title"
+        :body="BLOCKED_NOTICE.body"
+        link-label="다른 답으로 고를게요"
+        @link="dismissBlocked"
+      />
     </DimOverlay>
   </StageShell>
 </template>

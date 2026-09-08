@@ -54,9 +54,6 @@ const error = ref('');
 
 /** 월세 준비 중 안내. 알약을 고르면 열린다. */
 const wolseNotice = ref(false);
-/** 알림 신청. 받아 둘 데가 아직 없어서 이 화면 안에서만 산다 — 아래 주석 참고. */
-const notified = ref(false);
-
 /**
  * 이 화면에서 만든 계획.
  *
@@ -267,30 +264,12 @@ async function submit() {
     </footer>
 
     <DimOverlay v-if="wolseNotice" placement="center" @close="wolseNotice = false">
-      <img
-        src="/tiger-trouble.png"
-        alt=""
-        width="160"
-        height="130"
-        class="h-modal-art w-40 object-contain"
+      <PreparingNotice
+        title="월세 경로는 준비 중이에요"
+        body="지금은 전세 경로만 도와드릴 수 있어요. 청년월세 특별지원과 세액공제 안내는 곧 열려요"
+        link-label="전세로 진행하기"
+        @link="fallBackToJeonse"
       />
-      <h2 class="text-question text-ink-card">월세 경로는 준비 중이에요</h2>
-      <p class="text-note-body text-ink-card-body text-center">
-        지금은 전세 경로만 도와드릴 수 있어요.<br />
-        청년월세 특별지원과 세액공제 안내는 곧 열려요
-      </p>
-
-      <!--
-        알림 신청을 받아 둘 데가 아직 없다. 눌린 것을 이 화면에서만 기억하고,
-        새로고침하면 사라진다. 신청 API 가 생기면 여기서 부르고 이 상태를 걷어낸다.
-      -->
-      <AppButton variant="strong" :disabled="notified" @click="notified = true">
-        {{ notified ? '알림을 신청했어요' : '열리면 알림 받기' }}
-      </AppButton>
-
-      <button type="button" class="text-label2 text-ink-label" @click="fallBackToJeonse">
-        전세로 진행하기
-      </button>
     </DimOverlay>
   </PhoneFrame>
 </template>

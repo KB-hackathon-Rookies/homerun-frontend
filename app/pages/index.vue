@@ -57,7 +57,7 @@ onMounted(() => {
       </div>
 
       <div class="relative mt-4 aspect-[39/40] w-full shrink-0">
-        <img src="/intro.jpg" alt="" class="absolute inset-0 size-full object-cover" />
+        <img src="/illust/intro.jpg" alt="" class="absolute inset-0 size-full object-cover" />
       </div>
     </div>
 

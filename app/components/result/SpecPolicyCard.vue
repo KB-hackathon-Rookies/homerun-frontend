@@ -12,13 +12,24 @@ import { formatKoreanMoney } from '~/utils/money';
  */
 const { card } = defineProps<{ card: LoanCard }>();
 
+/** `계산 근거` 칩. 시안 1루 5 는 이 칩으로 계산 근거 코치 시트를 연다. */
+defineEmits<{ basis: [] }>();
+
 const badge = computed(() => specBadge(card));
 const short = computed(() => (card.ownFundsShortfall ?? 0) > 0);
 
-/** 모자라지 않으면 0 원이다. 모자라면 음수로 적어 부족분을 그대로 드러낸다. */
-const gap = computed(() =>
-  card.ownFundsShortfall === null ? null : -Math.abs(card.ownFundsShortfall),
-);
+/**
+ * 차액.
+ *
+ * 부호만 붙이면 "-2,400만원" 이 무슨 뜻인지 한 번 더 생각해야 한다. 시안처럼
+ * **부족·여유를 말로 붙인다** — 색만으로 알리지 않는 것과 같은 이유다.
+ */
+const gapText = computed(() => {
+  const shortfall = card.ownFundsShortfall;
+  if (shortfall === null || shortfall === undefined) return null;
+  if (shortfall > 0) return `${formatKoreanMoney(shortfall)} 부족`;
+  return shortfall < 0 ? `${formatKoreanMoney(-shortfall)} 여유` : '딱 맞아요';
+});
 
 /**
  * 금리는 범위로 온다. 담보 방식과 우대 항목이 은행에서 정해지기 때문이다.
@@ -73,15 +84,28 @@ const interestText = computed(() => {
         </div>
         <div class="flex items-center justify-between">
           <span class="text-caption2 text-ink-hero-body">차액</span>
-          <span class="text-numeric" :class="short ? 'text-danger' : 'text-ink-hero'">
-            {{ formatKoreanMoney(gap) }}
+          <span class="text-numeric" :class="short ? 'text-danger' : 'text-success'">
+            {{ gapText }}
           </span>
         </div>
       </div>
 
-      <p v-if="rateText" class="text-caption2 text-ink-hero-body font-medium">
-        예상 금리 {{ rateText }}<span v-if="interestText"> · 월 이자 약 {{ interestText }}</span>
-      </p>
+      <!-- 시안 `calcRow`. 계산기 아이콘 · 금리 한 줄 · 근거를 여는 칩이 한 줄에 선다. -->
+      <div v-if="rateText" class="flex w-full items-center gap-1.5">
+        <img src="/icon/calc.png" alt="" width="16" height="16" class="size-4 shrink-0" />
+
+        <p class="text-caption2 text-ink-card-body flex-1 font-medium">
+          예상 금리 {{ rateText }}<span v-if="interestText"> · 월 이자 약 {{ interestText }}</span>
+        </p>
+
+        <button
+          type="button"
+          class="bg-surface-active rounded-chip-sm text-chip text-primary-strong shrink-0 px-1.5 py-0.5 font-bold"
+          @click="$emit('basis')"
+        >
+          계산 근거
+        </button>
+      </div>
 
       <div
         v-if="card.estimate.recommendedDepositLimit"

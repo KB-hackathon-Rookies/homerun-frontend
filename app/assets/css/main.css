@@ -132,6 +132,9 @@
 
   /* 독립 준비 문진(시안 벤치 1~4) */
   --color-line-step: #c9ced6; /* 지나온 단계 원 테두리 */
+  --color-line-follow: rgb(51 102 255 / 0.3); /* 앞 답에 따라 이어지는 문항 카드 테두리 */
+  --color-line-chip: #d0d7e2; /* 코치 시트 '더 알아보기' 칩 테두리 */
+  --color-ink-chip: #333d4b; /* 그 칩 글자 */
 
   /* ---------------------------------------------------------------
    * 색 · 파란 면 위
@@ -296,6 +299,10 @@
   --text-choice--line-height: 1.2;
   --text-choice--font-weight: 700;
 
+  --text-coach-title: 1rem; /* 16 · 코치 시트 머리의 "코치 TIME" */
+  --text-coach-title--line-height: 1.375;
+  --text-coach-title--font-weight: 700;
+
   --text-note-body: 0.8125rem; /* 13 · 안내 카드 본문 */
   --text-note-body--line-height: 1.462;
   --text-note-body--font-weight: 400;
@@ -364,7 +371,8 @@
   --spacing-badge: 14px; /* 알림 개수 원 */
   --spacing-row: 52px; /* 마이 한 줄 */
   --spacing-modal: 310px; /* 가운데 뜨는 안내 카드 폭 */
-  --spacing-modal-art: 130px; /* 그 카드 안 일러스트 높이 */
+  --spacing-notice-art: 130px; /* 준비 중 안내 카드 일러스트 폭. 높이는 원본 비율대로 122 가 된다 */
+  --spacing-celebrate-art: 150px; /* 1루 안착 축하 카드 일러스트 폭. 원본 비율대로 높이 122 */
   --spacing-edu-card: 165px; /* 코치 교육 카드 한 장 */
 
   /* 코치 FAB. 흰 버튼이 화면 위에 떠 보이게 하는 그림자 */
@@ -407,6 +415,18 @@
     font-family: var(--font-sans);
     color: var(--color-ink);
     background-color: var(--color-canvas);
+
+    /*
+     * 한국어를 어절 중간에서 자르지 않는다.
+     *
+     * 기본값(`normal`)은 한글을 글자 단위로 끊어서 "열려요" 가 "열 / 려요" 로
+     * 갈라진다. 시안은 어디서도 그렇게 잘리지 않는다 — 폭이 좁은 모달·카드에서
+     * 특히 눈에 띈다.
+     *
+     * 대신 끊을 데가 없는 긴 영문·URL 은 넘쳐 버리므로 그때만 강제로 접는다.
+     */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 
   /*

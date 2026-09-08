@@ -24,6 +24,9 @@ const { pending, error, cards } = useJeonsePolicies(planId);
  * 시안 본문에는 예시 계정의 실제 금액이 박혀 있다. 그대로 옮기면 남의 숫자를 내
  * 근거인 것처럼 읽게 되므로, 금액이 아니라 규칙만 남긴다.
  */
+/** 진행 표시. 앞 셋은 문진에서 지나왔다. */
+const SUB_STEPS = ['기본 정보', '회사 정보', '추가 정보', '예상 진단'];
+
 const COACH = {
   title: '내 스펙 계산 근거',
   intro: '카드에 나온 숫자가 어디서 나왔는지 알려줄게. 한도, 금리, 필요한 돈 순서로 계산했어',
@@ -99,23 +102,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="스펙 매칭 확인" base="1루" @back="navigateTo(`/result/${planId}/match`)">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" brand base="1루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3.5 px-4 pt-4 pb-6">
+      <SubStep :steps="SUB_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
-      <button type="button" class="w-full text-left" @click="coachOpen = true">
-        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
-          >네 스펙은 입력값으로 계산한 거야. 어떤 규칙으로 나온 숫자인지 계산 근거를
-          보여줄게</CoachTip
-        >
-      </button>
-
-      <h2 class="text-headline1 text-ink-hero">받을 수 있는 대출을 모두 찾았어요</h2>
+      <p class="text-caption1 text-ink-label font-medium">1루 · 예상 진단</p>
+      <h1 class="text-question text-ink-card">받을 수 있는 대출을 모두 찾았어요</h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
-      <SpecPolicyCard v-for="card in cards" :key="card.code" :card="card" />
+      <SpecPolicyCard
+        v-for="card in cards"
+        :key="card.code"
+        :card="card"
+        @basis="coachOpen = true"
+      />
 
       <AppCard v-if="cards.length" class="text-caption2 text-ink-hero-body">
         ⚠️ 여기 나온 한도는 상품 기준 최대치예요. 실제로는 은행이 더 낮게 안내할 수 있어요 — 은행이
@@ -135,12 +137,11 @@ onMounted(() => {
 
     <!-- 시안(1루 5)은 이전·2루로를 하단 CTA 줄에 나란히 둔다. -->
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/result/${planId}/match`)">이전</AppButton>
-      </div>
+      <footer class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 gap-2.5 border-t">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/result/${planId}/match`)">이전</AppButton>
+        </div>
 
-      <div class="flex-1">
         <AppButton
           variant="strong"
           :disabled="pending || !cards.length"
@@ -148,27 +149,30 @@ onMounted(() => {
         >
           매물 찾으러 가기
         </AppButton>
-      </div>
-    </footer>
-</template>
+      </footer>
+    </template>
 
     <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
-    <DimOverlay v-if="celebrating" @close="dismissCelebration">
-      <div class="flex flex-col items-center gap-2 text-center">
-        <p class="text-caption1 text-primary-strong">1루 안착!</p>
-        <h2 class="text-headline1 text-ink-hero">받을 수 있는 대출, 다 찾았어</h2>
-        <p class="text-caption2 text-ink-hero-body">
-          네 조건으로 가능한 대출과 한도가 나왔어. 이제 이 스펙에 맞는 집을 찾으러 가자
-        </p>
+    <DimOverlay v-if="celebrating" placement="center" @close="dismissCelebration">
+      <img src="/tiger/search.png" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
 
-        <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
-          ⚾ 다음은 2루 · 검증
-        </p>
+      <p class="text-title3 text-primary-strong">1루 안착!</p>
+      <h2 class="text-stage text-ink-card font-bold">받을 수 있는 대출, 다 찾았어</h2>
+      <p class="text-note-body text-ink-card-body text-center">
+        네 조건으로 가능한 대출과 한도가 나왔어. 이제 이 스펙에 맞는 집을 찾으러 가자
+      </p>
 
-        <div class="mt-3 w-full">
-          <AppButton variant="strong" @click="dismissCelebration">스펙 확인하기</AppButton>
-        </div>
-      </div>
+      <p
+        class="bg-surface-active rounded-pill text-caption-tight text-primary-strong px-3 py-1.5 font-bold"
+      >
+        ⚾ 다음은 2루 · 검증
+      </p>
+
+      <!--
+        시안 1루 6 의 카드에는 버튼이 없고 바깥을 눌러 닫는다. 그런데 딤만 덮인
+        화면에서 어디를 눌러야 하는지 알려주는 것이 없어, 닫는 버튼 하나는 남긴다.
+      -->
+      <AppButton variant="strong" @click="dismissCelebration">스펙 확인하기</AppButton>
     </DimOverlay>
   </StageShell>
 </template>

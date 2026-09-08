@@ -2,7 +2,6 @@
 import { useFirstBaseApi } from '~/api/firstBase';
 import { incomeSyncOutcome, useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
 import {
-  type DiagnosisResumeStep,
   type DiagnosisStep,
   type DiagnosisStepPatch,
   type PlanInput,
@@ -18,24 +17,22 @@ import { formatKoreanMoney } from '~/utils/money';
 /**
  * 1루 추가 정보 입력.
  *
- * 앞 문진과 껍데기가 같아서 여기도 한 화면에서 단계를 넘긴다. 다만 단계가
- * 갈린다 — 오픈뱅킹으로 소득이 확인되면 소득 직접 입력을 건너뛴다.
+ * 시안(1루 3)이 한 장에 다 편다. 확인·직접입력·보증금·지역을 네 화면으로 넘기던 것을
+ * 한 화면으로 모았다 — 서로 짧고 한 덩어리로 읽히는 값이라 훑는 편이 빠르다.
+ * 서버는 여전히 STEP 단위로 받으므로 다음을 누를 때 순서대로 보낸다.
  *
  * 소득은 서버가 오픈뱅킹으로 검증한 값만 `OPEN_BANKING` 출처로 쓴다. 그래서
  * 먼저 서버에 동기화·확인을 요청하고, 그다음 STEP 을 저장한다. 요약 GET 만으로는
  * 서버가 출처를 기록하지 않아, 그대로 `OPEN_BANKING` 을 보내면 409 로 막힌다.
  *
- * 순자산은 다르다. 계좌 잔액은 부채가 반영된 순자산이 아니므로 오픈뱅킹 값으로
- * 자동 저장하지 않고, 사용자가 직접 확인해 입력한 값(`MANUAL`)만 쓴다.
+ * 시안이 조회 카드에 나란히 놓은 `금융자산` 이 곧 진단이 쓰는 `순자산` 이다. 맞다고
+ * 답하면 그 값을 순자산으로 그대로 쓰고, 아니라고 답할 때만 직접 받는다.
  */
 definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-type Step = 'CONFIRM' | 'MANUAL' | 'ASSETS' | 'DEPOSIT' | 'REGION';
-
-const step = ref<Step>('CONFIRM');
 const { revision, load, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
@@ -59,26 +56,6 @@ const income = ref('');
 const assets = ref('');
 /** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 시 확인 대상이라 실제 값을 받는다. */
 const availableCash = ref('');
-/** 기존 전세자금대출 유무(YES/NO). 정책 판정에 쓰이므로 임의로 채우지 않고 직접 받는다. */
-const existingJeonseLoan = ref<string | null>(null);
-/**
- * 세대원 기금대출과 배우자의 전세·주택담보대출까지 없음을 사용자가 확인했는가.
- *
- * 버팀목 중복대출 금지는 본인 대출 하나로 판정할 수 없어서, 이 확인이 없으면 판정이
- * 추가확인으로 남는다. 사용자 진술이지 은행 확인이 아니라 진행을 막지는 않는다 —
- * 체크를 안 해도 다음으로 넘어가고, 결과에서 추가확인으로 안내된다.
- */
-const prohibitedLoanConfirmed = ref(false);
-
-// 기존 대출이 있다고 답을 바꾸면 앞서 한 확인은 더 이상 성립하지 않는다.
-watch(existingJeonseLoan, (value) => {
-  if (value !== 'NO') prohibitedLoanConfirmed.value = false;
-});
-
-/** 대출이 없다고 답한 경우에만 의미가 있다. 그 밖에는 확인하지 않은 것으로 보낸다. */
-const prohibitedLoanAnswer = computed(
-  () => existingJeonseLoan.value === 'NO' && prohibitedLoanConfirmed.value,
-);
 const deposit = ref('');
 const regionId = ref<string | null>(null);
 
@@ -101,22 +78,6 @@ const parsedCash = computed(() => parseManwon(availableCash.value));
 const parsedDeposit = computed(() => parseManwon(deposit.value));
 
 /**
- * 서버가 이어하기로 준 STEP 을 이 화면의 단계로 옮긴다.
- *
- * 이 화면이 저장하는 서버 STEP 은 셋(FINANCIAL·HOPE_DEPOSIT·REGION)이고, 화면 단계는
- * 다섯이다. CONFIRM·MANUAL·ASSETS 는 모두 FINANCIAL 한 STEP 을 나눠 받는 자리다.
- */
-function stepFromResume(resumeStep: DiagnosisResumeStep | null): Step | null {
-  if (resumeStep === 'HOPE_DEPOSIT') return 'DEPOSIT';
-  if (resumeStep === 'REGION') return 'REGION';
-  // REVIEW·null 은 문진을 다 채웠다는 뜻이다. 마지막 자리에서 확인하고 넘어가게 둔다.
-  if (resumeStep === 'REVIEW' || resumeStep === null) return 'REGION';
-  if (resumeStep === 'FINANCIAL') return 'CONFIRM';
-  // 앞 문진이 안 끝났으면 이 화면이 정할 일이 아니다.
-  return null;
-}
-
-/**
  * 저장된 답을 칸에 되돌려 놓는다.
  *
  * 전에는 `revision` 만 읽어서, 지역 입력에서 새로고침하면 **빈 금융 문진이 처음부터**
@@ -131,12 +92,6 @@ function restore(input: PlanInput | null) {
   availableCash.value = manwonFromWon(input.availableCash);
   deposit.value = manwonFromWon(input.hopeDeposit);
   regionId.value = input.regionId === null ? null : String(input.regionId);
-
-  if (input.existingJeonseLoan !== null) {
-    existingJeonseLoan.value = input.existingJeonseLoan ? 'YES' : 'NO';
-    // 대출이 있다고 답했으면 중복대출 확인은 성립하지 않는다. watch 와 같은 규칙이다.
-    prohibitedLoanConfirmed.value = !input.existingJeonseLoan && !!input.prohibitedLoanConfirmed;
-  }
 
   // 이미 확인해 둔 오픈뱅킹 소득은 STEP 저장에 그대로 실어야 출처 검증에 걸리지 않는다.
   if (input.incomeSource === 'OPEN_BANKING') openBankingIncome.value = input.monthlyIncome;
@@ -163,41 +118,37 @@ onMounted(async () => {
     await load();
   }
 
-  const resumedStep = stepFromResume(resumed?.resumeStep ?? null);
-  if (resumedStep) step.value = resumedStep;
-
-  // 소득을 이미 확인해 둔 자리로 돌아온 것이면 오픈뱅킹을 다시 물을 이유가 없다.
-  if (step.value !== 'CONFIRM') return;
+  // 소득을 이미 확인해 뒀으면 오픈뱅킹을 다시 물을 이유가 없다. 직접 입력 칸만 편다.
+  if (resumed?.input?.incomeSource === 'OPEN_BANKING') return;
 
   try {
     summary.value = await financialSummary();
   } catch {
-    // 연동을 안 했거나 조회가 실패했다. 물어볼 값이 없으니 직접 입력부터 받는다.
-    step.value = 'MANUAL';
+    // 연동을 안 했거나 조회가 실패했다. 물어볼 값이 없으니 직접 입력만 남긴다.
+    useOpenBanking.value = 'MANUAL';
   }
 });
 
+/** 오픈뱅킹으로 확인할 값이 있는가. 없으면 확인 카드를 아예 세우지 않는다. */
+const hasSummary = computed(() => !!summary.value);
+/** 직접 입력 칸을 펴야 하는가. 조회값이 없으면 처음부터 편다. */
+const manual = computed(() => !hasSummary.value || useOpenBanking.value === 'MANUAL');
+
 const canProceed = computed(() => {
-  if (step.value === 'CONFIRM') return !!useOpenBanking.value;
+  if (hasSummary.value && !useOpenBanking.value) return false;
   // 값이 채워졌는지가 아니라 형식을 통과했는지를 본다. `abc` 는 채워진 것이 아니다.
-  if (step.value === 'MANUAL')
-    return (
-      parsedIncome.value.value !== null &&
-      parsedAssets.value.value !== null &&
-      parsedCash.value.value !== null &&
-      !!existingJeonseLoan.value
-    );
-  if (step.value === 'ASSETS')
-    return (
-      parsedAssets.value.value !== null &&
-      parsedCash.value.value !== null &&
-      !!existingJeonseLoan.value
-    );
-  if (step.value === 'DEPOSIT') return parsedDeposit.value.value !== null;
-  return !!regionId.value;
+  if (manual.value && (parsedIncome.value.value === null || parsedAssets.value.value === null)) {
+    return false;
+  }
+  return parsedCash.value.value !== null && parsedDeposit.value.value !== null && !!regionId.value;
 });
 
-const isLast = computed(() => step.value === 'REGION');
+/** 진행 표시. 앞 두 칸은 문진에서 이미 지나왔다. */
+const SUB_STEPS = ['기본 정보', '회사 정보', '추가 정보', '예상 진단'];
+
+const REGION_OPTIONS = computed(() =>
+  regions.value.map((region) => ({ value: String(region.id), label: region.name })),
+);
 
 /** 3억을 넘으면 기금대출이 막힌다. 미리 알려준다. */
 const depositNotice = computed(() =>
@@ -220,6 +171,8 @@ async function save(code: DiagnosisStep, patch: DiagnosisStepPatch) {
  * 전에는 상태를 보지 않고 추정값을 저장값처럼 쓰면서 확인을 무조건 호출했다. 그래서
  * 수동 입력이 보존된 사용자는 확인 요청이 409(`PLAN_017`)로 튕겨 나가 이유도 모른 채
  * 막혔고, 이미 확인된 사용자는 저장값과 다른 추정값을 다음 단계로 실어 보냈다.
+ *
+ * @returns 소득을 확정했으면 true. false 면 직접 입력 칸이 펴진 채 멈춘다.
  */
 async function confirmOpenBankingIncome() {
   const { syncPlanIncome, confirmPlanIncome } = useOpenBankingApi();
@@ -240,70 +193,66 @@ async function confirmOpenBankingIncome() {
         ? '직접 입력해 두신 소득이 있어 그대로 두었어요. 오픈뱅킹 값으로 바꾸시려면 아래에서 고쳐주세요'
         : '';
     useOpenBanking.value = 'MANUAL';
-    step.value = 'MANUAL';
-    return;
+    return false;
   }
 
   preservedIncomeNotice.value = '';
   if (outcome === 'CONFIRM') await confirmPlanIncome(planId);
   // 동기화·확인으로 서버 revision 이 올라갔으니 최신값을 물려받는다.
   await load();
-  step.value = 'ASSETS';
+  return true;
 }
 
+/**
+ * 한 화면에 모인 답을 서버가 받는 순서대로 보낸다.
+ *
+ * 중간에서 실패하면 거기까지는 저장된 채로 멈춘다. 다시 누르면 같은 값을 다시
+ * 보내므로 덧나지 않는다.
+ */
 async function next() {
   if (!canProceed.value || pending.value) return;
 
   pending.value = true;
   error.value = '';
   try {
-    if (step.value === 'CONFIRM') {
-      if (useOpenBanking.value === 'MANUAL') {
-        step.value = 'MANUAL';
-        return;
-      }
-      await confirmOpenBankingIncome();
-      return;
-    }
-
-    if (step.value === 'MANUAL') {
-      await save('FINANCIAL', {
+    let financePatch: DiagnosisStepPatch;
+    if (manual.value) {
+      financePatch = {
         monthlyIncome: parsedIncome.value.value ?? 0,
-        netAssets: parsedAssets.value.value ?? 0,
-        availableCash: parsedCash.value.value ?? 0,
-        existingJeonseLoan: existingJeonseLoan.value === 'YES',
-        prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
         incomeSource: 'MANUAL',
-        assetSource: 'MANUAL',
-        financialDataConfirmed: true,
-      });
-      step.value = 'DEPOSIT';
-      return;
-    }
-
-    if (step.value === 'ASSETS') {
-      // 소득은 서버가 오픈뱅킹으로 확인한 값을 그대로, 순자산은 사용자가 직접
-      // 넣은 값을 쓴다. 계좌 잔액을 순자산으로 자동 저장하지 않는다.
-      await save('FINANCIAL', {
-        monthlyIncome: openBankingIncome.value ?? undefined,
         netAssets: parsedAssets.value.value ?? 0,
-        availableCash: parsedCash.value.value ?? 0,
-        existingJeonseLoan: existingJeonseLoan.value === 'YES',
-        prohibitedLoanConfirmed: prohibitedLoanAnswer.value,
-        incomeSource: 'OPEN_BANKING',
         assetSource: 'MANUAL',
-        financialDataConfirmed: true,
-      });
-      step.value = 'DEPOSIT';
-      return;
+      };
+    } else {
+      // 확정하지 못하면 직접 입력 칸이 펴진 채로 멈춘다. 0원으로 조용히 넘기지 않는다.
+      if (!(await confirmOpenBankingIncome())) return;
+      // 소득은 서버가 확인한 값을, 순자산은 조회 카드에 보여준 금융자산을 쓴다.
+      financePatch = {
+        monthlyIncome: openBankingIncome.value ?? undefined,
+        incomeSource: 'OPEN_BANKING',
+        netAssets: summary.value?.totalAccountBalance ?? 0,
+        assetSource: 'OPEN_BANKING',
+      };
     }
 
-    if (step.value === 'DEPOSIT') {
-      await save('HOPE_DEPOSIT', { hopeDeposit: parsedDeposit.value.value ?? 0 });
-      step.value = 'REGION';
-      return;
-    }
-
+    await save('FINANCIAL', {
+      ...financePatch,
+      availableCash: parsedCash.value.value ?? 0,
+      /*
+       * 기존 전세자금대출은 화면에서 묻지 않고 **없음으로 두고 판정한다.**
+       *
+       * 시안 1루 3 에 그 문항이 없고, 이 서비스가 돕는 첫 독립 청년에게는 이미
+       * 받아 둔 전세자금대출이 사실상 없다. 비워서 보내면 중복대출 조건이 확인되지
+       * 않은 채 남아 카드가 전부 "확인 필요" 로 떨어지는데, 그건 화면이 말하려는
+       * 바(조건을 통과했다)와 어긋난다.
+       *
+       * 세대원·배우자까지 확인한 것은 아니므로 `prohibitedLoanConfirmed` 는 보내지
+       * 않는다. 그 부분은 2루 은행 상담에서 실제로 확인된다.
+       */
+      existingJeonseLoan: false,
+      financialDataConfirmed: true,
+    });
+    await save('HOPE_DEPOSIT', { hopeDeposit: parsedDeposit.value.value ?? 0 });
     await save('REGION', { regionId: Number(regionId.value) });
     await submitFirstBase();
   } catch (cause) {
@@ -332,8 +281,7 @@ async function submitFirstBase() {
   });
   if (result.status !== 'COMPLETED') {
     // 아직 확인하지 못한 입력이 남았다(예: 자기자금). 화면을 넘기지 않는다.
-    error.value =
-      '입력을 한 번 더 확인해야 해요. 앞 단계로 돌아가 값을 확인하고 다시 시도해주세요.';
+    error.value = '입력을 한 번 더 확인해야 해요. 값을 확인하고 다시 시도해주세요.';
     return;
   }
   await navigateTo(`/result/${planId}/match`);
@@ -372,205 +320,118 @@ const COACH = {
 const coachOpen = ref(false);
 
 function back() {
-  if (step.value === 'CONFIRM') {
-    /*
-     * 이어하기가 아니라 앞 질문을 고치러 간다고 알린다.
-     *
-     * 이 표시가 없으면 진단 화면이 서버의 resumeStep(=FINANCIAL)을 보고 곧장 이 화면으로
-     * 되돌려 보낸다. 이전을 눌러도 제자리라 앞 답을 고칠 방법이 없었다.
-     */
-    navigateTo(`/diagnosis/${planId}?edit=1`);
-    return;
-  }
-  // 소득을 직접 입력하러 온 사람과 오픈뱅킹으로 확인한 사람은 지나온 길이 다르다.
-  if (step.value === 'MANUAL' || step.value === 'ASSETS') {
-    step.value = 'CONFIRM';
-    return;
-  }
-  if (step.value === 'DEPOSIT') {
-    step.value = useOpenBanking.value === 'MANUAL' ? 'MANUAL' : 'ASSETS';
-    return;
-  }
-  step.value = 'DEPOSIT';
+  // 앞 답을 고치러 가는 길이라고 알린다. 안 그러면 그 화면이 이어하기로 보고 되돌려 보낸다.
+  navigateTo(`/diagnosis/${planId}?edit=1`);
 }
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="사용자 정보 입력" base="1루" @back="back">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" brand base="1루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-2.5 px-4 pt-4 pb-6">
+      <SubStep :steps="SUB_STEPS" :current="2" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
-      <button type="button" class="w-full text-left" @click="coachOpen = true">
-        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
-          >보증금 말고도 이사비·중개비까지, 실제로 필요한 돈을 같이 계산해줄게</CoachTip
-        >
-      </button>
+      <p class="text-caption1 text-ink-label font-medium">1루 · 추가 정보</p>
+      <h1 class="text-question text-ink-card">자산과 희망 조건을 알려주세요</h1>
 
-      <QuestionCard
-        v-if="step === 'CONFIRM'"
-        question="오픈뱅킹으로 조회한 월 평균 소득이에요. 맞나요?"
+      <QuestionBlock
+        v-if="hasSummary"
+        question="오픈뱅킹으로 조회한 정보예요. 맞나요?"
+        @info="coachOpen = true"
       >
-        <div class="border-line rounded-field flex flex-col gap-1 border p-4">
-          <span class="text-micro text-ink-muted">월 평균 소득</span>
-          <span class="text-numeric text-ink-hero">
-            약 {{ formatKoreanMoney(summary?.averageMonthlyNetIncome) }}
-          </span>
+        <div class="border-line rounded-field flex w-full gap-8 border px-4 py-3">
+          <div class="flex flex-col gap-1">
+            <span class="text-micro text-ink-label">금융자산</span>
+            <span class="text-numeric text-ink-card">
+              약 {{ formatKoreanMoney(summary?.totalAccountBalance) }}
+            </span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-micro text-ink-label">월 평균 소득</span>
+            <span class="text-numeric text-ink-card">
+              {{ formatKoreanMoney(summary?.averageMonthlyNetIncome) }}
+            </span>
+          </div>
         </div>
 
         <PillGroup
           v-model="useOpenBanking"
+          variant="small"
           :options="[
             { value: 'OPEN_BANKING', label: '맞아요' },
             { value: 'MANUAL', label: '아니에요, 직접 입력할게요' },
           ]"
         />
-      </QuestionCard>
+      </QuestionBlock>
 
-      <QuestionCard v-else-if="step === 'MANUAL'" question="아래 정보를 직접 입력해주세요">
-        <p v-if="preservedIncomeNotice" class="text-caption2 text-ink-hero-body">
+      <QuestionBlock
+        v-if="manual"
+        question="아래 정보를 직접 입력해주세요"
+        :follow="hasSummary"
+        :hint="hasSummary ? `추가 입력 · '아니에요'를 고르면 나타나요` : undefined"
+        @info="coachOpen = true"
+      >
+        <!-- 왜 직접 입력으로 왔는지 말해 준다. 적어 둔 값이 그대로면 실패로 읽힌다. -->
+        <p v-if="preservedIncomeNotice" class="text-caption2 text-ink-card-body">
           {{ preservedIncomeNotice }}
-        </p>
-        <p v-else class="text-caption2 text-ink-hero-body">
-          오픈뱅킹 조회값이 틀린 경우에만 사용해요
         </p>
         <AppInput
           v-model="income"
           :error="parsedIncome.error ?? ''"
-          label="월 평균 소득 (만 원)"
+          label="월소득 (만 원)"
           type="tel"
-          placeholder="숫자만 입력해주세요"
+          placeholder="예) 245만 원"
         />
-        <AppInput
-          v-model="assets"
-          :error="parsedAssets.error ?? ''"
-          label="금융자산 (만 원)"
-          type="tel"
-          placeholder="숫자만 입력해주세요"
-        />
-        <AppInput
-          v-model="availableCash"
-          :error="parsedCash.error ?? ''"
-          label="지금 쓸 수 있는 현금 (만 원)"
-          type="tel"
-          placeholder="계약금·잔금에 보탤 자기자금"
-        />
-        <div class="flex flex-col gap-2">
-          <span class="text-caption2 text-ink-hero-body">기존에 받은 전세자금대출이 있나요?</span>
-          <PillGroup
-            v-model="existingJeonseLoan"
-            :options="[
-              { value: 'YES', label: '있어요' },
-              { value: 'NO', label: '없어요' },
-            ]"
-          />
-
-          <div
-            v-if="existingJeonseLoan === 'NO'"
-            class="border-line rounded-field flex flex-col gap-1.5 border p-3.5"
-          >
-            <AppCheckbox v-model="prohibitedLoanConfirmed">
-              세대원의 기금대출과 배우자의 전세·주택담보대출도 없는 것을 확인했어요
-            </AppCheckbox>
-            <p class="text-caption2 text-ink-muted">
-              버팀목은 본인 대출만으로 판단할 수 없어요. 체크하지 않아도 다음으로 넘어갈 수 있고,
-              그때는 결과에서 은행 확인이 필요하다고 안내해드려요
-            </p>
-          </div>
-        </div>
-      </QuestionCard>
-
-      <QuestionCard v-else-if="step === 'ASSETS'" question="보유한 순자산을 입력해주세요">
-        <p class="text-caption2 text-ink-hero-body">
-          예금·적금·투자 등에서 대출 같은 부채를 뺀 실제 순자산을 만 원 단위로 입력해주세요
-        </p>
-        <p
-          v-if="summary?.totalAccountBalance !== null && summary?.totalAccountBalance !== undefined"
-          class="text-caption2 text-ink-muted"
-        >
-          참고로 오픈뱅킹 계좌 잔액은 약 {{ formatKoreanMoney(summary.totalAccountBalance) }}
-          예요. 잔액이 곧 순자산은 아니라 직접 확인해서 넣어주세요
-        </p>
         <AppInput
           v-model="assets"
           :error="parsedAssets.error ?? ''"
           label="순자산 (만 원)"
           type="tel"
-          placeholder="숫자만 입력해주세요"
+          placeholder="예) 3,600만 원"
         />
+      </QuestionBlock>
+
+      <QuestionBlock question="지금 쓸 수 있는 현금이 얼마인가요?" @info="coachOpen = true">
         <AppInput
           v-model="availableCash"
           :error="parsedCash.error ?? ''"
-          label="지금 쓸 수 있는 현금 (만 원)"
+          label="자기자금 (만 원)"
           type="tel"
-          placeholder="계약금·잔금에 보탤 자기자금"
+          placeholder="계약금·잔금에 보탤 돈"
         />
-        <div class="flex flex-col gap-2">
-          <span class="text-caption2 text-ink-hero-body">기존에 받은 전세자금대출이 있나요?</span>
-          <PillGroup
-            v-model="existingJeonseLoan"
-            :options="[
-              { value: 'YES', label: '있어요' },
-              { value: 'NO', label: '없어요' },
-            ]"
-          />
+      </QuestionBlock>
 
-          <div
-            v-if="existingJeonseLoan === 'NO'"
-            class="border-line rounded-field flex flex-col gap-1.5 border p-3.5"
-          >
-            <AppCheckbox v-model="prohibitedLoanConfirmed">
-              세대원의 기금대출과 배우자의 전세·주택담보대출도 없는 것을 확인했어요
-            </AppCheckbox>
-            <p class="text-caption2 text-ink-muted">
-              버팀목은 본인 대출만으로 판단할 수 없어요. 체크하지 않아도 다음으로 넘어갈 수 있고,
-              그때는 결과에서 은행 확인이 필요하다고 안내해드려요
-            </p>
-          </div>
-        </div>
-      </QuestionCard>
-
-      <template v-else-if="step === 'DEPOSIT'">
-        <QuestionCard question="희망하는 전세 보증금을 입력해주세요">
-          <AppInput
-            v-model="deposit"
-            :error="parsedDeposit.error ?? ''"
-            label="희망 보증금 (만 원)"
-            type="tel"
-            placeholder="숫자만 입력해주세요"
-          />
-        </QuestionCard>
-
-        <div v-if="depositNotice" class="bg-surface border-line rounded-field border p-3.5">
-          <p class="text-caption2 text-ink-hero-body font-medium">{{ depositNotice }}</p>
-        </div>
-      </template>
-
-      <QuestionCard v-else question="어디에서 거주하고 싶으신가요?">
-        <PillGroup
-          v-model="regionId"
-          :options="regions.map((region) => ({ value: String(region.id), label: region.name }))"
+      <QuestionBlock question="희망하는 전세 보증금을 입력해주세요" @info="coachOpen = true">
+        <AppInput
+          v-model="deposit"
+          :error="parsedDeposit.error ?? ''"
+          label="보증금 (만 원)"
+          type="tel"
+          placeholder="예) 1억 8,000만 원"
         />
-        <p v-if="!regions.length" class="text-caption2 text-ink-muted">
+        <p v-if="depositNotice" class="text-caption2 text-ink-card-body">{{ depositNotice }}</p>
+      </QuestionBlock>
+
+      <QuestionBlock question="어디에서 거주하고 싶으신가요?" @info="coachOpen = true">
+        <PillGroup v-model="regionId" variant="small" :options="REGION_OPTIONS" />
+        <p v-if="!regions.length" class="text-caption2 text-ink-label">
           지역 목록을 불러오지 못했어요.
         </p>
-      </QuestionCard>
+      </QuestionBlock>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
 
     <!-- 시안(1루 3)은 이전·다음을 하단 CTA 줄에 나란히 둔다. -->
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
-      </div>
+      <footer class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 gap-2.5 border-t">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" :disabled="pending" @click="back">이전</AppButton>
+        </div>
 
-      <div class="flex-1">
         <AppButton variant="strong" :disabled="!canProceed || pending" @click="next">
-          {{ pending ? '저장 중…' : isLast ? '매칭 확인' : '다음' }}
+          {{ pending ? '저장 중…' : '매칭 확인' }}
         </AppButton>
-      </div>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

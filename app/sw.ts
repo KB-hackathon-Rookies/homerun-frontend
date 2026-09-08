@@ -64,8 +64,8 @@ if (__FIREBASE_CONFIG__.projectId) {
 
     self.registration.showNotification(title, {
       body,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: '/pwa/icon-192.png',
+      badge: '/pwa/icon-192.png',
       // 같은 마감으로 두 번 오면 덮어쓴다. 알림창이 같은 말로 쌓이지 않게 한다.
       tag: payload.data?.dedupKey,
       data: { link },
