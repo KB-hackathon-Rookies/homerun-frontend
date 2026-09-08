@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { useConsultationApi, type Consultation } from '~/api/consultation';
 import type { LoanCard } from '~/api/policy';
-import { collateralLabel, productLabel, resultLabel } from '~/components/property/consultation';
-import { trafficTone } from '~/components/property/trafficLight';
+import {
+  collateralLabel,
+  isFinalTerms,
+  missingFinalTerms,
+  productLabel,
+  resultLabel,
+} from '~/components/property/consultation';
+import { acceptsConsultation, trafficTone } from '~/components/property/trafficLight';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
@@ -24,7 +30,7 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
 
-const { property, title, spec } = useProperty(planId, propertyId);
+const { property, title, spec, error: propertyError } = useProperty(planId, propertyId);
 const { pending, error, cards, results } = useJeonsePolicies(planId, propertyId);
 
 const consultations = ref<Consultation[]>([]);
@@ -44,10 +50,52 @@ const failedCodes = computed(
 const available = computed(() => cards.value.filter((card) => !failedCodes.value.has(card.code)));
 const unavailable = computed(() => results.value.filter((result) => result.verdict === 'FAIL'));
 
-/** 한 곳이라도 "가능" 을 들었으면 3루로 넘어갈 수 있다. */
-const settled = computed(() =>
-  consultations.value.find((item) => item.resultStatus === 'POSSIBLE'),
+/**
+ * 상담 결과를 적으러 들어가도 되는가.
+ *
+ * 백엔드는 GREEN·BLUE 에서만 상담을 받는다. 등기부에 "모르겠어요" 가 하나라도
+ * 남으면 YELLOW 라, 여기서 안 막으면 사용자는 은행을 다 돌고 와서 결과를 적는
+ * 순간에야 409 를 본다. 헛걸음은 되돌릴 수 없다.
+ */
+const canConsult = computed(() => acceptsConsultation(property.value?.trafficLight ?? null));
+
+/** 매물을 아직 못 읽었으면 막을지 열지도 정할 수 없다. 그동안은 눌리지 않게 둔다. */
+const propertyPending = computed(() => property.value === null && !propertyError.value);
+
+/**
+ * 2루를 닫을 수 있는 상담.
+ *
+ * "가능" 만으로는 모자란다 — 상품·담보·승인한도·금리가 다 있어야 서버가 2루
+ * 완료를 받는다. 여기서 헐겁게 보내면 확정 화면이 대신 막힌다.
+ */
+const settled = computed(() => consultations.value.find(isFinalTerms));
+
+/**
+ * "가능" 은 들었는데 조건이 덜 찬 상담.
+ *
+ * 카드에는 "완료" 로 보이니까, 왜 3루로 못 넘어가는지 따로 말해주지 않으면
+ * 화면이 이유 없이 막힌 것처럼 보인다.
+ */
+const missingTerms = computed(() =>
+  consultations.value
+    .filter((item) => item.resultStatus === 'POSSIBLE' && !isFinalTerms(item))
+    .map((item) => `${item.bankName} — ${missingFinalTerms(item).join(' · ')} 미확인`),
 );
+
+/** 아래 버튼이 하는 일. 상태마다 갈 곳이 다르다. */
+const cta = computed(() => {
+  if (propertyPending.value) return { label: '불러오는 중…', to: '' };
+  if (settled.value) {
+    return { label: '이 매물로 3루 진행', to: `/property/${planId}/${propertyId}/confirm` };
+  }
+  if (!canConsult.value) {
+    return { label: '등기부 확인하러 가기', to: `/property/${planId}/${propertyId}/registry-check` };
+  }
+  return {
+    label: consultations.value.length ? '+ 상담 카드 추가' : '+ 첫 상담 카드 추가하기',
+    to: `/property/${planId}/${propertyId}/consult-guide`,
+  };
+});
 
 const summaryOf = (item: Consultation) => {
   if (item.resultStatus !== 'POSSIBLE') return resultLabel(item.resultStatus);
@@ -81,6 +129,29 @@ onMounted(async () => {
         </AppBadge>
         <p class="text-body2 text-ink-hero font-bold">{{ title }}</p>
         <p class="text-caption2 text-ink-hero-body">{{ spec }}</p>
+      </AppCard>
+
+      <p v-if="propertyError" class="text-label2 text-danger">{{ propertyError }}</p>
+
+      <!--
+        상담을 받지 않는 신호등. 예전에는 그냥 들여보내서, 은행을 다 돌고 와
+        결과를 적는 순간 409(PRP_012)로 막혔다. 헛걸음은 되돌릴 수 없으니
+        들어가기 전에 막고 어디를 채워야 하는지 알려준다.
+      -->
+      <AppCard v-else-if="!propertyPending && !canConsult" class="flex flex-col gap-3">
+        <h2 class="text-body3 text-ink-hero font-bold">아직 은행 상담을 기록할 수 없어요</h2>
+        <p class="text-label2 text-ink-hero-body">
+          등기부 체크리스트에 <strong>"모르겠어요"</strong> 가 남아 있어 신호등이
+          {{ property?.trafficLightLabel ?? '확인 필요' }} 예요. 임차권등기 · 압류 · 경매 여부를
+          확인해 채우면 상담 결과를 남길 수 있어요
+        </p>
+        <button
+          type="button"
+          class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
+          @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+        >
+          등기부 체크리스트로 가기
+        </button>
       </AppCard>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
@@ -166,7 +237,7 @@ onMounted(async () => {
           </div>
 
           <button
-            v-if="consultations.length < MAX_CARDS"
+            v-if="consultations.length < MAX_CARDS && canConsult"
             type="button"
             class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
             @click="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
@@ -183,20 +254,25 @@ onMounted(async () => {
           3루로 넘어갈 수 있어요
         </p>
       </div>
+
+      <!-- "가능" 인데 조건이 덜 찼을 때. 카드가 "완료" 로 보이니 이유를 적어준다. -->
+      <div
+        v-else-if="missingTerms.length"
+        class="bg-surface-brand rounded-field flex flex-col gap-1.5 p-3.5"
+      >
+        <p class="text-caption1 text-ink-hero font-bold">3루로 넘어가려면 조건이 더 필요해요</p>
+        <p class="text-caption2 text-ink-hero-body">
+          한 은행에서 상품 · 담보 · 승인한도 · 금리를 모두 들어야 2루를 닫을 수 있어요
+        </p>
+        <p v-for="note in missingTerms" :key="note" class="text-caption2 text-ink-muted">
+          {{ note }}
+        </p>
+      </div>
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton
-        variant="strong"
-        @click="
-          navigateTo(
-            settled
-              ? `/property/${planId}/${propertyId}/confirm`
-              : `/property/${planId}/${propertyId}/consult-guide`,
-          )
-        "
-      >
-        {{ settled ? '이 매물로 3루 진행' : '+ 첫 상담 카드 추가하기' }}
+      <AppButton variant="strong" :disabled="propertyPending" @click="navigateTo(cta.to)">
+        {{ cta.label }}
       </AppButton>
     </footer>
   </PhoneFrame>
