@@ -28,7 +28,21 @@ const saving = ref(false);
 const error = ref('');
 const saved = ref(false);
 
-const toNumber = (text: string) => Number(text.replace(/[^0-9]/g, '')) || 0;
+const onlyDigits = (text: string) => Number(text.replace(/[^0-9]/g, '')) || 0;
+
+/**
+ * 화면은 만 원 단위로 받고 백엔드는 원 단위로 저장한다. 1루 문진(`diagnosis/[planId]/finance.vue`)
+ * 과 같은 규칙이라, 거기서 만 원을 배운 사용자가 여기서 300 을 넣어도 300원이 되지 않는다.
+ */
+const toWon = (text: string) => onlyDigits(text) * 10_000;
+
+/** 저장된 원 단위 값을 편집용 만 원 단위로 되돌린다. 이걸 빼면 열 때마다 값이 만 배씩 커진다. */
+const toMan = (won: number | null | undefined) =>
+  won === null || won === undefined ? 0 : Math.floor(won / 10_000);
+
+/** 아직 답하지 않은 값은 0 이 아니라 빈 칸으로 둔다. */
+const toManText = (won: number | null | undefined) =>
+  won === null || won === undefined ? '' : String(toMan(won));
 
 /** 부모와 시·군이 다른지만 저장한다. 주소를 받지 않으므로 "같은 세대" 는 추정이 아니라 그 값의 반대다. */
 const household = computed(() => {
@@ -49,11 +63,13 @@ const unconfirmed = computed(
     input.value?.incomeSource === 'OPEN_BANKING' && input.value?.financialDataConfirmed === false,
 );
 
+// 비교도 만 원 단위로 한다. 원 단위로 비교하면 만 원 미만이 잘린 값 때문에
+// 아무것도 고치지 않았는데 저장 버튼이 열린다.
 const changed = computed(
   () =>
     !!input.value &&
-    (toNumber(monthlyIncome.value) !== (input.value.monthlyIncome ?? 0) ||
-      toNumber(netAssets.value) !== (input.value.netAssets ?? 0)),
+    (onlyDigits(monthlyIncome.value) !== toMan(input.value.monthlyIncome) ||
+      onlyDigits(netAssets.value) !== toMan(input.value.netAssets)),
 );
 
 async function save() {
@@ -62,15 +78,18 @@ async function save() {
   saving.value = true;
   saved.value = false;
   error.value = '';
-  const nextIncome = toNumber(monthlyIncome.value);
-  const nextAssets = toNumber(netAssets.value);
+  const nextIncome = toWon(monthlyIncome.value);
+  const nextAssets = toWon(netAssets.value);
   try {
+    // `unknownFields` 를 보내지 않는다. 이 화면은 자기자금을 편집하지 않으므로 "모름" 이라고
+    // 말할 자격이 없다. 항목을 생략하면 서버 `PlanInputStepService.value()` 가 "현재 값 유지"
+    // 로 떨어져 자기자금이 보존된다. `AVAILABLE_CASH` 를 모름으로 보내면 값이 null 이 되고
+    // 1루가 NEEDS_CONFIRMATION 에 영구히 갇힌다.
     const result = await usePlanApi().saveStep(planId.value, 'FINANCIAL', input.value.revision, {
       monthlyIncome: nextIncome,
       netAssets: nextAssets,
       incomeSource: 'MANUAL',
       assetSource: 'MANUAL',
-      unknownFields: ['AVAILABLE_CASH'],
     });
     // 서버가 돌려준 새 revision 과 방금 보낸 값을 화면 상태에 반영한다. 이걸 빼먹으면
     // 다음 저장이 옛 revision 으로 나가 충돌하고, `changed` 가 계속 참이라 버튼도 안 잠긴다.
@@ -103,8 +122,8 @@ onMounted(async () => {
   try {
     const found = await usePlanApi().input(planId.value);
     input.value = found;
-    monthlyIncome.value = String(found.monthlyIncome ?? '');
-    netAssets.value = String(found.netAssets ?? '');
+    monthlyIncome.value = toManText(found.monthlyIncome);
+    netAssets.value = toManText(found.netAssets);
   } catch (cause) {
     error.value = messageFrom(cause, '입력값을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -138,13 +157,13 @@ onMounted(async () => {
         <SectionCard title="소득과 자산">
           <AppInput
             v-model="monthlyIncome"
-            label="월 소득"
+            label="월 소득 (만 원)"
             type="tel"
             placeholder="숫자만 입력해주세요"
           />
           <AppInput
             v-model="netAssets"
-            label="순자산"
+            label="순자산 (만 원)"
             type="tel"
             placeholder="숫자만 입력해주세요"
           />

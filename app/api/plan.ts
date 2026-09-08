@@ -90,6 +90,8 @@ export interface PlanInput {
   monthlyIncome: number | null;
   maintenanceFee: number | null;
   netAssets: number | null;
+  /** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 확인과 결과 카드의 자기자금 부족분이 읽는다. */
+  availableCash: number | null;
   /** 부모와 주민등록상 시·군이 다른가. 마이의 가구 항목이 이걸 뒤집어 보여준다. */
   livesApartFromParents: boolean | null;
   /** 1루 완료에 필요한 값들. 하나라도 비면 판정을 시작할 수 없다. */

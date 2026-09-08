@@ -24,6 +24,7 @@ const BASE_FIELDS: RequiredField[] = [
   { key: 'employmentType', label: '고용 형태', step: 'EMPLOYMENT_TYPE' },
   { key: 'monthlyIncome', label: '월 소득', step: 'FINANCIAL' },
   { key: 'netAssets', label: '순자산', step: 'FINANCIAL' },
+  { key: 'availableCash', label: '자기자금', step: 'FINANCIAL' },
 ];
 
 const SALARIED_FIELDS: RequiredField[] = [
@@ -31,8 +32,13 @@ const SALARIED_FIELDS: RequiredField[] = [
   { key: 'employmentMonths', label: '재직 개월', step: 'EMPLOYMENT_PERIOD' },
 ];
 
-/** 급여근로자만 우대금리 조건을 더 본다. */
-const SALARIED = ['FULL_TIME', 'CONTRACT', 'INTERN'];
+/**
+ * 급여근로자만 우대금리 조건을 더 본다.
+ *
+ * 서버 `PlanInputCompletionValidator` 의 급여근로자 분기와 같은 목록이어야 한다.
+ * 여기서 빠진 고용형태는 "빠진 항목" 이 비어 보이는데 서버는 PLAN_013 을 낸다.
+ */
+const SALARIED = ['FULL_TIME', 'CONTRACT', 'DAILY_WORKER', 'INTERN'];
 
 export function missingRequired(input: PlanInput | null): RequiredField[] {
   if (!input) return [];
