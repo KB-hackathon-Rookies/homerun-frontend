@@ -24,6 +24,16 @@ const ELIGIBILITY_NOTICE_DAYS = 90;
  * 알리는 신호(allPoliciesFailed)만 켜고 결과 화면에 상담 카드를 그대로 둔다.
  */
 export function useResultGuard(planId: number) {
+  /**
+   * no-policy 에서 "판정 결과 보러 가기" 로 넘어온 길인가(`?from=no-policy`).
+   *
+   * 상담 카드조차 없을 때는 여기서 no-policy 로 밀어내는데, no-policy 는 다시
+   * 이 화면으로 돌아온다. 표시가 없으면 같은 판정으로 또 밀어내 무한 루프가 된다.
+   * 사용자가 스스로 결과를 보러 온 것이므로 그때는 밀어내지 않는다.
+   */
+  const route = useRoute();
+  const cameFromNoPolicy = computed(() => route.query.from === 'no-policy');
+
   /** 규칙 버전이 서로 다른 판정이 섞여 있는가. 개정 뒤 재판정을 안 한 것이다. */
   const ruleChanged = ref(false);
   /** 자격 기한이 다가온 조건이 있는가. */
@@ -58,6 +68,11 @@ export function useResultGuard(planId: number) {
       }
 
       // 이어갈 상담 카드조차 없을 때만 막다른 안내 화면으로 보낸다.
+      // 단, 그 화면에서 결과를 보려고 되돌아온 길이면 다시 밀어내지 않는다(루프 차단).
+      if (cameFromNoPolicy.value) {
+        allPoliciesFailed.value = true;
+        return;
+      }
       await navigateTo(`/status/${planId}/no-policy`, { replace: true });
       return;
     }
