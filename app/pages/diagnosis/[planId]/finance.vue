@@ -10,18 +10,21 @@ import { formatKoreanMoney } from '~/utils/money';
  * 1루 추가 정보 입력.
  *
  * 앞 문진과 껍데기가 같아서 여기도 한 화면에서 단계를 넘긴다. 다만 단계가
- * 갈린다 — 오픈뱅킹 조회값이 맞으면 직접 입력을 건너뛴다.
+ * 갈린다 — 오픈뱅킹으로 소득이 확인되면 소득 직접 입력을 건너뛴다.
  *
- * 조회값을 그대로 쓸 때와 사용자가 고쳤을 때를 출처로 구분해 보낸다. 나중에
- * 판정이 틀렸을 때 어느 값을 믿고 계산했는지 알 수 있어야 한다.
+ * 소득은 서버가 오픈뱅킹으로 검증한 값만 `OPEN_BANKING` 출처로 쓴다. 그래서
+ * 먼저 서버에 동기화·확인을 요청하고, 그다음 STEP 을 저장한다. 요약 GET 만으로는
+ * 서버가 출처를 기록하지 않아, 그대로 `OPEN_BANKING` 을 보내면 409 로 막힌다.
+ *
+ * 순자산은 다르다. 계좌 잔액은 부채가 반영된 순자산이 아니므로 오픈뱅킹 값으로
+ * 자동 저장하지 않고, 사용자가 직접 확인해 입력한 값(`MANUAL`)만 쓴다.
  */
 definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const STEPS = ['CONFIRM', 'MANUAL', 'DEPOSIT', 'REGION'] as const;
-type Step = (typeof STEPS)[number];
+type Step = 'CONFIRM' | 'MANUAL' | 'ASSETS' | 'DEPOSIT' | 'REGION';
 
 const step = ref<Step>('CONFIRM');
 const { load, saveStep } = useInputRevision(planId);
@@ -38,6 +41,9 @@ const assets = ref('');
 const deposit = ref('');
 const regionId = ref<string | null>(null);
 
+/** 서버가 오픈뱅킹으로 확정해 저장한 월 소득(원). STEP 저장에 그대로 실어 보낸다. */
+const openBankingIncome = ref<number | null>(null);
+
 const onlyDigits = (value: string) => Number(value.replace(/\D/g, '')) || 0;
 
 /** 화면은 만 원 단위로 받고 백엔드는 원 단위로 받는다. */
@@ -53,7 +59,7 @@ onMounted(async () => {
   try {
     regions.value = await jeonseOptions();
   } catch {
-    // 지역 목록은 4단계에서야 쓴다. 여기서 막지 않는다.
+    // 지역 목록은 뒤 단계에서야 쓴다. 여기서 막지 않는다.
   }
 
   try {
@@ -67,6 +73,7 @@ onMounted(async () => {
 const canProceed = computed(() => {
   if (step.value === 'CONFIRM') return !!useOpenBanking.value;
   if (step.value === 'MANUAL') return !!income.value && !!assets.value;
+  if (step.value === 'ASSETS') return !!assets.value;
   if (step.value === 'DEPOSIT') return !!deposit.value;
   return !!regionId.value;
 });
@@ -84,6 +91,31 @@ async function save(code: DiagnosisStep, patch: DiagnosisStepPatch) {
   await saveStep(code, patch);
 }
 
+/**
+ * 오픈뱅킹 소득을 서버에 동기화하고 확인받는다.
+ *
+ * 서버가 소득을 확정하지 못하면(연동 실패·급여 미확인 등) 오픈뱅킹 소득을 쓸 수
+ * 없으므로 직접 입력으로 돌린다. 확정했으면 그 값을 확인 처리하고 순자산 입력으로
+ * 넘어간다.
+ */
+async function confirmOpenBankingIncome() {
+  const { syncPlanIncome, confirmPlanIncome } = useOpenBankingApi();
+
+  const synced = await syncPlanIncome(planId);
+  if (synced.suggestedMonthlyIncome === null) {
+    useOpenBanking.value = 'MANUAL';
+    income.value = '';
+    step.value = 'MANUAL';
+    return;
+  }
+
+  await confirmPlanIncome(planId);
+  openBankingIncome.value = synced.suggestedMonthlyIncome;
+  // 동기화·확인으로 서버 revision 이 올라갔으니 최신값을 물려받는다.
+  await load();
+  step.value = 'ASSETS';
+}
+
 async function next() {
   if (!canProceed.value || pending.value) return;
 
@@ -95,15 +127,7 @@ async function next() {
         step.value = 'MANUAL';
         return;
       }
-      await save('FINANCIAL', {
-        monthlyIncome: summary.value?.averageMonthlyNetIncome ?? undefined,
-        netAssets: summary.value?.totalAccountBalance ?? undefined,
-        incomeSource: 'OPEN_BANKING',
-        assetSource: 'OPEN_BANKING',
-        financialDataConfirmed: true,
-        unknownFields: ['AVAILABLE_CASH'],
-      });
-      step.value = 'DEPOSIT';
+      await confirmOpenBankingIncome();
       return;
     }
 
@@ -112,6 +136,21 @@ async function next() {
         monthlyIncome: toWon(income.value),
         netAssets: toWon(assets.value),
         incomeSource: 'MANUAL',
+        assetSource: 'MANUAL',
+        financialDataConfirmed: true,
+        unknownFields: ['AVAILABLE_CASH'],
+      });
+      step.value = 'DEPOSIT';
+      return;
+    }
+
+    if (step.value === 'ASSETS') {
+      // 소득은 서버가 오픈뱅킹으로 확인한 값을 그대로, 순자산은 사용자가 직접
+      // 넣은 값을 쓴다. 계좌 잔액을 순자산으로 자동 저장하지 않는다.
+      await save('FINANCIAL', {
+        monthlyIncome: openBankingIncome.value ?? undefined,
+        netAssets: toWon(assets.value),
+        incomeSource: 'OPEN_BANKING',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
         unknownFields: ['AVAILABLE_CASH'],
@@ -136,17 +175,20 @@ async function next() {
 }
 
 function back() {
-  const at = STEPS.indexOf(step.value);
-  if (at <= 0) {
+  if (step.value === 'CONFIRM') {
     navigateTo(`/diagnosis/${planId}`);
     return;
   }
-  // 조회값을 그대로 쓴 사람은 직접 입력을 지나온 적이 없다.
-  if (step.value === 'DEPOSIT' && useOpenBanking.value !== 'MANUAL') {
+  // 소득을 직접 입력하러 온 사람과 오픈뱅킹으로 확인한 사람은 지나온 길이 다르다.
+  if (step.value === 'MANUAL' || step.value === 'ASSETS') {
     step.value = 'CONFIRM';
     return;
   }
-  step.value = STEPS[at - 1]!;
+  if (step.value === 'DEPOSIT') {
+    step.value = useOpenBanking.value === 'MANUAL' ? 'MANUAL' : 'ASSETS';
+    return;
+  }
+  step.value = 'DEPOSIT';
 }
 </script>
 
@@ -157,19 +199,11 @@ function back() {
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 p-4">
       <CoachTip>보증금 말고도 이사비·중개비까지, 실제로 필요한 돈을 같이 계산해줄게</CoachTip>
 
-      <QuestionCard v-if="step === 'CONFIRM'" question="오픈뱅킹으로 조회한 정보예요. 맞나요?">
-        <div class="border-line rounded-field flex gap-8 border p-4">
-          <span class="flex flex-col gap-1">
-            <span class="text-micro text-ink-muted">금융자산</span>
-            <span class="text-numeric text-ink-hero">
-              약 {{ formatKoreanMoney(summary?.totalAccountBalance) }}
-            </span>
-          </span>
-          <span class="flex flex-col gap-1">
-            <span class="text-micro text-ink-muted">월 평균 소득</span>
-            <span class="text-numeric text-ink-hero">
-              약 {{ formatKoreanMoney(summary?.averageMonthlyNetIncome) }}
-            </span>
+      <QuestionCard v-if="step === 'CONFIRM'" question="오픈뱅킹으로 조회한 월 평균 소득이에요. 맞나요?">
+        <div class="border-line rounded-field flex flex-col gap-1 border p-4">
+          <span class="text-micro text-ink-muted">월 평균 소득</span>
+          <span class="text-numeric text-ink-hero">
+            약 {{ formatKoreanMoney(summary?.averageMonthlyNetIncome) }}
           </span>
         </div>
 
@@ -193,6 +227,25 @@ function back() {
         <AppInput
           v-model="assets"
           label="금융자산 (만 원)"
+          type="tel"
+          placeholder="숫자만 입력해주세요"
+        />
+      </QuestionCard>
+
+      <QuestionCard v-else-if="step === 'ASSETS'" question="보유한 순자산을 입력해주세요">
+        <p class="text-caption2 text-ink-hero-body">
+          예금·적금·투자 등에서 대출 같은 부채를 뺀 실제 순자산을 만 원 단위로 입력해주세요
+        </p>
+        <p
+          v-if="summary?.totalAccountBalance !== null && summary?.totalAccountBalance !== undefined"
+          class="text-caption2 text-ink-muted"
+        >
+          참고로 오픈뱅킹 계좌 잔액은 약 {{ formatKoreanMoney(summary.totalAccountBalance) }}
+          예요. 잔액이 곧 순자산은 아니라 직접 확인해서 넣어주세요
+        </p>
+        <AppInput
+          v-model="assets"
+          label="순자산 (만 원)"
           type="tel"
           placeholder="숫자만 입력해주세요"
         />
