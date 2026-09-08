@@ -102,8 +102,8 @@ onMounted(async () => {
       <div class="px-gutter-tight flex flex-1 flex-col gap-4 overflow-y-auto py-4">
         <p class="text-step text-ink-muted px-1">{{ module.base }} · {{ module.minutes }}분</p>
 
-        <AppCard v-if="serverModule" class="text-caption2 text-ink-hero-body whitespace-pre-wrap">
-          {{ serverModule.body }}
+        <AppCard v-if="serverModule">
+          <MarkdownContent :content="serverModule.body" />
         </AppCard>
 
         <template v-for="(block, i) in serverModule ? [] : module.body" :key="i">
