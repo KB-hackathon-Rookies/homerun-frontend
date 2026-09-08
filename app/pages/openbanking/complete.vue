@@ -131,11 +131,10 @@ onMounted(load);
     <div class="h-statusbar shrink-0" />
 
     <div class="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-6 py-6">
-      <!--
-        완료 배지. 파란 원까지 그림에 들어 있어서 바깥에 원을 한 겹 더 두르지 않는다.
-        세로만 맞추고 가로는 비율을 따라가게 둔다 — 정사각으로 강제하면 2% 찌그러진다.
-      -->
-      <img src="/complete.png" alt="" class="h-hero w-auto" />
+      <!-- 완료 배지. 배지에도 파란 원이 있어 둘레에 옅은 고리가 생긴다. -->
+      <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
+        <img src="/complete.png" alt="" class="h-25 w-auto" />
+      </span>
 
       <h1 class="text-title3 text-ink-hero">오픈뱅킹 연동 완료!</h1>
 
