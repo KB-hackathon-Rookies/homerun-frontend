@@ -25,6 +25,15 @@ defineEmits<{ back: [] }>();
     </button>
     <h1 class="text-headline2 text-ink flex-1">{{ title }}</h1>
     <AppBadge v-if="badge" tone="brand">{{ badge }}</AppBadge>
+
+    <!--
+      막힌 화면일수록 나갈 길이 있어야 한다. 상태 화면 다섯 개는 탭바가 없어
+      뒤로가기 말고는 나갈 수단이 없었고, 그 뒤로가기가 다시 이 화면으로
+      돌아오는 자리도 있었다. 피그마 상단 바의 홈 아이콘을 여기에도 둔다.
+    -->
+    <button type="button" class="text-ink -mr-1 p-1" aria-label="홈" @click="navigateTo('/home')">
+      <AppIcon name="home" class="size-icon" />
+    </button>
   </header>
 
   <div
