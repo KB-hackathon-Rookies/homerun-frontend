@@ -316,4 +316,22 @@
     color: var(--color-ink);
     background-color: var(--color-canvas);
   }
+
+  /*
+   * 누를 수 있는 것에는 손가락 커서를 돌려준다.
+   *
+   * Tailwind v4 는 preflight 에서 버튼 커서를 default 로 바꿨다(v3 까지는
+   * pointer 였다). 모바일에서는 티가 안 나지만 데스크톱 브라우저로 보면
+   * 화면 전체의 버튼이 눌리지 않는 것처럼 보인다.
+   *
+   * 비활성 버튼은 제외한다 — 눌러도 아무 일이 없는 것에 커서로 눌러도 된다고
+   * 말하면 안 된다.
+   */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='option'],
+  label:has(> input[type='checkbox']),
+  summary {
+    cursor: pointer;
+  }
 }
