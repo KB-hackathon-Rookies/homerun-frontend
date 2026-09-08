@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyApi } from '~/api/property';
 import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
  * 2루 매물 진단 STEP 3 — 위반건축물 확인.
@@ -99,6 +100,8 @@ async function next() {
       </div>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+
+      <CoachTime :sheets="[COACH_TIME.buildingLedger]" />
     </div>
 
     <StepFooter
