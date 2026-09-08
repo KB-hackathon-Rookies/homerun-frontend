@@ -69,10 +69,6 @@ onMounted(async () => {
 
       <h2 class="text-body3 text-ink-hero font-bold">기금e든든 비대면 신청이라면</h2>
 
-      <DetailLink @open="navigateTo(`/contract/${planId}/documents`)">
-        서류 발급 상세로 이동
-      </DetailLink>
-
       <div class="bg-surface-info rounded-field flex flex-col gap-1.5 p-3.5">
         <p class="text-label2 text-primary-strong font-semibold">사전자산심사 함께 신청</p>
         <p class="text-caption2 text-ink-hero">• 적격 판정까지 1~5일 소요</p>
@@ -81,10 +77,14 @@ onMounted(async () => {
           • 잔금일 30일 전 신청 권장 (D-21 시점에 신청하면 딱 맞음)
         </p>
       </div>
+
+      <DetailLink @open="navigateTo(`/contract/${planId}/docs`)">
+        다음 단계 · D-14 서류 일괄 발급
+      </DetailLink>
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/resident-cert`)">
+      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/docs`)">
         방문 예약 완료
       </AppButton>
     </footer>
