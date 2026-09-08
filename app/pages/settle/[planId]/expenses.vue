@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSettlementApi, type ExpenseCategory, type FixedExpense } from '~/api/settlement';
+import { parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 

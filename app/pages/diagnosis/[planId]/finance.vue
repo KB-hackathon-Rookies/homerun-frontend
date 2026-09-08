@@ -4,6 +4,7 @@ import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
 import { type DiagnosisStep, type DiagnosisStepPatch, usePlanApi } from '~/api/plan';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import { useInputRevision } from '~/composables/useInputRevision';
+import { parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 

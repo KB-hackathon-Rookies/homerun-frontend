@@ -10,6 +10,7 @@ import {
   PRODUCT_OPTIONS,
   RESULT_OPTIONS,
 } from '~/components/property/consultation';
+import { parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { COACH_TIME } from '~/components/property/coachSheets';
 

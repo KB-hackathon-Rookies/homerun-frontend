@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePlanApi, type LeaseType, type PlanResponse } from '~/api/plan';
+import { parseManwon } from '~/utils/amount';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
