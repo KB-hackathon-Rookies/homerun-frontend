@@ -7,6 +7,7 @@ import {
   useRegistrySnapshot,
 } from '~/composables/useRegistrySnapshot';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 2 · 계약.
@@ -67,12 +68,13 @@ async function proceed() {
 </script>
 
 <template>
-  <StageShell title="계약" base="3루" @back="navigateTo(`/contract/${planId}/visit`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        계약 시 전세보증금의 5~10% 계약금 지불. 영수증 꼭 챙기고 특약이 제일 중요해
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 계약</p>
+
+      <h1 class="text-question text-ink-card">계약</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">필수 특약 4종</h2>
 
@@ -147,14 +149,16 @@ async function proceed() {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/visit`)">이전</AppButton>
-      </div>
-      <AppButton variant="strong" :disabled="!answered || saving" @click="proceed">
-        {{ saving ? '기록 중…' : '확정일자 받기' }}
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/visit`)"
+            >이전</AppButton
+          >
+        </div>
+        <AppButton variant="strong" :disabled="!answered || saving" @click="proceed">
+          {{ saving ? '기록 중…' : '확정일자 받기' }}
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

@@ -3,6 +3,7 @@ import { useContractApi, type ContractEntry, type ContractSchedule } from '~/api
 import { dday, formatLongDate, formatShortDate } from '~/utils/date';
 import { usePush } from '~/composables/usePush';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 4 · 일정 만들기.
@@ -96,9 +97,12 @@ async function start() {
 </script>
 
 <template>
-  <StageShell title="일정 만들기" base="3루" @back="navigateTo(`/contract/${planId}/fixed-date`)">
-    <div class="px-gutter-tight flex flex-col gap-3.5 py-4">
-      <CoachTip>잔금일만 알려주면 내가 날짜를 다 계산해서 알려줄게</CoachTip>
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="1" />
+
+      <p class="text-caption1 text-ink-label font-medium">3루 · 일정</p>
+      <h1 class="text-question text-ink-card">일정 만들기</h1>
 
       <AppCard class="flex flex-col gap-2">
         <p class="text-label2 text-ink-hero font-semibold">잔금 예정일</p>

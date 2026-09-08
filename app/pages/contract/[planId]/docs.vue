@@ -9,6 +9,7 @@ import {
   type DocSituation,
 } from '~/components/contract/labels';
 import { loadDocSituation } from '~/components/contract/situation';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 7 · 서류 일괄 발급 (D-14).
@@ -138,15 +139,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="D-14 서류 일괄 발급"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/bank-visit`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip v-if="pending || needsVisit">
-        서류가 열 개 넘어서 막막하죠? 사이트별로 묶으면 다섯 군데서 끝나요. 온라인이 안 되는 건
-        전입세대확인서 하나뿐이에요
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 서류</p>
+
+      <h1 class="text-question text-ink-card">D-14 서류 일괄 발급</h1>
       <CoachTip v-else>
         서류가 열 개 넘어서 막막하죠? 사이트별로 묶으면 몇 군데서 끝나요. 게다가 이번엔 주민센터에
         갈 일이 없어서 전부 온라인으로 끝나요
@@ -252,16 +251,16 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/bank-visit`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/bank-visit`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/resident-cert`)">
+          다음
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/resident-cert`)">
-        다음
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

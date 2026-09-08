@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useContractApi, type ContractEntry } from '~/api/contract';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 6 · 은행 방문 예약 (D-21).
@@ -41,12 +42,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="D-21 은행 예약"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/company-docs`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>2루 사전상담에서 확정된 은행으로 가면 돼. 사전상담 받았던 그 지점이 좋아</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 대출 신청</p>
+
+      <h1 class="text-question text-ink-card">D-21 은행 예약</h1>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
@@ -81,16 +83,16 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/docs`)">
+          방문 예약 완료
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/docs`)">
-        방문 예약 완료
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

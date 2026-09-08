@@ -2,6 +2,7 @@
 import { useContractApi, type ContractEntry } from '~/api/contract';
 import { COLLATERAL_LABEL, includesReturnGuarantee } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 12 · 잔금일 이후, 그리고 3루 13 · 안착.
@@ -47,12 +48,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="반환보증 안내"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/settlement`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>잔금·전입신고 완료! 어떤 보증서로 받았느냐에 따라 할 일이 하나 더 있어</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 잔금일</p>
+
+      <h1 class="text-question text-ink-card">반환보증 안내</h1>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
@@ -98,15 +100,15 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
-          이전
-        </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
+      </footer>
+    </template>
 
     <!-- 3루 안착 축하(시안 3루 13). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">

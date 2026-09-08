@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 /**
  * 3루 10 · 심사 확인 (D-3).
  *
@@ -22,15 +23,13 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <StageShell title="D-3 심사 확인"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/loan-apply`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        신청했으면 기다리면 되는데, 잔금일 3일 전에 한 번 확인해보자. 아직 소식이 없으면 재촉해야
-        하거든
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 대출 신청</p>
+
+      <h1 class="text-question text-ink-card">D-3 심사 확인</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">전화 통화 체크리스트</h2>
 
@@ -53,16 +52,16 @@ const checked = ref<Record<string, boolean>>({});
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/loan-apply`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/loan-apply`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
+          심사 정상 · D-day 준비
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
-        심사 정상 · D-day 준비
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

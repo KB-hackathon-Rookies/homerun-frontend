@@ -2,6 +2,7 @@
 import { useContractApi, type ContractEntry } from '~/api/contract';
 import { needsResidentCert } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 8 · 전입세대확인서 (D-12).
@@ -44,11 +45,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="D-12 전입세대확인서"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/docs`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">3루 · 서류</p>
+
+      <h1 class="text-question text-ink-card">D-12 전입세대확인서</h1>
       <p v-if="pending" class="text-label2 text-ink-muted">불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
@@ -67,16 +70,9 @@ onMounted(async () => {
           <p class="text-micro text-white">다세대주택이면 이 단계는 건너뛰어도 돼요</p>
         </div>
 
-        <CoachTip>이것만 온라인 발급이 안 돼. 주민센터를 꼭 가야 해</CoachTip>
-
         <h2 class="text-body3 text-ink-hero font-bold">발급 절차</h2>
 
         <CheckItem v-for="step in STEPS" :key="step" v-model="checked[step]">{{ step }}</CheckItem>
-
-        <CoachTip label="요청 시 이렇게 말하세요">
-          "은행 제출용이라 성명 가림 없이 부탁드립니다" · "지번 주소와 도로명 주소 두 버전 모두
-          조회해주세요"
-        </CoachTip>
 
         <p class="bg-surface-brand rounded-chip text-micro text-ink-hero-body p-3">
           💡 다가구면 확정일자 부여현황도 같이 받으세요
@@ -89,20 +85,20 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/docs`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/docs`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton
+          variant="strong"
+          :disabled="pending"
+          @click="navigateTo(`/contract/${planId}/loan-apply`)"
+        >
+          {{ applies ? '발급 완료 처리' : '다음 단계로' }}
         </AppButton>
-      </div>
-      <AppButton
-        variant="strong"
-        :disabled="pending"
-        @click="navigateTo(`/contract/${planId}/loan-apply`)"
-      >
-        {{ applies ? '발급 완료 처리' : '다음 단계로' }}
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

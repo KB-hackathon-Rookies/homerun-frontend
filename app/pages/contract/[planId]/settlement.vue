@@ -7,6 +7,7 @@ import {
   useRegistrySnapshot,
 } from '~/composables/useRegistrySnapshot';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
  * 3루 11 · 잔금일.
@@ -131,9 +132,13 @@ async function finish() {
 </script>
 
 <template>
-  <StageShell title="D-day 잔금일" base="3루" @back="navigateTo(`/contract/${planId}/review`)">
+  <StageShell brand base="3루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">3루 · 잔금일</p>
+
+      <h1 class="text-question text-ink-card">D-day 잔금일</h1>
       <div class="bg-surface border-danger rounded-field flex flex-col gap-1 border p-3.5">
         <p class="text-label2 text-danger font-bold">
           돈을 보내기 전에 등기부를 한 번 더 떼야 해요
@@ -242,27 +247,27 @@ async function finish() {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/review`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/review`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton
+          v-if="isSafe"
+          variant="strong"
+          :disabled="completing || !datesReady"
+          @click="finish"
+        >
+          {{ completing ? '완료 처리 중…' : '잔금 송금 완료 · 3루 마치기' }}
         </AppButton>
-      </div>
-      <AppButton
-        v-if="isSafe"
-        variant="strong"
-        :disabled="completing || !datesReady"
-        @click="finish"
-      >
-        {{ completing ? '완료 처리 중…' : '잔금 송금 완료 · 3루 마치기' }}
-      </AppButton>
-      <AppButton v-else-if="isNeedInfo || isBlock" variant="strong" disabled>
-        {{ isBlock ? '잔금을 보낼 수 없어요' : '확인이 더 필요해요' }}
-      </AppButton>
-      <AppButton v-else variant="strong" :disabled="!answered || saving" @click="compare">
-        {{ saving ? '대조 중…' : '대조 완료 · 잔금 송금하기' }}
-      </AppButton>
-    </footer>
-</template>
+        <AppButton v-else-if="isNeedInfo || isBlock" variant="strong" disabled>
+          {{ isBlock ? '잔금을 보낼 수 없어요' : '확인이 더 필요해요' }}
+        </AppButton>
+        <AppButton v-else variant="strong" :disabled="!answered || saving" @click="compare">
+          {{ saving ? '대조 중…' : '대조 완료 · 잔금 송금하기' }}
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>
