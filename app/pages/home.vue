@@ -4,7 +4,7 @@ import { useNotificationApi } from '~/api/notification';
 import { FEATURED_MODULES } from '~/components/coach/modules';
 import { usePush } from '~/composables/usePush';
 import { currentPlan } from '~/utils/currentPlan';
-import { messageFrom } from '~/utils/error';
+import { messageFrom, statusFrom } from '~/utils/error';
 import { displayStage, resumePath } from '~/utils/stage';
 
 /**
@@ -113,7 +113,15 @@ onMounted(async () => {
   try {
     dashboard.value = await useDashboardApi().get(planId.value);
   } catch (cause) {
-    error.value = messageFrom(cause, '진행 상황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+    // 저장된 planId 가 이 계정 것이 아니면(계정 전환·기기 이동) 조회가 403·404 로 막힌다.
+    // 그럴 땐 낡은 planId 를 지우고 '계획 없음'으로 되돌려 1루부터 다시 시작하게 한다.
+    const status = statusFrom(cause);
+    if (status === 403 || status === 404) {
+      currentPlan.clear();
+      planId.value = null;
+    } else {
+      error.value = messageFrom(cause, '진행 상황을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+    }
   } finally {
     pending.value = false;
   }
