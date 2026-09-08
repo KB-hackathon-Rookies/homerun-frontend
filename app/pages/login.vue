@@ -14,7 +14,8 @@ const config = useRuntimeConfig();
 
 const email = ref('');
 const password = ref('');
-const error = ref('');
+/** 소셜 콜백이 실패하면 `?error=코드` 로 돌아온다. 코드만으로는 알 수 없으니 문구로 바꿔 준다. */
+const error = ref(route.query.error ? '소셜 로그인에 실패했어요. 다시 시도해주세요.' : '');
 const pending = ref(false);
 
 const canSubmit = computed(() => !!email.value && !!password.value && !pending.value);

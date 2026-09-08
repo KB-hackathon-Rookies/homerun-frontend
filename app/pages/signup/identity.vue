@@ -15,10 +15,18 @@ import { messageFrom } from '~/utils/error';
  *
  * 지역은 따로 고르지 않는다. 고른 주소의 법정동 코드 앞 두 자리(시도)로 정책 권역
  * (서울·인천·경기·그 외)을 자동으로 정한다. 주소·상세주소는 detailAddress 로 보낸다.
+ *
+ * 들어오는 길이 둘이다. **이메일**은 위 그대로다. **소셜**은 콜백(`/auth/callback`)에서 계정과
+ * 세션이 이미 만들어져 있어서, 제공자가 주지 않는 값만 채워 `POST /auth/social/signup` 으로
+ * 가입을 끝낸다. 화면에서 받는 값은 둘이 같고 보내는 곳만 다르다.
  */
 const signup = useSignupStore();
-const { sendPhoneVerification, confirmPhoneVerification } = useAuthApi();
+const auth = useAuthStore();
+const { sendPhoneVerification, confirmPhoneVerification, socialSignup } = useAuthApi();
 const { jeonseOptions } = useRegionApi();
+
+/** 소셜로 들어왔는가. 콜백에서 세션이 이미 걸려 있으면 소셜이다. */
+const isSocial = computed(() => auth.isAuthenticated);
 
 /** 법정동 코드 시도 앞자리 → 정책 권역 코드. 나머지는 전부 그 외 지역이다. */
 const SIDO_TO_REGION: Record<string, string> = {
@@ -27,7 +35,7 @@ const SIDO_TO_REGION: Record<string, string> = {
   '41': 'JEONSE_GYEONGGI',
 };
 
-const name = ref(signup.name);
+const name = ref(signup.name || auth.user?.name || '');
 const birthDate = ref(signup.birthDate);
 const phone = ref(signup.phone);
 const phoneCode = ref('');
@@ -72,9 +80,13 @@ const canSubmit = computed(
     !pending.value,
 );
 
-/** 앞 단계(이메일 인증)를 건너뛰고 들어오면 보낼 것이 없다. 처음으로 돌려보낸다. */
+/**
+ * 앞 단계(이메일 인증)를 건너뛰고 들어오면 보낼 것이 없다. 처음으로 돌려보낸다.
+ *
+ * 소셜은 이메일 인증을 거치지 않으므로 이 가드에 걸리면 안 된다.
+ */
 onMounted(async () => {
-  if (!signup.isEmailVerified) {
+  if (!isSocial.value && !signup.isEmailVerified) {
     navigateTo('/signup', { replace: true });
     return;
   }
@@ -137,16 +149,28 @@ async function submit() {
 
   pending.value = true;
   error.value = '';
+  const detailAddress = [chosen.value.roadAddress, addressDetail.value]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(' ');
   try {
-    signup.name = name.value;
-    signup.birthDate = birthDateIso.value;
-    signup.phone = phoneDigits.value;
-    signup.regionId = region.value.id;
-    signup.detailAddress = [chosen.value.roadAddress, addressDetail.value]
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .join(' ');
-    await signup.submit();
+    if (isSocial.value) {
+      auth.user = await socialSignup({
+        name: name.value,
+        birthDate: birthDateIso.value,
+        phone: phoneDigits.value,
+        phoneVerificationToken: signup.phoneVerificationToken,
+        regionId: region.value.id,
+        detailAddress: detailAddress || undefined,
+      });
+    } else {
+      signup.name = name.value;
+      signup.birthDate = birthDateIso.value;
+      signup.phone = phoneDigits.value;
+      signup.regionId = region.value.id;
+      signup.detailAddress = detailAddress;
+      await signup.submit();
+    }
     await navigateTo('/signup/complete', { replace: true });
   } catch (cause) {
     error.value = messageFrom(cause, '가입에 실패했어요. 잠시 후 다시 시도해주세요.');
