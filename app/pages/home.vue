@@ -290,12 +290,16 @@ async function recoverPlan() {
           </button>
         </div>
 
-        <div ref="eduTrack" class="flex gap-2.5 overflow-x-auto" @scroll.passive="syncActiveCard">
+        <div
+          ref="eduTrack"
+          class="scrollbar-hide flex snap-x snap-mandatory gap-2.5 overflow-x-auto"
+          @scroll.passive="syncActiveCard"
+        >
           <button
             v-for="module in FEATURED_MODULES"
             :key="module.id"
             type="button"
-            class="rounded-button w-edu-card flex shrink-0 flex-col gap-1.5 px-3.5 py-3.5 text-left"
+            class="rounded-button w-edu-card flex shrink-0 snap-start flex-col gap-1.5 px-3.5 py-3.5 text-left"
             :class="eduTone(module.tone).card"
             @click="navigateTo(`/coach/${module.id}`)"
           >
