@@ -77,14 +77,16 @@ onMounted(async () => {
 
       <template v-else>
         <div class="bg-badge-warning rounded-field flex flex-col gap-2.5 p-4">
+          <p class="text-label2 text-warning-strong font-semibold">중소기업 우대금리 대상만</p>
+          <p class="text-caption2 text-ink-hero">
+            청년 버팀목 + 중소기업 재직으로 우대금리 0.3%p 받을 사람만 해당돼요. 아니면 이 단계
+            통째로 건너뛰기.
+          </p>
           <span
             class="bg-surface rounded-chip text-micro text-warning-strong self-start px-2 py-0.5 font-semibold"
           >
-            중소기업 우대금리 대상만
+            청년 버팀목만 해당
           </span>
-          <p class="text-caption2 text-ink-hero">
-            청년 버팀목 + 중소기업 재직으로 우대금리 0.3%p 받을 사람만 해당돼요.
-          </p>
         </div>
 
         <h2 class="text-body3 text-ink-hero font-bold">회사에 요청할 것</h2>
