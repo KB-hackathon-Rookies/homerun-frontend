@@ -16,16 +16,24 @@ export const useSignupStore = defineStore('signup', {
   state: () => ({
     email: '',
     password: '',
-    /** 인증번호 확인에 성공해야 생긴다. 이게 없으면 가입 요청을 보낼 수 없다. */
+    /** 이메일 인증번호 확인에 성공해야 생긴다. 이게 없으면 가입 요청을 보낼 수 없다. */
     verificationToken: '',
+    /** 휴대전화 인증번호 확인에 성공해야 생긴다. 가입 요청에 함께 보낸다. */
+    phoneVerificationToken: '',
     name: '',
     birthDate: '',
     phone: '',
+    /** 정책 권역(서울·인천·경기·그 외). 백엔드가 regionId 로 받는다. */
+    regionId: null as number | null,
+    /** 도로명 + 상세주소를 합쳐 둔다. 선택값이다. */
+    detailAddress: '',
   }),
 
   getters: {
     /** 이메일 인증을 마쳤는지. 다음 단계로 넘어갈 조건이다. */
     isEmailVerified: (state) => !!state.verificationToken,
+    /** 휴대전화 인증을 마쳤는지. 가입 버튼을 열 조건이다. */
+    isPhoneVerified: (state) => !!state.phoneVerificationToken,
   },
 
   actions: {
@@ -34,11 +42,18 @@ export const useSignupStore = defineStore('signup', {
       const { signup } = useAuthApi();
       const auth = useAuthStore();
 
+      if (this.regionId === null) throw new Error('지역이 선택되지 않았습니다.');
+
       const response = await signup({
         email: this.email,
         password: this.password,
-        nickname: this.name,
-        verificationToken: this.verificationToken,
+        name: this.name,
+        birthDate: this.birthDate,
+        phone: this.phone,
+        regionId: this.regionId,
+        detailAddress: this.detailAddress || undefined,
+        emailVerificationToken: this.verificationToken,
+        phoneVerificationToken: this.phoneVerificationToken,
       });
 
       auth.apply(response);
