@@ -184,9 +184,14 @@ async function recoverPlan() {
     </header>
 
     <div class="px-gutter flex flex-1 flex-col gap-4 pt-5 pb-25">
-      <div class="flex flex-col gap-1.5">
-        <h1 class="text-hero text-ink-hero">{{ greeting }}</h1>
-        <p class="text-caption-tight text-ink-hero-body">{{ subtitle }}</p>
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-1.5">
+          <h1 class="text-hero text-ink-hero">{{ greeting }}</h1>
+          <p class="text-caption-tight text-ink-hero-body">{{ subtitle }}</p>
+        </div>
+
+        <!-- 인사를 건네는 쪽이 코치라 인사말 옆에 세운다. 장식이라 대체텍스트를 비운다. -->
+        <img src="/mascot.png" alt="" class="h-28 w-auto shrink-0" />
       </div>
 
       <p v-if="pending" class="text-label2 text-ink-muted">진행 상황을 불러오는 중이에요…</p>
@@ -274,7 +279,8 @@ async function recoverPlan() {
         aria-label="AI 코치"
         disabled
       >
-        <AppIcon name="bolt" class="text-on-brand size-6" />
+        <!-- 버튼에 aria-label 이 있으므로 이미지는 장식으로 둔다. 둘 다 읽히면 두 번 말한다. -->
+        <img src="/mascot-mark.png" alt="" class="size-9" />
       </button>
     </div>
 
