@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { COACH_MODULES } from '~/components/coach/modules';
+import { educationCode, useEducationApi, type EducationModuleDetail } from '~/api/education';
 import { useCoachProgress } from '~/composables/useCoachProgress';
 
 /**
@@ -16,6 +17,7 @@ const { markDone } = useCoachProgress();
 const module = computed(() => COACH_MODULES.find((item) => item.id === route.params.moduleId));
 const index = computed(() => COACH_MODULES.findIndex((item) => item.id === route.params.moduleId));
 const nextModule = computed(() => (index.value >= 0 ? COACH_MODULES[index.value + 1] : undefined));
+const serverModule = ref<EducationModuleDetail | null>(null);
 const error = ref('');
 
 const phase = ref<'read' | 'quiz' | 'done'>('read');
@@ -78,6 +80,20 @@ async function finish() {
     error.value = '교육 완료를 저장하지 못했어요. 잠시 후 다시 시도해주세요.';
   }
 }
+
+onMounted(async () => {
+  const id = String(route.params.moduleId);
+  const code = educationCode(
+    id,
+    COACH_MODULES.map((item) => item.id),
+  );
+  if (!code) return;
+  try {
+    serverModule.value = await useEducationApi().detail(code);
+  } catch {
+    // 배포 데이터 조회가 안 되면 번들에 포함된 콘텐츠를 대신 보여준다.
+  }
+});
 </script>
 
 <template>
@@ -94,7 +110,7 @@ async function finish() {
 
     <!-- 준비 중: 제목·시간만 있고 본문이 없는 모듈. -->
     <div
-      v-else-if="!module.body"
+      v-else-if="!module.body && !serverModule"
       class="px-gutter flex flex-1 flex-col items-center justify-center gap-3 text-center"
     >
       <p class="text-headline2 text-ink-hero">준비 중이에요</p>
@@ -112,64 +128,72 @@ async function finish() {
           {{ module.minutes }}분
         </p>
 
-        <template v-for="(block, i) in module.body" :key="i">
-          <!-- 코치가 말하는 자리. 아바타와 함께 파란 말풍선으로 띄운다. -->
-          <div
-            v-if="block.kind === 'coach'"
-            class="bg-surface-active rounded-button flex gap-3 p-4"
-          >
-            <img
-              src="/tiger-face_coach.png"
-              alt=""
-              width="44"
-              height="44"
-              class="rounded-pill size-11 shrink-0 object-cover select-none"
-            />
-            <div class="flex flex-1 flex-col gap-1">
-              <p class="text-caption-tight text-primary-strong font-bold">코치 TIME</p>
-              <p class="text-label2 text-ink-card font-normal">{{ block.text }}</p>
-            </div>
-          </div>
+        <AppCard v-if="serverModule">
+          <MarkdownContent :content="serverModule.body" />
+        </AppCard>
 
-          <div
-            v-else-if="block.kind === 'steps'"
-            class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
-          >
-            <h2 class="text-stage text-ink-card font-bold">{{ block.heading }}</h2>
-            <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
-              <span
-                class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
-              >
-                {{ n + 1 }}
-              </span>
-              <span class="text-label2 text-ink-card font-bold">{{ item }}</span>
+        <template v-else>
+          <template v-for="(block, i) in module.body" :key="i">
+            <!-- 코치가 말하는 자리. 아바타와 함께 파란 말풍선으로 띄운다. -->
+            <div
+              v-if="block.kind === 'coach'"
+              class="bg-surface-active rounded-button flex gap-3 p-4"
+            >
+              <img
+                src="/tiger-face_coach.png"
+                alt=""
+                width="44"
+                height="44"
+                class="rounded-pill size-11 shrink-0 object-cover select-none"
+              />
+              <div class="flex flex-1 flex-col gap-1">
+                <p class="text-caption-tight text-primary-strong font-bold">코치 TIME</p>
+                <p class="text-label2 text-ink-card font-normal">{{ block.text }}</p>
+              </div>
             </div>
-          </div>
 
-          <div
-            v-else-if="block.kind === 'cases'"
-            class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
-          >
-            <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
-              <span
-                class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
-              >
-                {{ n + 1 }}
-              </span>
-              <span class="flex flex-1 flex-col gap-0.5">
-                <span class="text-label2 text-ink-card font-bold">{{ item.title }}</span>
-                <span class="text-caption-tight text-ink-card-body">{{ item.body }}</span>
-              </span>
+            <div
+              v-else-if="block.kind === 'steps'"
+              class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
+            >
+              <h2 class="text-stage text-ink-card font-bold">{{ block.heading }}</h2>
+              <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
+                <span
+                  class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
+                >
+                  {{ n + 1 }}
+                </span>
+                <span class="text-label2 text-ink-card font-bold">{{ item }}</span>
+              </div>
             </div>
-          </div>
 
-          <div
-            v-else-if="block.kind === 'note'"
-            class="bg-surface-note text-ink-note rounded-button flex flex-col gap-2.5 p-4"
-          >
-            <p class="text-label2 font-bold">{{ block.heading }}</p>
-            <p v-for="(item, n) in block.items" :key="n" class="text-caption-tight">· {{ item }}</p>
-          </div>
+            <div
+              v-else-if="block.kind === 'cases'"
+              class="bg-surface border-line-list rounded-button flex flex-col gap-2.5 border p-4"
+            >
+              <div v-for="(item, n) in block.items" :key="n" class="flex items-start gap-2.5">
+                <span
+                  class="bg-surface-active text-primary-strong rounded-pill text-step flex size-5.5 shrink-0 items-center justify-center font-bold"
+                >
+                  {{ n + 1 }}
+                </span>
+                <span class="flex flex-1 flex-col gap-0.5">
+                  <span class="text-label2 text-ink-card font-bold">{{ item.title }}</span>
+                  <span class="text-caption-tight text-ink-card-body">{{ item.body }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-else-if="block.kind === 'note'"
+              class="bg-surface-note text-ink-note rounded-button flex flex-col gap-2.5 p-4"
+            >
+              <p class="text-label2 font-bold">{{ block.heading }}</p>
+              <p v-for="(item, n) in block.items" :key="n" class="text-caption-tight">
+                · {{ item }}
+              </p>
+            </div>
+          </template>
         </template>
       </div>
 
