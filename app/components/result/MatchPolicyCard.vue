@@ -47,6 +47,15 @@ const markOf = (condition: ConditionBasis) => {
       </li>
     </ul>
 
-    <p class="bg-canvas rounded-button text-caption2 text-ink-hero-body p-4">{{ card.notice }}</p>
+    <!--
+      시안 1루 4 는 조건 목록이 있는 카드에 회색 상자를 두지 않는다. 상담 안내처럼
+      판정할 조건이 없는 카드만 이 상자로 말한다.
+    -->
+    <p
+      v-if="card.notice"
+      class="bg-surface-muted rounded-button text-caption2 text-ink-card-body p-4"
+    >
+      {{ card.notice }}
+    </p>
   </AppCard>
 </template>

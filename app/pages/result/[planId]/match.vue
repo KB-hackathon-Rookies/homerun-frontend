@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CoachSheet } from '~/components/coach/sheet';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useResultGuard } from '~/composables/useResultGuard';
 
@@ -34,7 +35,10 @@ watch(pending, (loading) => {
  *
  * 내용은 시안 문구 그대로다. 지어내지 않는다.
  */
-const COACH = {
+/** 진행 표시. 앞 셋은 문진에서 지나왔다. */
+const SUB_STEPS = ['기본 정보', '회사 정보', '추가 정보', '예상 진단'];
+
+const COACH: CoachSheet = {
   title: '자주 묻는 질문',
   intro: '판정 결과 보면서 자주 나오는 질문들이야. 네 상황에 걸리는 게 있으면 여기서 확인해',
   qa: [
@@ -61,24 +65,19 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" title="스펙 매칭 확인" base="1루" @back="navigateTo(`/diagnosis/${planId}`)">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" brand base="1루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-5 px-4 pt-4 pb-6">
+      <SubStep :steps="SUB_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-5 py-4">
-      <!-- 코치 팁 전체가 코치 TIME 을 여는 자리다. 오른쪽 아래 코치 FAB 과 같은 시트를 연다. -->
-      <button type="button" class="w-full text-left" @click="coachOpen = true">
-        <CoachTip label="⚾ 코치 TIME · 눌러서 자세히 보기"
-          >네 조건에 맞는 정책을 자동으로 매칭했어. 왜 되는지·안 되는지 근거도 같이 볼 수
-          있어</CoachTip
-        >
-      </button>
+      <p class="text-caption1 text-ink-label font-medium">1루 · 예상 진단</p>
 
-      <h2 class="text-headline1 text-ink-hero">
+      <h1 class="text-section text-ink-card font-bold">
         {{
           allPoliciesFailed
             ? '지금 되는 정책은 없지만, 은행 상담으로 이어갈 수 있어요'
             : '조건에 맞는 대출을 모두 확인했어요'
         }}
-      </h2>
+      </h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -112,12 +111,11 @@ const coachOpen = ref(false);
 
     <!-- 시안(1루 4)은 이전·내 스펙 보기를 하단 CTA 줄에 나란히 둔다. -->
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/diagnosis/${planId}`)">이전</AppButton>
-      </div>
+      <footer class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 gap-2.5 border-t">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/diagnosis/${planId}`)">이전</AppButton>
+        </div>
 
-      <div class="flex-1">
         <AppButton
           variant="strong"
           :disabled="pending || !cards.length"
@@ -125,8 +123,7 @@ const coachOpen = ref(false);
         >
           내 스펙 보기
         </AppButton>
-      </div>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>
