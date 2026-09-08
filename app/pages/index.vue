@@ -32,20 +32,19 @@ onMounted(() => {
 
 <template>
   <PhoneFrame>
-    <div class="flex flex-1 flex-col items-center px-gutter pt-statusbar">
-      <BrandMark class="self-start pt-4" />
+    <div class="pt-statusbar shrink-0" />
 
-      <div class="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-        <!-- 피그마의 intro.png 자리. 아직 에셋이 없어 로고를 크게 세워 둔다. -->
-        <span class="bg-primary size-hero rotate-45 rounded-screen" />
+    <!--
+      화면 정의서 AU-01. 마름모 44 · 워드마크 · 하단 한 줄이 전부다.
 
-        <h1 class="text-title1 text-ink-strong whitespace-pre-line">
-          {{ '첫 독립,\n홈런이\n함께할게요' }}
-        </h1>
-        <p class="text-ink-placeholder text-xl font-bold">청년의 첫 독립을 위한 맞춤 자립 코치</p>
-      </div>
-
-      <p class="text-caption1 text-ink-subtle pb-8">첫 독립을 위한 준비</p>
+      1초 남짓 보이고 사라지는 화면이라 읽을 것을 늘리지 않는다. 서비스 설명은 바로 다음
+      웰컴(AU-02)이 맡는다.
+    -->
+    <div class="flex flex-1 flex-col items-center justify-center gap-4">
+      <span class="bg-primary size-11 rotate-45 rounded-sm" />
+      <span class="font-logo text-title2 text-ink">홈런</span>
     </div>
+
+    <p class="text-caption1 text-ink-subtle pb-cta-pad shrink-0 text-center">첫 독립을 위한 준비</p>
   </PhoneFrame>
 </template>
