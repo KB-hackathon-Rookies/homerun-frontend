@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthApi } from '~/api/auth';
+import { emailSchema, messageOf, passwordSchema, passes } from '~/schemas/signup';
 import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
@@ -22,18 +23,50 @@ const sent = ref(false);
 const error = ref('');
 const pending = ref(false);
 
-const passwordMismatch = computed(
-  () => !!passwordConfirm.value && password.value !== passwordConfirm.value,
+const emailError = computed(() => messageOf(emailSchema, email.value));
+const passwordError = computed(() => messageOf(passwordSchema, password.value));
+
+/**
+ * 확인값은 **비어 있어도 오류**다.
+ *
+ * 전에는 `!!passwordConfirm && 서로 다름` 이라 확인칸을 비워 두면 오류가 아니었고 다음
+ * 버튼이 열렸다. 확인칸은 오타를 걸러내려고 있는 것이라 안 적으면 제 역할을 못 한다.
+ */
+const passwordConfirmError = computed(() => {
+  if (!password.value) return '';
+  if (!passwordConfirm.value) return '비밀번호를 한 번 더 입력해주세요';
+  return password.value === passwordConfirm.value ? '' : '비밀번호가 서로 달라요';
+});
+
+/**
+ * 인증을 끝낸 이메일과 지금 칸에 적힌 이메일이 같은가.
+ *
+ * A 로 인증하고 칸만 B 로 바꾸면 화면은 B 를 보여주는데 저장된 토큰과 `signup.email` 은
+ * A 였다. 서버는 A 로 가입시킨다 — 사용자가 본 것과 다른 계정이 만들어진다.
+ */
+const verifiedEmailMatches = computed(
+  () => signup.isEmailVerified && signup.email === email.value.trim(),
 );
 
-/** 백엔드가 8자 이상을 요구한다(`EmailSignupRequest`). 보내기 전에 걸러준다. */
-const passwordTooShort = computed(() => !!password.value && password.value.length < 8);
+/**
+ * 인증한 뒤 이메일을 고치면 그 인증은 더 이상 이 이메일의 것이 아니다.
+ *
+ * 되돌려 적으면 다시 인증해야 한다 — 토큰은 한 번 쓰면 사라지므로 남겨 둘 이유가 없다.
+ */
+watch(email, (value) => {
+  if (signup.isEmailVerified && signup.email !== value.trim()) {
+    signup.email = '';
+    signup.verificationToken = '';
+    sent.value = false;
+    code.value = '';
+  }
+});
 
 const canSubmit = computed(
   () =>
-    signup.isEmailVerified &&
-    password.value.length >= 8 &&
-    !passwordMismatch.value &&
+    verifiedEmailMatches.value &&
+    passes(passwordSchema, password.value) &&
+    !passwordConfirmError.value &&
     !pending.value,
 );
 
@@ -65,6 +98,8 @@ async function confirm() {
 }
 
 function next() {
+  // 버튼 상태에만 맡기지 않는다. 엔터 제출·자동완성처럼 버튼을 거치지 않는 길이 있다.
+  if (!canSubmit.value) return;
   signup.password = password.value;
   navigateTo('/signup/identity');
 }
@@ -85,9 +120,12 @@ function next() {
           type="email"
           placeholder="이메일을 입력해주세요"
           autocomplete="email"
+          :error="emailError"
         >
           <template #action>
-            <InputAction :disabled="!email || pending" @click="send">인증번호 받기</InputAction>
+            <InputAction :disabled="!passes(emailSchema, email) || pending" @click="send">
+              인증번호 받기
+            </InputAction>
           </template>
         </AppInput>
 
@@ -109,11 +147,10 @@ function next() {
           v-model="password"
           label="비밀번호"
           type="password"
-          placeholder="8자 이상 입력해주세요"
+          placeholder="영문·숫자·특수문자를 섞어 8자 이상"
           autocomplete="new-password"
-        >
-          <template v-if="passwordTooShort" #hint>8자 이상이어야 해요.</template>
-        </AppInput>
+          :error="passwordError"
+        />
 
         <AppInput
           v-model="passwordConfirm"
@@ -121,9 +158,8 @@ function next() {
           type="password"
           placeholder="비밀번호를 다시 입력해주세요"
           autocomplete="new-password"
-        >
-          <template v-if="passwordMismatch" #hint>비밀번호가 서로 달라요.</template>
-        </AppInput>
+          :error="passwordConfirmError"
+        />
       </div>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>

@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { useFirstBaseApi } from '~/api/firstBase';
-import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
-import { type DiagnosisStep, type DiagnosisStepPatch, usePlanApi } from '~/api/plan';
+import { incomeSyncOutcome, useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
+import {
+  type DiagnosisResumeStep,
+  type DiagnosisStep,
+  type DiagnosisStepPatch,
+  type PlanInput,
+  type PlanInputResume,
+  usePlanApi,
+} from '~/api/plan';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import { useInputRevision } from '~/composables/useInputRevision';
-import { parseManwon } from '~/utils/amount';
+import { manwonFromWon, parseManwon } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
@@ -78,6 +85,9 @@ const regionId = ref<string | null>(null);
 /** 서버가 오픈뱅킹으로 확정해 저장한 월 소득(원). STEP 저장에 그대로 실어 보낸다. */
 const openBankingIncome = ref<number | null>(null);
 
+/** 오픈뱅킹을 골랐는데 직접 입력으로 되돌아온 이유. 없으면 빈 문자열. */
+const preservedIncomeNotice = ref('');
+
 /**
  * 화면은 만 원 단위로 받고 백엔드는 원 단위로 받는다. **검사한 뒤에** 바꾼다.
  *
@@ -90,10 +100,49 @@ const parsedAssets = computed(() => parseManwon(assets.value));
 const parsedCash = computed(() => parseManwon(availableCash.value));
 const parsedDeposit = computed(() => parseManwon(deposit.value));
 
-onMounted(async () => {
-  // 문진에서 이어 오므로 서버가 들고 있는 판이 이미 여러 번 올라가 있다.
-  await load();
+/**
+ * 서버가 이어하기로 준 STEP 을 이 화면의 단계로 옮긴다.
+ *
+ * 이 화면이 저장하는 서버 STEP 은 셋(FINANCIAL·HOPE_DEPOSIT·REGION)이고, 화면 단계는
+ * 다섯이다. CONFIRM·MANUAL·ASSETS 는 모두 FINANCIAL 한 STEP 을 나눠 받는 자리다.
+ */
+function stepFromResume(resumeStep: DiagnosisResumeStep | null): Step | null {
+  if (resumeStep === 'HOPE_DEPOSIT') return 'DEPOSIT';
+  if (resumeStep === 'REGION') return 'REGION';
+  // REVIEW·null 은 문진을 다 채웠다는 뜻이다. 마지막 자리에서 확인하고 넘어가게 둔다.
+  if (resumeStep === 'REVIEW' || resumeStep === null) return 'REGION';
+  if (resumeStep === 'FINANCIAL') return 'CONFIRM';
+  // 앞 문진이 안 끝났으면 이 화면이 정할 일이 아니다.
+  return null;
+}
 
+/**
+ * 저장된 답을 칸에 되돌려 놓는다.
+ *
+ * 전에는 `revision` 만 읽어서, 지역 입력에서 새로고침하면 **빈 금융 문진이 처음부터**
+ * 다시 나왔다. 서버는 답을 들고 있는데 화면이 안 읽었다. 금액은 원으로 저장돼 있어
+ * 만 원 칸으로 되돌릴 때 버리지 않고 소수까지 그대로 적는다.
+ */
+function restore(input: PlanInput | null) {
+  if (!input) return;
+
+  income.value = manwonFromWon(input.monthlyIncome);
+  assets.value = manwonFromWon(input.netAssets);
+  availableCash.value = manwonFromWon(input.availableCash);
+  deposit.value = manwonFromWon(input.hopeDeposit);
+  regionId.value = input.regionId === null ? null : String(input.regionId);
+
+  if (input.existingJeonseLoan !== null) {
+    existingJeonseLoan.value = input.existingJeonseLoan ? 'YES' : 'NO';
+    // 대출이 있다고 답했으면 중복대출 확인은 성립하지 않는다. watch 와 같은 규칙이다.
+    prohibitedLoanConfirmed.value = !input.existingJeonseLoan && !!input.prohibitedLoanConfirmed;
+  }
+
+  // 이미 확인해 둔 오픈뱅킹 소득은 STEP 저장에 그대로 실어야 출처 검증에 걸리지 않는다.
+  if (input.incomeSource === 'OPEN_BANKING') openBankingIncome.value = input.monthlyIncome;
+}
+
+onMounted(async () => {
   const { financialSummary } = useOpenBankingApi();
   const { jeonseOptions } = useRegionApi();
 
@@ -102,6 +151,23 @@ onMounted(async () => {
   } catch {
     // 지역 목록은 뒤 단계에서야 쓴다. 여기서 막지 않는다.
   }
+
+  // 문진에서 이어 오므로 서버가 들고 있는 판이 이미 여러 번 올라가 있다.
+  let resumed: PlanInputResume | null = null;
+  try {
+    resumed = await usePlanApi().resume(planId);
+    revision.value = resumed.revision;
+    restore(resumed.input);
+  } catch {
+    // 이어할 게 없거나 조회가 막혔다. 저장은 서버가 소유자·revision 으로 막는다.
+    await load();
+  }
+
+  const resumedStep = stepFromResume(resumed?.resumeStep ?? null);
+  if (resumedStep) step.value = resumedStep;
+
+  // 소득을 이미 확인해 둔 자리로 돌아온 것이면 오픈뱅킹을 다시 물을 이유가 없다.
+  if (step.value !== 'CONFIRM') return;
 
   try {
     summary.value = await financialSummary();
@@ -147,23 +213,39 @@ async function save(code: DiagnosisStep, patch: DiagnosisStepPatch) {
 /**
  * 오픈뱅킹 소득을 서버에 동기화하고 확인받는다.
  *
- * 서버가 소득을 확정하지 못하면(연동 실패·급여 미확인 등) 오픈뱅킹 소득을 쓸 수
- * 없으므로 직접 입력으로 돌린다. 확정했으면 그 값을 확인 처리하고 순자산 입력으로
- * 넘어간다.
+ * **서버가 늘 추정값을 저장하지는 않는다.** 사용자가 직접 적어 둔 소득이 있거나
+ * 이미 확인을 마친 값이 있으면 서버는 그것을 지키고 추정값을 버린다. 무엇을 했는지는
+ * `monthlyIncomeSyncStatus` 가 말하고, 실제로 저장된 값은 `input` 에 실려 온다.
+ *
+ * 전에는 상태를 보지 않고 추정값을 저장값처럼 쓰면서 확인을 무조건 호출했다. 그래서
+ * 수동 입력이 보존된 사용자는 확인 요청이 409(`PLAN_017`)로 튕겨 나가 이유도 모른 채
+ * 막혔고, 이미 확인된 사용자는 저장값과 다른 추정값을 다음 단계로 실어 보냈다.
  */
 async function confirmOpenBankingIncome() {
   const { syncPlanIncome, confirmPlanIncome } = useOpenBankingApi();
 
   const synced = await syncPlanIncome(planId);
-  if (synced.suggestedMonthlyIncome === null) {
+  const stored = synced.input;
+
+  // 서버가 들고 있는 값이 기준이다. 추정값은 반영됐을 때만 이 안에 들어 있다.
+  restore(stored);
+
+  const outcome = incomeSyncOutcome(synced);
+
+  if (outcome === 'MANUAL') {
+    // 왜 직접 입력으로 왔는지 말해 준다. 적어 둔 값이 그대로 있는데 설명이 없으면
+    // 오픈뱅킹이 실패한 것으로 읽힌다.
+    preservedIncomeNotice.value =
+      synced.monthlyIncomeSyncStatus === 'MANUAL_VALUE_PRESERVED'
+        ? '직접 입력해 두신 소득이 있어 그대로 두었어요. 오픈뱅킹 값으로 바꾸시려면 아래에서 고쳐주세요'
+        : '';
     useOpenBanking.value = 'MANUAL';
-    income.value = '';
     step.value = 'MANUAL';
     return;
   }
 
-  await confirmPlanIncome(planId);
-  openBankingIncome.value = synced.suggestedMonthlyIncome;
+  preservedIncomeNotice.value = '';
+  if (outcome === 'CONFIRM') await confirmPlanIncome(planId);
   // 동기화·확인으로 서버 revision 이 올라갔으니 최신값을 물려받는다.
   await load();
   step.value = 'ASSETS';
@@ -291,7 +373,13 @@ const coachOpen = ref(false);
 
 function back() {
   if (step.value === 'CONFIRM') {
-    navigateTo(`/diagnosis/${planId}`);
+    /*
+     * 이어하기가 아니라 앞 질문을 고치러 간다고 알린다.
+     *
+     * 이 표시가 없으면 진단 화면이 서버의 resumeStep(=FINANCIAL)을 보고 곧장 이 화면으로
+     * 되돌려 보낸다. 이전을 눌러도 제자리라 앞 답을 고칠 방법이 없었다.
+     */
+    navigateTo(`/diagnosis/${planId}?edit=1`);
     return;
   }
   // 소득을 직접 입력하러 온 사람과 오픈뱅킹으로 확인한 사람은 지나온 길이 다르다.
@@ -340,7 +428,12 @@ function back() {
       </QuestionCard>
 
       <QuestionCard v-else-if="step === 'MANUAL'" question="아래 정보를 직접 입력해주세요">
-        <p class="text-caption2 text-ink-hero-body">오픈뱅킹 조회값이 틀린 경우에만 사용해요</p>
+        <p v-if="preservedIncomeNotice" class="text-caption2 text-ink-hero-body">
+          {{ preservedIncomeNotice }}
+        </p>
+        <p v-else class="text-caption2 text-ink-hero-body">
+          오픈뱅킹 조회값이 틀린 경우에만 사용해요
+        </p>
         <AppInput
           v-model="income"
           :error="parsedIncome.error ?? ''"

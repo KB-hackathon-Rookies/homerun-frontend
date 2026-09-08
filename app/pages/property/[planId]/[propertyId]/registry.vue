@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
+
 /**
  * 2루-2 등기부등본 발급 안내.
  *
@@ -14,6 +16,13 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+
+/**
+ * 여기는 저장하는 값이 없지만 STEP 4 의 첫 화면이다. 아직 앞 STEP 에 머문 매물이
+ * URL 로 들어오면 등기부부터 떼게 만들고, 정작 체크리스트에서 막힌다. 700원과
+ * 본인 인증이 드는 일이라 헛걸음이 특히 비싸다 — 지금 단계 화면으로 돌려보낸다.
+ */
+usePropertyStepGuard(planId, propertyId, 'registry');
 
 const STEPS = [
   '1. 부동산 등기사항증명서 열람·발급 신청 (부동산 > 열람·발급)',

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { usePropertyApi } from '~/api/property';
-import { messageFrom } from '~/utils/error';
-import { propertyStepRoute } from '~/utils/propertyStep';
+import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
 
 /**
@@ -20,37 +19,26 @@ const propertyId = Number(route.params.propertyId);
 
 const checked = ref(false);
 const violation = ref<boolean | null>(null);
-const revision = ref(0);
-const pending = ref(true);
 const saving = ref(false);
-const error = ref('');
 
-onMounted(async () => {
-  try {
-    const workflow = await usePropertyApi().resume(planId, propertyId);
-    // STEP 3 은 워크플로가 VIOLATION 일 때만 저장된다. 앞 STEP 이거나 이미 지났으면 지금 단계로 보낸다.
-    if (workflow.currentStep !== 'VIOLATION') {
-      await navigateTo(propertyStepRoute(planId, propertyId, workflow.currentStep), { replace: true });
-      return;
-    }
-    revision.value = workflow.revision;
-  } catch (cause) {
-    error.value = messageFrom(cause, '진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    pending.value = false;
-  }
-});
+/** STEP 3 은 워크플로가 VIOLATION 일 때만 저장된다. 앞 STEP 이거나 이미 지났으면 지금 단계로 보낸다. */
+const { revision, pending, error, conflict, sync, reportSaveError } = usePropertyStepGuard(
+  planId,
+  propertyId,
+  'violation',
+);
 
 async function next() {
   if (violation.value === null || saving.value) return;
 
   saving.value = true;
   error.value = '';
+  conflict.value = false;
   try {
     await usePropertyApi().saveViolation(planId, propertyId, revision.value, violation.value);
     await navigateTo(`/property/${planId}/${propertyId}/detail`);
   } catch (cause) {
-    error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+    reportSaveError(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     saving.value = false;
   }
@@ -106,7 +94,7 @@ async function next() {
         </button>
       </div>
 
-      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
+      <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
     <StepFooter
