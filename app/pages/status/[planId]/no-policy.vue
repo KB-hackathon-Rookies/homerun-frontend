@@ -105,6 +105,16 @@ onMounted(async () => {
           </p>
         </SectionCard>
 
+        <!--
+          정책이 다 떨어져도 막다른 길은 아니다. 결과 화면에는 일반 은행 상담
+          카드가 남아 있어, 그 길로 매물 탐색을 이어갈 수 있다.
+        -->
+        <SectionCard title="은행 상담으로 이어가기">
+          <p class="text-label2 text-ink-muted">
+            정책 대출은 어렵지만, 결과 화면의 일반 은행 상담 카드로 매물 탐색을 계속할 수 있어요.
+          </p>
+        </SectionCard>
+
         <p class="bg-surface-info rounded-cta text-label2 text-primary-strong px-3 py-2.5">
           현재 규칙 버전 {{ ruleVersion ?? '확인 중' }} 기준이에요. 지침이 개정되면 자동으로 다시
           판정합니다.

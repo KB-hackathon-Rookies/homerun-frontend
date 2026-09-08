@@ -20,10 +20,10 @@ const { pending, error, cards, results, basisOf } = useJeonsePolicies(planId);
  * 판정이 다 떨어졌으면 여기서 멈추지 않고 왜 막혔는지 말해 주는 화면으로
  * 보낸다. 결과가 나온 뒤에만 보므로 평소 흐름은 그대로다.
  */
-const { ruleChanged, eligibilityEnding, inspect } = useResultGuard(planId);
+const { ruleChanged, eligibilityEnding, allPoliciesFailed, inspect } = useResultGuard(planId);
 
 watch(pending, (loading) => {
-  if (!loading && !error.value) inspect(results.value);
+  if (!loading && !error.value) inspect(results.value, cards.value);
 });
 </script>
 
@@ -37,10 +37,28 @@ watch(pending, (loading) => {
         있어</CoachTip
       >
 
-      <h2 class="text-headline1 text-ink-hero">조건에 맞는 대출을 모두 확인했어요</h2>
+      <h2 class="text-headline1 text-ink-hero">
+        {{
+          allPoliciesFailed
+            ? '지금 되는 정책은 없지만, 은행 상담으로 이어갈 수 있어요'
+            : '조건에 맞는 대출을 모두 확인했어요'
+        }}
+      </h2>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
+
+      <!--
+        정책이 다 떨어졌다. 결과 화면을 막지 않고 왜 막혔는지 볼 길만 열어 둔다.
+        no-policy 로 자동 이동하지 않으므로 여기서 눌러 들어가도 루프가 생기지 않는다.
+      -->
+      <StatusNotice
+        v-if="allPoliciesFailed"
+        tone="danger"
+        @open="navigateTo(`/status/${planId}/no-policy`)"
+      >
+        조건에 맞는 정책이 없어요. 왜 막혔는지 확인해보세요
+      </StatusNotice>
 
       <StatusNotice v-if="ruleChanged" @open="navigateTo(`/status/${planId}/rule-changed`)">
         지침이 개정돼 다시 판정해야 하는 정책이 있어요
