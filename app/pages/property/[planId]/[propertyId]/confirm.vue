@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useConsultationApi, type Consultation } from '~/api/consultation';
+import { usePlanApi } from '~/api/plan';
 import { usePropertyApi } from '~/api/property';
+import { useSecondBaseApi } from '~/api/secondBase';
 import { collateralLabel, productLabel } from '~/components/property/consultation';
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
@@ -69,7 +71,17 @@ async function proceed() {
   saving.value = true;
   saveError.value = '';
   try {
-    await usePropertyApi().decide(planId, propertyId, settled.value.consultationId);
+    const decision = await usePropertyApi().decide(planId, propertyId, settled.value.consultationId);
+
+    /*
+     * 확정을 저장하는 것만으로는 계획이 2루에 남는다. 2루 최종 제출을 불러 서버가
+     * 최종 조건을 확인하고 계획을 3루로 넘기게 한다. 서버가 완료를 승인한 뒤에만
+     * 3루로 넘어간다.
+     */
+    const plan = await usePlanApi().get(planId);
+    if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
+    await useSecondBaseApi().complete(planId, decision.decisionRevision, plan.ruleVersion);
+
     await navigateTo(`/contract/${planId}/visit`);
   } catch (cause) {
     saveError.value = messageFrom(cause, '확정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');

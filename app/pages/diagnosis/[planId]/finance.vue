@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { useFirstBaseApi } from '~/api/firstBase';
 import { useOpenBankingApi, type FinancialSummary } from '~/api/openbanking';
-import type { DiagnosisStep, DiagnosisStepPatch } from '~/api/plan';
+import { type DiagnosisStep, type DiagnosisStepPatch, usePlanApi } from '~/api/plan';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import { useInputRevision } from '~/composables/useInputRevision';
 import { messageFrom } from '~/utils/error';
@@ -27,9 +28,19 @@ const planId = Number(route.params.planId);
 type Step = 'CONFIRM' | 'MANUAL' | 'ASSETS' | 'DEPOSIT' | 'REGION';
 
 const step = ref<Step>('CONFIRM');
-const { load, saveStep } = useInputRevision(planId);
+const { revision, load, saveStep } = useInputRevision(planId);
 const pending = ref(false);
 const error = ref('');
+
+/** 진단 비용은 화면에서 따로 받지 않는다. 한도·이자는 서버가 정책 판정으로 계산한다. */
+const ZERO_COSTS = {
+  movingCost: 0,
+  brokerageFee: 0,
+  guaranteeFee: 0,
+  stampTax: 0,
+  emergencyReserve: 0,
+  monthlyLivingExpense: 0,
+} as const;
 
 /** 오픈뱅킹 조회값. 못 가져오면 바로 직접 입력으로 보낸다. */
 const summary = ref<FinancialSummary | null>(null);
@@ -38,6 +49,8 @@ const regions = ref<RegionOption[]>([]);
 const useOpenBanking = ref<string | null>(null);
 const income = ref('');
 const assets = ref('');
+/** 지금 당장 쓸 수 있는 현금(자기자금). 1루 완료 시 확인 대상이라 실제 값을 받는다. */
+const availableCash = ref('');
 const deposit = ref('');
 const regionId = ref<string | null>(null);
 
@@ -72,8 +85,8 @@ onMounted(async () => {
 
 const canProceed = computed(() => {
   if (step.value === 'CONFIRM') return !!useOpenBanking.value;
-  if (step.value === 'MANUAL') return !!income.value && !!assets.value;
-  if (step.value === 'ASSETS') return !!assets.value;
+  if (step.value === 'MANUAL') return !!income.value && !!assets.value && !!availableCash.value;
+  if (step.value === 'ASSETS') return !!assets.value && !!availableCash.value;
   if (step.value === 'DEPOSIT') return !!deposit.value;
   return !!regionId.value;
 });
@@ -135,10 +148,10 @@ async function next() {
       await save('FINANCIAL', {
         monthlyIncome: toWon(income.value),
         netAssets: toWon(assets.value),
+        availableCash: toWon(availableCash.value),
         incomeSource: 'MANUAL',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
-        unknownFields: ['AVAILABLE_CASH'],
       });
       step.value = 'DEPOSIT';
       return;
@@ -150,10 +163,10 @@ async function next() {
       await save('FINANCIAL', {
         monthlyIncome: openBankingIncome.value ?? undefined,
         netAssets: toWon(assets.value),
+        availableCash: toWon(availableCash.value),
         incomeSource: 'OPEN_BANKING',
         assetSource: 'MANUAL',
         financialDataConfirmed: true,
-        unknownFields: ['AVAILABLE_CASH'],
       });
       step.value = 'DEPOSIT';
       return;
@@ -166,12 +179,37 @@ async function next() {
     }
 
     await save('REGION', { regionId: Number(regionId.value) });
-    await navigateTo(`/result/${planId}/match`);
+    await submitFirstBase();
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
     pending.value = false;
   }
+}
+
+/**
+ * 1루를 최종 제출한다.
+ *
+ * 결과 화면은 정책 평가 API 를 다시 부르므로, 여기서 평가만 해서는 계획 stage 가
+ * 1루에 남는다. REVIEW 를 저장해 필수 입력이 다 찼음을 확정한 뒤, first-base 완료를
+ * 호출해 서버가 진단을 저장하고 계획을 2루로 넘기게 한다. 서버가 완료를 승인한
+ * 뒤에만 결과 화면으로 넘어간다.
+ */
+async function submitFirstBase() {
+  await saveStep('REVIEW', {});
+
+  const plan = await usePlanApi().get(planId);
+  if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
+
+  const result = await useFirstBaseApi().complete(planId, revision.value, plan.ruleVersion, {
+    ...ZERO_COSTS,
+  });
+  if (result.status !== 'COMPLETED') {
+    // 아직 확인하지 못한 입력이 남았다(예: 자기자금). 화면을 넘기지 않는다.
+    error.value = '입력을 한 번 더 확인해야 해요. 앞 단계로 돌아가 값을 확인하고 다시 시도해주세요.';
+    return;
+  }
+  await navigateTo(`/result/${planId}/match`);
 }
 
 function back() {
@@ -230,6 +268,12 @@ function back() {
           type="tel"
           placeholder="숫자만 입력해주세요"
         />
+        <AppInput
+          v-model="availableCash"
+          label="지금 쓸 수 있는 현금 (만 원)"
+          type="tel"
+          placeholder="계약금·잔금에 보탤 자기자금"
+        />
       </QuestionCard>
 
       <QuestionCard v-else-if="step === 'ASSETS'" question="보유한 순자산을 입력해주세요">
@@ -248,6 +292,12 @@ function back() {
           label="순자산 (만 원)"
           type="tel"
           placeholder="숫자만 입력해주세요"
+        />
+        <AppInput
+          v-model="availableCash"
+          label="지금 쓸 수 있는 현금 (만 원)"
+          type="tel"
+          placeholder="계약금·잔금에 보탤 자기자금"
         />
       </QuestionCard>
 

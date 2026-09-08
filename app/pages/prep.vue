@@ -76,7 +76,7 @@ function back() {
 }
 
 async function submit() {
-  const { create, saveInput, profilePrefill } = usePlanApi();
+  const { create, saveInput, profilePrefill, completeStep } = usePlanApi();
 
   pending.value = true;
   error.value = '';
@@ -110,6 +110,15 @@ async function submit() {
       ...(birthDate ? { birthDate } : {}),
       ...(skipsDeposit.value ? {} : { currentDeposit: depositAmount.value }),
     });
+
+    /*
+     * 준비 완료를 서버 진행 상태에 반영한다(BENCH → BENCH_ONBOARDING 완료).
+     * 이걸 부르지 않으면 계획이 BENCH 에 남아, 진단을 진행해도 대시보드 단계·홈
+     * 이어하기와 화면이 어긋난다. 서버가 완료를 승인한 뒤에 진단으로 넘어간다.
+     */
+    if (!plan.ruleVersion) throw new Error('계획 규칙 버전을 확인할 수 없어요.');
+    await completeStep(plan.id, 'BENCH_ONBOARDING', plan.ruleVersion);
+
     await navigateTo(`/diagnosis/${plan.id}`, { replace: true });
   } catch (cause) {
     error.value = messageFrom(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
