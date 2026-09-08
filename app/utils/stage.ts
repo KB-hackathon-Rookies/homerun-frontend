@@ -42,6 +42,28 @@ export function nodeState(node: PlanStage, current: PlanStage): NodeState {
 }
 
 /**
+ * 지금 화면이 어느 루인가 — `resumePath` 의 반대 방향이다.
+ *
+ * 코치 FAB 이 질문과 함께 보낼 단계를 여기서 읽는다. 화면마다 손으로 적으면
+ * 빠뜨린 화면이 생기고, 잘못 적으면 코치가 엉뚱한 루의 자료를 뒤진다.
+ *
+ * 표에 없는 경로는 `null` 이다 — 로그인·회원가입·문진·오픈뱅킹처럼 계획이 아직
+ * 없거나 여정 밖인 화면이라 물어볼 단계가 없다. 모르는 것을 1루로 채우지 않는다.
+ * 홈·마이는 경로만으로 알 수 없어서 화면이 계획에서 읽어 직접 넘긴다.
+ */
+const COACH_STAGE_ROUTES: { prefix: string; stage: PlanStage }[] = [
+  { prefix: '/diagnosis/', stage: 'FIRST' },
+  { prefix: '/result/', stage: 'FIRST' },
+  { prefix: '/property/', stage: 'SECOND' },
+  { prefix: '/contract/', stage: 'THIRD' },
+  { prefix: '/settle/', stage: 'HOME' },
+];
+
+export function coachStageFor(path: string): PlanStage | null {
+  return COACH_STAGE_ROUTES.find((entry) => path.startsWith(entry.prefix))?.stage ?? null;
+}
+
+/**
  * 이어서 진행할 화면.
  *
  * 백엔드는 단계 말고 `locationCode` 도 주는데, 그 코드와 라우트를 짝지어 둔 표가

@@ -151,7 +151,7 @@ async function start() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]">
     <StageBar title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)" />
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
@@ -233,14 +233,10 @@ async function start() {
         계약하고 나서 알면 계약금이 걸린 채로 막히기 때문이다.
       -->
       <AppCard class="flex flex-col gap-3">
-        <p class="text-body3 text-ink-hero font-bold">
-          임대인에게 전세대출 협조를 확인하셨나요?
-        </p>
+        <p class="text-body3 text-ink-hero font-bold">임대인에게 전세대출 협조를 확인하셨나요?</p>
         <PillGroup v-model="consent" :options="CONSENT_OPTIONS" />
         <p v-if="consentNotice" class="text-caption2 text-ink-hero-body">{{ consentNotice }}</p>
       </AppCard>
-
-      <CoachTime :sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]" />
     </div>
 
     <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">

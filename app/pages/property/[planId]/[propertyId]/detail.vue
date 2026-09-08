@@ -47,7 +47,7 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame :coach-sheets="[COACH_TIME.emptyJeonse]">
     <StageBar
       title="매물 상세"
       base="2루"
@@ -110,8 +110,6 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
           </p>
         </section>
       </template>
-
-      <CoachTime :sheets="[COACH_TIME.emptyJeonse]" />
     </div>
 
     <StepFooter
