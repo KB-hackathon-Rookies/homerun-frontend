@@ -115,5 +115,16 @@ async function remove(expenseId: number) {
       <p v-if="!items.length" class="text-caption2 text-ink-muted">등록한 고정지출이 없어요.</p>
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
+
+    <!--
+      입력 화면인데 하단 CTA 가 없어 헤더의 뒤로가기 화살표가 유일한 출구였다.
+      푸터가 없는 나머지 화면은 전부 `*-detail`(상세·딤)이라 뒤로가기만으로 충분하지만,
+      여기는 값을 넣는 화면이라 등록을 마치고 돌아가는 길이 눈에 보여야 한다.
+    -->
+    <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+      <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/checkin`)">
+        등록 마치고 돌아가기
+      </AppButton>
+    </footer>
   </PhoneFrame>
 </template>
