@@ -36,7 +36,7 @@ defineEmits<{ open: [] }>();
         class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight bottom-fab-lift pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
         @click="$emit('open')"
       >
-        <img src="/mascot-mark.png" alt="" class="size-9" />
+        <img src="/brand/mascot-mark.png" alt="" class="size-9" />
       </button>
     </div>
   </div>

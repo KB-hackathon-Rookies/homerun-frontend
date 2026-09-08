@@ -246,7 +246,7 @@ async function recoverPlan() {
         절대 배치라 뒤따르는 카드를 덮는다.
       -->
       <img
-        src="/tiger-main.png"
+        src="/tiger/main.png"
         alt=""
         width="184"
         height="189"
@@ -375,7 +375,7 @@ async function recoverPlan() {
         disabled
       >
         <img
-          src="/tiger-face_default.png"
+          src="/tiger/face-default.png"
           alt=""
           width="44"
           height="44"

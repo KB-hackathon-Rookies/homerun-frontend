@@ -45,7 +45,7 @@ export default defineNuxtConfig({
          */
         { rel: 'manifest', href: '/manifest.webmanifest' },
         // iOS 는 매니페스트의 아이콘을 보지 않는다. 이 링크로만 홈 화면 아이콘을 정한다.
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+        { rel: 'apple-touch-icon', href: '/pwa/apple-touch-icon.png', sizes: '180x180' },
       ],
 
       meta: [
@@ -98,10 +98,15 @@ export default defineNuxtConfig({
       background_color: '#ffffff',
       theme_color: '#3366ff',
       icons: [
-        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/pwa/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/pwa/icon-512.png', sizes: '512x512', type: 'image/png' },
         // 안드로이드는 이걸 원·스퀴클 등으로 잘라 쓴다. 가장자리가 잘려도 캐릭터가 남는다.
-        { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        {
+          src: '/pwa/icon-maskable-512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
       ],
     },
 

@@ -268,7 +268,7 @@ async function submit() {
 
     <DimOverlay v-if="wolseNotice" placement="center" @close="wolseNotice = false">
       <img
-        src="/tiger-trouble.png"
+        src="/tiger/trouble.png"
         alt=""
         width="160"
         height="130"

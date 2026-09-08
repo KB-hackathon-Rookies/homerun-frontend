@@ -24,7 +24,7 @@ defineEmits<{ close: []; chat: [] }>();
       <section v-for="sheet in sheets" :key="sheet.title" class="flex flex-col gap-3">
         <!-- 시안 head. 말을 거는 쪽이 코치라 얼굴을 세운다. -->
         <div class="flex items-center gap-2.5">
-          <img src="/mascot-mark.png" alt="" class="size-8 shrink-0" />
+          <img src="/brand/mascot-mark.png" alt="" class="size-8 shrink-0" />
           <div class="flex flex-col gap-0.5">
             <p class="text-caption1 text-primary-strong">코치 TIME</p>
             <h2 class="text-headline1 text-ink-hero">{{ sheet.title }}</h2>

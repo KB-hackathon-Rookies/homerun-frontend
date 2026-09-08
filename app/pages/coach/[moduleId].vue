@@ -45,7 +45,7 @@ const nextOrder = computed(() => index.value + 2);
  * 머쓱해하는 쪽으로 바꾼다. 문제가 아예 없는 모듈은 성적이랄 게 없으니 기본.
  */
 const doneImage = computed(() =>
-  quizTotal.value && correctCount.value <= 1 ? '/tiger-done_low.png' : '/tiger-done.png',
+  quizTotal.value && correctCount.value <= 1 ? '/tiger/done-low.png' : '/tiger/done.png',
 );
 const question = computed(() => module.value?.quiz?.[quizAt.value]);
 const isLastQuestion = computed(() => quizTotal.value > 0 && quizAt.value === quizTotal.value - 1);
@@ -140,7 +140,7 @@ onMounted(async () => {
               class="bg-surface-active rounded-button flex gap-3 p-4"
             >
               <img
-                src="/tiger-face_coach.png"
+                src="/tiger/face-coach.png"
                 alt=""
                 width="44"
                 height="44"
@@ -232,7 +232,7 @@ onMounted(async () => {
           class="bg-surface border-line-list rounded-button flex flex-col items-center gap-3.5 border px-4 py-6"
         >
           <img
-            src="/tiger-face_quiz.png"
+            src="/tiger/face-quiz.png"
             alt=""
             width="56"
             height="56"

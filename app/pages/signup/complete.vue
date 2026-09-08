@@ -21,7 +21,7 @@ const greeting = computed(() =>
     <div class="flex flex-1 flex-col items-center justify-center gap-4 px-6">
       <!-- 완료 배지. 배지에도 파란 원이 있어 둘레에 옅은 고리가 생긴다. -->
       <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
-        <img src="/complete.png" alt="" class="h-25 w-auto" />
+        <img src="/illust/complete.png" alt="" class="h-25 w-auto" />
       </span>
 
       <h1 class="text-title3 text-ink-hero">가입 완료!</h1>
