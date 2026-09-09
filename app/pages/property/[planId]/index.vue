@@ -126,7 +126,7 @@ const coachOpen = ref(false);
 <template>
   <StageShell
     v-model:coach-open="coachOpen"
-    :coach-sheets="[COACH_TIME.preContract]"
+    :coach-sheets="[COACH_TIME.propertyFilter, COACH_TIME.landlordConsent]"
     brand
     base="2루"
   >

@@ -45,16 +45,16 @@ const coachOpen = ref(false);
 
       <CheckItem v-for="item in CHECKS" :key="item" v-model="checked[item]">{{ item }}</CheckItem>
 
-      <button
-        type="button"
-        class="bg-surface border-danger rounded-field flex flex-col gap-1 border p-3.5 text-left"
-        @click="navigateTo(`/contract/${planId}/loan-rejected`)"
-      >
+      <div class="bg-surface border-danger rounded-field flex flex-col gap-1 border p-3.5">
         <span class="text-label2 text-danger font-bold">거절 통보를 받았어요</span>
         <span class="text-micro text-ink-hero-body">
           당황하지 말고 순서대로 대응. 하단 "대출 거절 대응" 화면 참고
         </span>
-      </button>
+      </div>
+
+      <DetailLink @open="navigateTo(`/contract/${planId}/loan-rejected`)">
+        대출 거절 대응 상세보기
+      </DetailLink>
     </div>
 
     <template #footer>

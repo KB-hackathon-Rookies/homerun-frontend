@@ -56,7 +56,7 @@ const STEPS = [
 <template>
   <GuideFrame
     :coach-sheets="[COACH_TIME.visitChecklist]"
-    title="임장 상세"
+    title="임장 체크리스트"
     @back="navigateTo(`/contract/${planId}/visit`)"
   >
     <h2 class="text-option text-ink-hero px-1 pt-2">공인중개사에게 이렇게 말해요</h2>
@@ -108,7 +108,7 @@ const STEPS = [
 
     <template #cta>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/visit`)">
-        화면으로 돌아가기
+        돌아가기
       </AppButton>
     </template>
   </GuideFrame>
