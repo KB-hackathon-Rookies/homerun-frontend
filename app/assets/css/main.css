@@ -336,9 +336,14 @@
    * 자리를 쓰고, 브라우저 탭에서는 아예 없다.
    *
    * `env()` 는 `viewport-fit=cover` 가 있어야 값을 준다(`nuxt.config.ts`).
-   * 없으면 0 으로 떨어지는데, 그게 브라우저에서는 맞는 값이다.
+   * 목업처럼 값을 주지 않는 환경에서도 iPhone 화면을 재현할 수 있게 최소 높이를 둔다.
    */
-  --spacing-statusbar: env(safe-area-inset-top, 0px);
+  /*
+   * 목업·일반 브라우저에서는 safe-area 값이 0 이다. 그 경우에도 iPhone 상태바
+   * (시간·신호·배터리)가 들어갈 자리는 비워 둬야 헤더가 그 줄을 침범하지 않는다.
+   * 실제 기기에서 더 큰 노치·다이내믹 아일랜드 여백을 주면 그 값을 그대로 따른다.
+   */
+  --spacing-statusbar: max(44px, env(safe-area-inset-top, 0px));
   --spacing-topbar: 52px;
   --spacing-button: 58px; /* 주 버튼 높이 */
   --spacing-field: 54px; /* 입력 높이 */

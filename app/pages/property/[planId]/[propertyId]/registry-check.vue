@@ -127,10 +127,12 @@ async function save() {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.registryChecklist]" title="등기부 체크리스트"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/registry`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.registryChecklist]"
+    title="등기부 체크리스트"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip>본 대로 하나씩 답해줘. 모르는 건 모른다고 둬도 판정에 그대로 반영돼</CoachTip>
 
@@ -184,14 +186,16 @@ async function save() {
       <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
-    <StepFooter
-      :disabled="
-        !answered || !!parsedSeniorDebt.error || !!parsedOfficialPrice.error || pending || saving
-      "
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
-      @next="save"
-    >
-      {{ saving ? '저장 중…' : '확인 완료' }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="
+          !answered || !!parsedSeniorDebt.error || !!parsedOfficialPrice.error || pending || saving
+        "
+        @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+        @next="save"
+      >
+        {{ saving ? '저장 중…' : '확인 완료' }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

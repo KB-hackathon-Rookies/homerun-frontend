@@ -42,6 +42,11 @@ export function useResultGuard(planId: number) {
   const allPoliciesFailed = ref(false);
 
   async function inspect(results: PolicyVerdictDetail[], cards: LoanCard[] = []) {
+    // 같은 화면에서 판정 결과가 다시 들어올 수 있으므로, 이전 판단을 남겨 두지 않는다.
+    ruleChanged.value = false;
+    eligibilityEnding.value = false;
+    allPoliciesFailed.value = false;
+
     const passable = results.some((result) => result.verdict !== 'FAIL');
 
     if (!passable) {
@@ -77,10 +82,13 @@ export function useResultGuard(planId: number) {
       return;
     }
 
-    allPoliciesFailed.value = false;
-
-    const versions = results.map((result) => result.ruleVersion).filter((v) => v !== null);
-    ruleChanged.value = new Set(versions).size > 1;
+    /*
+     * `ruleVersion`은 전역 지침 버전이 아니라 정책별 규칙 번호다. 정책마다 번호가
+     * 다른 것은 정상이라, 값이 섞였다는 이유로 재판정 안내를 띄우면 오탐이 된다.
+     * 현재 evaluate API는 이미 최신 규칙으로 판정한 결과만 주며, 오래된 결과 여부를
+     * 나타내는 필드가 없다. 그 신호를 백엔드가 명시하기 전까지는 추측해 안내하지 않는다.
+     */
+    ruleChanged.value = false;
 
     eligibilityEnding.value = results.some((result) =>
       result.basis.some(

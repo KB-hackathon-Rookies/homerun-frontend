@@ -45,10 +45,11 @@ const PARTS = [
 </script>
 
 <template>
-  <StageShell title="등기부등본 발급"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/detail`)">
-
+  <StageShell
+    title="등기부등본 발급"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <h2 class="text-headline1 text-ink-hero">등기부등본은 직접 확인해야 해요</h2>
 
@@ -75,11 +76,13 @@ const PARTS = [
       </button>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-    >
-      발급 완료, 체크리스트로
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+        @next="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+      >
+        발급 완료, 체크리스트로
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

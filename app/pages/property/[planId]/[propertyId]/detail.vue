@@ -55,10 +55,12 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.emptyJeonse]" title="매물 상세"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/violation`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.emptyJeonse]"
+    title="매물 상세"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip
         >전세가가 집값에 바짝 붙었으면 깡통전세 위험이야. 임대인이 진짜 주인인지도 꼭
@@ -117,11 +119,13 @@ const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/pro
       </template>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
-    >
-      등기부등본 확인하러 가기
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+        @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+      >
+        등기부등본 확인하러 가기
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

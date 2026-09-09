@@ -39,10 +39,12 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.guaranteeAgency]" title="은행 사전상담"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.guaranteeAgency]"
+    title="은행 사전상담"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>은행 가기 전 사전상담이야. 보증기관이 보증서를 내줘야 대출이 실행돼</CoachTip>
 
@@ -80,11 +82,13 @@ const checked = ref<Record<string, boolean>>({});
       </div>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-    >
-      상담 결과 입력하기
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+        @next="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
+      >
+        상담 결과 입력하기
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

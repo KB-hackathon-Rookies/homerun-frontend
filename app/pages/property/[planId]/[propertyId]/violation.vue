@@ -46,10 +46,12 @@ async function next() {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.buildingLedger]" title="매물 등록"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.buildingLedger]"
+    title="매물 등록"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip
         >위반건축물은 자동으로 못 봐. 정부24 건축물대장을 직접 열람하고 와야 정확해</CoachTip
@@ -94,12 +96,14 @@ async function next() {
       <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
-    <StepFooter
-      :disabled="violation === null || pending || saving"
-      @back="navigateTo(`/property/${planId}/${propertyId}`)"
-      @next="next"
-    >
-      {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="violation === null || pending || saving"
+        @back="navigateTo(`/property/${planId}/${propertyId}`)"
+        @next="next"
+      >
+        {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

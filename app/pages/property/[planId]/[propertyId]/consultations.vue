@@ -128,10 +128,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.bankConsult]" title="은행 상담"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.bankConsult]"
+    title="은행 상담"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <AppCard v-if="property" class="flex flex-col gap-2">
         <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid" class="self-start">
@@ -278,29 +280,27 @@ onMounted(async () => {
           {{ note }}
         </p>
       </div>
-
-      <!--
-        나갈 길.
-        하단 `이전` 은 등기부 체크리스트로 되돌아갈 뿐이라, 이 매물로는 상담이
-        안 되겠다 싶은 사람이 다른 매물을 보러 갈 경로가 화면에 없었다. 상담이
-        막히는 건 흔한 일이고, 그때 할 일은 이 화면을 붙들고 있는 게 아니라
-        다른 매물을 보는 것이다.
-      -->
-      <button
-        type="button"
-        class="border-line rounded-chip text-label2 text-ink-hero-body h-11 shrink-0 border font-semibold"
-        @click="navigateTo(`/property/${planId}`)"
-      >
-        매물 목록으로 · 다른 매물 보기
-      </button>
     </div>
 
-    <StepFooter
-      :disabled="propertyPending"
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-      @next="navigateTo(cta.to)"
-    >
-      {{ cta.label }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="propertyPending"
+        @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+        @next="navigateTo(cta.to)"
+      >
+        <template #notice>
+          <!-- 이 매물 상담을 접고 다른 후보를 볼 수 있는 길도 하단에 고정한다. -->
+          <button
+            type="button"
+            class="border-line rounded-chip text-label2 text-ink-hero-body h-11 w-full border font-semibold"
+            @click="navigateTo(`/property/${planId}`)"
+          >
+            매물 목록으로 · 다른 매물 보기
+          </button>
+        </template>
+
+        {{ cta.label }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>
