@@ -117,8 +117,24 @@ async function save() {
   error.value = '';
   conflict.value = false;
   try {
-    await usePropertyApi().saveRegistry(planId, propertyId, revision.value, patch);
-    await navigateTo(`/property/${planId}/${propertyId}/consultations`);
+    const { workflow } = await usePropertyApi().saveRegistry(
+      planId,
+      propertyId,
+      revision.value,
+      patch,
+    );
+    /*
+     * GREEN 이라야 워크플로가 COMPLETE 로 올라가 은행 상담을 받는다. YELLOW("모르겠어요"가
+     * 남음)·RED 는 REGISTRY 에 머무는데, 그대로 상담으로 보내면 상담이 GREEN 만 받으므로
+     * 다시 등기부로 튕겨 나와 무한히 오간다. 판정이 안 끝난 매물은 신호등과 이유를 보여주는
+     * 매물 상세로 보낸다 — 거기서 등기부를 다시 확인해 GREEN 으로 올릴 길이 열린다.
+     */
+    const advanced = workflow.currentStep === 'COMPLETE';
+    await navigateTo(
+      advanced
+        ? `/property/${planId}/${propertyId}/consultations`
+        : `/property/${planId}/${propertyId}/detail`,
+    );
   } catch (cause) {
     reportSaveError(cause, '저장하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
