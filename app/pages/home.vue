@@ -374,33 +374,7 @@ async function recoverPlan() {
       </section>
     </div>
 
-    <!--
-      AI 코치. 스크롤과 무관하게 보는 화면 바닥에 붙어 있어야 한다.
-
-      `PhoneFrame` 이 `overflow-hidden` 이라 그 안에서는 `sticky` 가 듣지 않는다
-      — 스크롤 컨테이너로 잡히는데 정작 스크롤은 문서가 한다. 그래서 뷰포트에
-      고정하고, 화면 껍데기와 같은 폭·가운데 정렬을 다시 걸어 자리를 맞춘다.
-
-      띠 자체는 클릭을 통과시키고 버튼만 받는다. 비활성이지만 흐리게 두지
-      않는다 — 마스코트까지 옅어져 버튼이 투명해 보인다.
-    -->
-    <div
-      class="max-w-screen pointer-events-none fixed inset-x-0 bottom-0 z-10 mx-auto flex w-full justify-end px-4 pb-3"
-    >
-      <button
-        type="button"
-        class="bg-surface border-primary-strong rounded-pill shadow-fab pointer-events-auto flex size-13 items-center justify-center border-2"
-        aria-label="AI 코치"
-        disabled
-      >
-        <img
-          src="/tiger/face-default.webp"
-          alt=""
-          width="44"
-          height="44"
-          class="rounded-pill pointer-events-none size-11 select-none"
-        />
-      </button>
-    </div>
+    <!-- AI 코치 FAB 은 PhoneFrame 이 CoachDock 으로 세운다(화면마다 같은 자리).
+         여기서 또 그리면 같은 호랑이 버튼이 둘이 된다. -->
   </PhoneFrame>
 </template>
