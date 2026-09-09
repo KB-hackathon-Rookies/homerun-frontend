@@ -19,7 +19,7 @@ import { messageFrom } from '~/utils/error';
  */
 definePageMeta({ middleware: 'auth' });
 
-const { mockConnect } = useOpenBankingApi();
+const { mockConnect, connection } = useOpenBankingApi();
 
 /** 연출용 은행 목록. 실제 목 계좌와 무관하다 — 진행 느낌만 만든다. */
 const BANKS = ['KB국민은행', '신한은행', '우리은행', '하나은행', 'NH농협은행'] as const;
@@ -106,17 +106,8 @@ async function giveUp(message: string) {
   await navigateTo(`/status/${planId}/openbanking-failed`, { replace: true });
 }
 
-async function start() {
-  stopClock();
-  error.value = '';
-  elapsed.value = 0;
-  // 연결은 인가 없이 즉시 세운다. 여기서 실패하면 진행을 시작하지 않는다.
-  try {
-    await mockConnect();
-  } catch (cause) {
-    await giveUp(messageFrom(cause, '연동을 시작하지 못했어요.'));
-    return;
-  }
+/** 진행 시계를 돌린다. 연결이 확인된 뒤에만 부른다. */
+function runProgress() {
   const startedAt = Date.now();
   timer = setInterval(() => {
     elapsed.value = Date.now() - startedAt;
@@ -125,6 +116,30 @@ async function start() {
       stopClock();
     }
   }, TICK_MS);
+}
+
+async function start() {
+  stopClock();
+  error.value = '';
+  elapsed.value = 0;
+  // 연결은 인가 없이 즉시 세운다.
+  try {
+    await mockConnect();
+  } catch (cause) {
+    // 가입 때 이미 자동 연결됐을 수 있다(데모 시드). 연결이 살아 있으면 거절하지 않고
+    // 그대로 진행한다 — mock-connect 가 잠깐 실패해도 계좌·요약은 이미 붙어 있다.
+    try {
+      if ((await connection()).connected) {
+        runProgress();
+        return;
+      }
+    } catch {
+      // 연결 확인도 실패하면 아래 giveUp 으로 떨어진다.
+    }
+    await giveUp(messageFrom(cause, '연동을 시작하지 못했어요.'));
+    return;
+  }
+  runProgress();
 }
 
 onMounted(start);
