@@ -16,6 +16,8 @@ import {
 import { messageFrom, statusFrom } from '~/utils/error';
 import { collateralLabel } from '~/utils/labels';
 import { settlePath } from '~/utils/settle';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-1 · 반환보증 가입.
@@ -117,16 +119,24 @@ onMounted(async () => {
     joinable.value = null;
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="반환보증 가입" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.returnGuarantee]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        전세대출을 받으려면 반환보증이 필요해. HUG 가 공짜로 되는 게 아니라, 보증료를 내고
-        지원사업으로 돌려받는 구조야
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
+
+      <h1 class="text-question text-ink-card">반환보증 가입</h1>
 
       <!--
         내 담보가 무엇이냐로 이 화면의 쓸모가 갈린다. 담보를 아직 모르면
@@ -233,20 +243,20 @@ onMounted(async () => {
       버튼만 두면 되돌아갈 길이 헤더 화살표뿐이 된다.
     -->
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton
-          variant="strong"
-          :disabled="!settlePath('fee-support', planId)"
-          @click="navigateTo(settlePath('fee-support', planId)!)"
-        >
-          보증료 지원 신청
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton
+            variant="strong"
+            :disabled="!settlePath('fee-support', planId)"
+            @click="navigateTo(settlePath('fee-support', planId)!)"
+          >
+            보증료 지원 신청
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

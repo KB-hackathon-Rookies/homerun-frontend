@@ -10,6 +10,8 @@ import {
 } from '~/components/settle/rir';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-5 · 월간 정착 체크인.
@@ -102,14 +104,24 @@ onMounted(() => {
       pending.value = false;
     });
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="이번 달 상태" base="홈" @back="navigateTo(`/settle/${planId}`)">
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        매달 얼마가 나가는지 알아야 연체를 막을 수 있어. 첫 달만 잡아두면 그다음은 쉬워
-      </CoachTip>
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.monthlyCheckin]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
+
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">이번 달 상태</h1>
 
       <!--
         대출을 아직 안 넣었으면 셀 수 있는 게 없다. 빈 화면 대신 무엇이 없고

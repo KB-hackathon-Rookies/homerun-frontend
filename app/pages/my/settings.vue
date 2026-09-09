@@ -209,7 +209,5 @@ onMounted(async () => {
       <p v-if="done" class="text-label2 text-success">{{ done }}</p>
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
     </div>
-
-    <TabBar active="my" :plan-id="planId" />
   </PhoneFrame>
 </template>

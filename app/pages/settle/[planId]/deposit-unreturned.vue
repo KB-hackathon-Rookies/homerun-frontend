@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { HELP_DESKS, UNRETURNED_STEPS } from '~/components/settle/lifecycle';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 대응 · 보증금 미반환.
@@ -14,12 +16,24 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="보증금 미반환 대응" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.troubleResponse]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">보증금 미반환 대응</h1>
       <div class="bg-surface border-danger-deep rounded-field flex flex-col gap-1 border p-4">
         <p class="text-stage text-danger-deep font-bold">절대 전입신고를 빼지 마세요</p>
         <p class="text-caption-tight text-ink-hero font-semibold">
@@ -62,19 +76,19 @@ const planId = Number(route.params.planId);
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton
-          variant="strong"
-          @click="navigateTo(`/settle/${planId}/deposit-unreturned-detail`)"
-        >
-          임차권등기 안내
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton
+            variant="strong"
+            @click="navigateTo(`/settle/${planId}/deposit-unreturned-detail`)"
+          >
+            임차권등기 안내
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

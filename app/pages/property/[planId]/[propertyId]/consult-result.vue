@@ -148,18 +148,20 @@ async function save() {
     saving.value = false;
   }
 }
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.rejected]"
     title="상담 결과 입력"
     base="2루"
     @back="navigateTo(consultBanksPath)"
   >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
-      <CoachTip>상담 결과를 남겨줘. 거절돼도 다른 은행·상품으로 다시 도전할 수 있어</CoachTip>
-
       <div class="flex items-center gap-2">
         <h2 class="text-option text-ink-hero">{{ bank }}</h2>
         <span v-if="banks.length > 1" class="text-caption2 text-ink-hero-body">

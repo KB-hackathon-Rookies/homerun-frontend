@@ -2,6 +2,7 @@
 import { socialLoginUrl } from '~/api/auth';
 import { useAuthStore } from '~/stores/auth';
 import { messageFrom } from '~/utils/error';
+import { safeRedirect } from '~/utils/redirect';
 
 // 브라우저 탭 제목.
 useHead({ title: '로그인' });
@@ -22,17 +23,6 @@ const error = ref(route.query.error ? '소셜 로그인에 실패했어요. 다�
 const pending = ref(false);
 
 const canSubmit = computed(() => !!email.value && !!password.value && !pending.value);
-
-/**
- * 돌아갈 곳으로 받아도 되는 값인가.
- *
- * `redirect` 는 주소창에 실려 오니 남이 심을 수 있다. 이 앱 안의 경로만 받는다 —
- * `/` 하나로 시작하고 그다음이 `/` 나 `\` 가 아니어야 한다. `//evil.example` 과
- * `https://evil.example` 은 브라우저가 바깥 주소로 읽으므로 여기서 걸러 낸다.
- */
-function safeRedirect(value: unknown): string | null {
-  return typeof value === 'string' && /^\/(?![/\\])/.test(value) ? value : null;
-}
 
 async function submit() {
   if (!canSubmit.value) return;
@@ -108,7 +98,6 @@ function social(provider: 'kakao' | 'google') {
         <AppButton variant="kakao" @click="social('kakao')">카카오로 계속하기</AppButton>
         <AppButton variant="white" @click="social('google')">Google로 계속하기</AppButton>
       </div>
-
     </form>
 
     <!--

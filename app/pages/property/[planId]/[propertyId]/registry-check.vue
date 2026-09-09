@@ -4,9 +4,10 @@ import { useProperty } from '~/composables/useProperty';
 import { parseManwon } from '~/utils/amount';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
- * 2루-3 등기부 체크리스트 (STEP 4).
+ * 2루 7 · 등기부 체크리스트 (STEP 4).
  *
  * 등기부를 보고 온 값을 받는다. 답이 셋인 이유가 있다 — **"모르겠어요" 를
  * 그대로 저장해야** 한다. 안 본 것을 "없어요" 로 채우면 백엔드가 확인된
@@ -124,31 +125,36 @@ async function save() {
     saving.value = false;
   }
 }
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.registryChecklist]"
-    title="등기부 체크리스트"
+    brand
     base="2루"
     @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
   >
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
-      <CoachTip>본 대로 하나씩 답해줘. 모르는 건 모른다고 둬도 판정에 그대로 반영돼</CoachTip>
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
-      <h2 class="text-headline1 text-ink-hero">등기부를 보고 답해주세요</h2>
+      <p class="text-caption1 text-ink-label font-medium">2루 · 등기부 확인</p>
+      <h1 class="text-question text-ink-card">등기부를 보고 답해주세요</h1>
 
       <AppCard v-for="question in QUESTIONS" :key="question.key" class="flex flex-col gap-3">
-        <p class="text-body3 text-ink-hero font-bold">{{ question.title }}</p>
+        <p class="text-body3 text-ink-strong font-bold">{{ question.title }}</p>
         <PillGroup v-model="answers[question.key]" :options="optionsOf(question)" />
       </AppCard>
 
       <AppCard class="flex flex-col gap-3">
-        <p class="text-body3 text-ink-hero font-bold">근저당 채권최고액 (만 원)</p>
+        <p class="text-body3 text-ink-strong font-bold">근저당 채권최고액 (만 원)</p>
         <input
           v-model="seniorDebt"
           inputmode="numeric"
-          placeholder="금액 입력 — 모르면 비워두세요"
+          placeholder="금액 입력 (또는 모르겠어요)"
           class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"
         />
         <p v-if="parsedSeniorDebt.error" class="text-label2 text-danger">
@@ -157,12 +163,12 @@ async function save() {
       </AppCard>
 
       <AppCard class="flex flex-col gap-3">
-        <p class="text-body3 text-ink-hero font-bold">공시가격도 같이 입력해주세요 (만 원)</p>
+        <p class="text-body3 text-ink-strong font-bold">공시가격도 같이 입력해주세요 (만 원)</p>
         <p class="text-caption2 text-ink-muted">반환보증 가입 가능 여부를 판단하는 데 필요해요</p>
         <input
           v-model="officialPrice"
           inputmode="numeric"
-          placeholder="공시가격 입력 — 모르면 비워두세요"
+          placeholder="공시가격 입력"
           class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted w-full px-3.5 py-3 outline-none"
         />
         <p v-if="parsedOfficialPrice.error" class="text-label2 text-danger">
@@ -170,16 +176,6 @@ async function save() {
         </p>
         <p class="text-micro text-ink-muted">
           빌라·아파트·연립: 부동산공시가격 알리미 / 오피스텔: 홈택스 기준시가
-        </p>
-      </AppCard>
-
-      <AppCard class="flex flex-col gap-3">
-        <p class="text-label2 text-ink-hero-body font-bold">
-          ⚠️ 반환보증 가입 가능 = 전세보증금 ≤ 공시가격 × 1.26
-        </p>
-        <p class="text-caption2 text-ink-muted">
-          빌라 전세에서 "보증보험 가입 거절"이 나오는 대부분의 이유예요. 대출 승인과 반환보증 가입은
-          별개 심사예요
         </p>
       </AppCard>
 

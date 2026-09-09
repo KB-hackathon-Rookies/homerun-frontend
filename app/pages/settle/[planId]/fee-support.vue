@@ -6,6 +6,8 @@ import {
   GOV24_URL,
 } from '~/components/settle/guarantee';
 import { messageFrom } from '~/utils/error';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-2 · 보증료 지원 신청.
@@ -43,15 +45,24 @@ onMounted(async () => {
     pending.value = false;
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="보증료 지원 신청" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.feeSupport]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="1" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        청년이면 낸 보증료를 전액 돌려받을 수 있어. 예산이 소진되면 마감이라 서두르는 게 좋아
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
+
+      <h1 class="text-question text-ink-card">보증료 지원 신청</h1>
 
       <!--
         판정 문구가 금액 라벨 자리를 덮고 있었다. 그러면 "최대 40만원" 이 무슨
@@ -106,19 +117,19 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <!-- 필수 요소 2번. 앞 단계는 반환보증 가입이다. -->
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}/return-guarantee`)">
-          이전
-        </AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
-          정부24로 신청
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <!-- 필수 요소 2번. 앞 단계는 반환보증 가입이다. -->
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}/return-guarantee`)">
+            이전
+          </AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
+            정부24로 신청
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

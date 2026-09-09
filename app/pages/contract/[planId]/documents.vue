@@ -9,6 +9,7 @@ import {
   type DocSituation,
 } from '~/components/contract/labels';
 import { loadDocSituation } from '~/components/contract/situation';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 상세 · 서류별 발급 방법.
@@ -455,7 +456,7 @@ const back = () => {
 </script>
 
 <template>
-  <GuideFrame title="서류별 발급 방법" @back="back">
+  <GuideFrame :coach-sheets="[COACH_TIME.docTiming]" title="서류별 발급 방법" @back="back">
     <AppCard class="flex flex-col gap-2">
       <p class="text-body3 text-ink-hero font-semibold">발급 방법은 세 가지예요</p>
       <div

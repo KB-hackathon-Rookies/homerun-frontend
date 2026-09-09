@@ -91,7 +91,5 @@ onMounted(async () => {
         <FactRow label="기존 판정" value="유지 · 재계산할 때 값 확인 필요" />
       </SectionCard>
     </div>
-
-    <TabBar active="my" :plan-id="planId" />
   </PhoneFrame>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FIXED_DATE_METHODS } from '~/components/contract/terms';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 3 · 확정일자 상세.
@@ -14,7 +15,11 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <GuideFrame title="확정일자 상세" @back="navigateTo(`/contract/${planId}/fixed-date`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.fixedDate]"
+    title="확정일자 상세"
+    @back="navigateTo(`/contract/${planId}/fixed-date`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">세 가지 방법</h2>
 
     <NumberedCard

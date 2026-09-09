@@ -43,5 +43,13 @@ defineProps<{
           : '아직 상품 판정이 없어요. 매물 진단을 끝내면 여기에 쌓여요.'
       }}
     </p>
+
+    <!--
+      시안 `687:14258` 이 🟢 카드에만 붙이는 줄. 판정만 늘어놓으면 "그래서 지금
+      뭘 하지" 가 남는다 — 다음 손이 상담 카드라는 걸 카드가 직접 말한다.
+    -->
+    <p v-if="property.trafficLight === 'GREEN'" class="text-caption1 text-primary-strong">
+      → 상담 카드를 쓸 수 있어요
+    </p>
   </AppCard>
 </template>

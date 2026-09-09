@@ -5,7 +5,8 @@ import { FEATURED_MODULES } from '~/components/coach/modules';
 import { usePush } from '~/composables/usePush';
 import { useAuthStore } from '~/stores/auth';
 import { currentPlan } from '~/utils/currentPlan';
-import { messageFrom, statusFrom } from '~/utils/error';
+import { codeFrom, messageFrom, statusFrom } from '~/utils/error';
+import { REQUIRED_TERMS_CODE } from '~/utils/requiredTerms';
 import { displayStage, laterStage, resumePath } from '~/utils/stage';
 
 // 브라우저 탭 제목.
@@ -187,6 +188,11 @@ onMounted(async () => {
 
 /** 계정에 걸린 planId 조회가 남의 것이라 막힌 상태인가. */
 function isMissing(cause: unknown) {
+  // 403 이라고 다 남의 것이 아니다. 필수 약관 미동의도 403 으로 오는데(모든 요청이
+  // 그렇게 된다) 이걸 '남의 계획' 으로 읽으면 캐시한 번호를 지우고 `/plans/active`
+  // 를 부른다 — 그것도 같은 403 이라 지운 값만 남는다. 이동은 인터셉터가 한다.
+  if (codeFrom(cause) === REQUIRED_TERMS_CODE) return false;
+
   const status = statusFrom(cause);
   return status === 403 || status === 404;
 }
@@ -242,7 +248,7 @@ async function recoverPlan() {
 </script>
 
 <template>
-  <PhoneFrame :coach-stage="dashboard?.currentStage">
+  <PhoneFrame fill :coach-stage="dashboard?.currentStage">
     <!-- 대시보드는 경로로 루를 알 수 없다. 계획이 오면 그 단계를 코치 FAB 에 넘긴다. -->
     <div class="h-statusbar bg-surface shrink-0" />
 
@@ -252,7 +258,9 @@ async function recoverPlan() {
       `isolate` 로 이 안에서만 쌓임 순서를 따진다. 마스코트를 `-z-10` 으로 깔면
       바깥 배경은 그대로 두고 이 안의 내용 뒤로만 들어간다.
     -->
-    <div class="px-gutter relative isolate flex flex-1 flex-col gap-4 pt-5 pb-20">
+    <div
+      class="px-gutter relative isolate flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pt-5 pb-20"
+    >
       <!--
         마스코트. 인사말 옆에 서서 아래로 흘러내린다(시안 메인 1~5).
 

@@ -41,6 +41,10 @@
   --color-danger: #ff4242;
   --color-warning: #f9ba00;
   --color-warning-soft: #f9c23c;
+  /* KB국민은행 대표색. KB부동산으로 나가는 자리에만 쓴다 — 우리 브랜드색이 아니다 */
+  --color-kb: #ffbc00;
+  --color-kb-ink: #60584c;
+
   --color-kakao: #fee500;
   --color-kakao-hover: #f2dc3d;
   --color-kakao-press: #e5c72b;
@@ -432,6 +436,19 @@
      */
     word-break: keep-all;
     overflow-wrap: break-word;
+  }
+
+  /*
+   * 앱처럼 보이게 스크롤바를 전역에서 숨긴다.
+   *
+   * 모바일 PWA 라 회색 스크롤 막대가 뜨면 앱 느낌이 깨지고, 폭을 갉아먹기도 한다.
+   * 스크롤 동작은 그대로 두고 막대만 감춘다(개별 `scrollbar-hide` 유틸을 전역으로 올린 것).
+   */
+  * {
+    scrollbar-width: none; /* Firefox */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome·Safari·Edge */
   }
 
   /*

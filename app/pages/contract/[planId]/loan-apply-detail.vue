@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 9 · 대출 신청 상세.
  *
@@ -22,12 +23,14 @@ const DOCS = [
   '전입세대확인서 (해당 시)',
   '우대금리 서류 3종 (청년 버팀목만)',
 ];
-
-const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <GuideFrame title="대출 신청 상세" @back="navigateTo(`/contract/${planId}/loan-apply`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.loanApply]"
+    title="대출 신청"
+    @back="navigateTo(`/contract/${planId}/loan-apply`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">신청은 두 개예요</h2>
 
     <NumberedCard :index="1" title="대출 신청">
@@ -53,8 +56,8 @@ const checked = ref<Record<string, boolean>>({});
 
     <h2 class="text-option text-ink-hero px-1 pt-2">신청 당일 챙길 것</h2>
 
-    <AppCard class="flex flex-col gap-2">
-      <CheckItem v-for="doc in DOCS" :key="doc" v-model="checked[doc]">{{ doc }}</CheckItem>
+    <AppCard class="flex flex-col gap-1">
+      <p v-for="doc in DOCS" :key="doc" class="text-caption2 text-ink-hero">☐ {{ doc }}</p>
     </AppCard>
 
     <h2 class="text-option text-ink-hero px-1 pt-2">질권설정 · 채권양도</h2>
@@ -85,7 +88,7 @@ const checked = ref<Record<string, boolean>>({});
 
     <template #cta>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/loan-apply`)">
-        대출 신청 화면으로
+        돌아가기
       </AppButton>
     </template>
   </GuideFrame>

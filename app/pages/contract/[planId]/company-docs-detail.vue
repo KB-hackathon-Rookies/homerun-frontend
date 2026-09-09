@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 5 · 회사 서류 상세.
  *
@@ -21,7 +22,11 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <GuideFrame title="회사 서류 요청 상세" @back="navigateTo(`/contract/${planId}/company-docs`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.companyDocs]"
+    title="회사 서류 요청 상세"
+    @back="navigateTo(`/contract/${planId}/company-docs`)"
+  >
     <div class="bg-badge-warning rounded-field flex flex-col gap-2.5 p-4">
       <span
         class="bg-surface rounded-chip text-micro text-warning-strong self-start px-2 py-0.5 font-semibold"

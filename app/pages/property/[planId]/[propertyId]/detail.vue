@@ -5,9 +5,10 @@ import { useProperty } from '~/composables/useProperty';
 import { trafficTone } from '~/components/property/trafficLight';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
- * 2루-4 매물 상세.
+ * 2루 5 · 매물 상세.
  *
  * 이 매물로 **되는 상품과 안 되는 상품을 갈라** 놓는다. 한 목록에 섞어
  * 놓으면 위에서부터 훑다가 안 되는 걸 붙잡고 있게 된다.
@@ -52,20 +53,24 @@ const available = computed(() => cards.value.filter((card) => !failedCodes.value
 const unavailable = computed(() => results.value.filter((result) => result.verdict === 'FAIL'));
 
 const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/products/${code}`);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.emptyJeonse]"
-    title="매물 상세"
+    brand
     base="2루"
     @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
   >
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip
-        >전세가가 집값에 바짝 붙었으면 깡통전세 위험이야. 임대인이 진짜 주인인지도 꼭
-        확인해</CoachTip
-      >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
+
+      <p class="text-caption1 text-ink-label font-medium">2루 · 등기부 확인</p>
+      <h1 class="text-question text-ink-card">매물 상세</h1>
 
       <AppCard v-if="property" class="flex flex-col gap-1.5">
         <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid" class="self-start">

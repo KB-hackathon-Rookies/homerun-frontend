@@ -145,6 +145,16 @@ export function usePropertyApi() {
     },
 
     /**
+     * 매물 후보를 삭제한다.
+     *
+     * 최종 선택했거나 계약에 쓴 매물은 서버가 막는다(409). 그 경우는 화면에서
+     * 에러 문구로 알린다 — 여기서 삼키면 사용자는 지워진 줄 안다.
+     */
+    async remove(planId: number, propertyId: number) {
+      await $api.delete(`${properties(planId)}/${propertyId}`);
+    },
+
+    /**
      * 매물을 등록하고 건축물대장·실거래를 한 번에 조회한다.
      *
      * 주소 검색 결과를 통째로 넘긴다. 조회에 필요한 법정동 코드와 지번이
@@ -173,6 +183,20 @@ export function usePropertyApi() {
     /** 저장된 판정을 읽기만 한다. 새로 판정하지 않는다. */
     async policyVerdicts(planId: number, propertyId: number) {
       const { data } = await $api.get<ApiResponse<PropertyPolicyVerdicts>>(
+        `${properties(planId)}/${propertyId}/policy-verdicts`,
+      );
+      return data.data;
+    },
+
+    /**
+     * 매물 x 상품 판정을 실행하고 저장한다(POST).
+     *
+     * `policyVerdicts`(GET)는 저장된 것만 읽는다. 백엔드는 등기부 단계까지 끝나야
+     * 판정을 만들어서, 등록 직후 자동조회 판정 화면은 GET 만으로는 늘 "판정 없음" 이다.
+     * 이걸로 먼저 판정을 만든다 — 아직 못 확인한 조건은 '진행중'(NEED_INFO)으로 나온다.
+     */
+    async evaluatePolicyVerdicts(planId: number, propertyId: number) {
+      const { data } = await $api.post<ApiResponse<PropertyPolicyVerdicts>>(
         `${properties(planId)}/${propertyId}/policy-verdicts`,
       );
       return data.data;

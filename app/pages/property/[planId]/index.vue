@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { usePropertyApi, type PropertyCandidate, type PropertyPolicyVerdict } from '~/api/property';
+import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
 import { acceptsConsultation } from '~/components/property/trafficLight';
 import { messageFrom } from '~/utils/error';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루 매물 목록.
@@ -18,9 +19,9 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const { candidates, policyVerdicts } = usePropertyApi();
+const { candidates, policyVerdicts, remove } = usePropertyApi();
 
-const properties = ref<PropertyCandidate[]>([]);
+const properties = ref<Awaited<ReturnType<typeof candidates>>>([]);
 /** 매물 번호 → 상품 판정. 목록 API 에 판정이 실려 오지 않아 카드마다 따로 읽는다. */
 const verdicts = ref<Record<number, PropertyPolicyVerdict[]>>({});
 const pending = ref(true);
@@ -40,19 +41,11 @@ const MAX_PROPERTIES = 5;
 
 const full = computed(() => properties.value.length >= MAX_PROPERTIES);
 
-/**
- * 초록·파랑은 등기부 확인을 마쳐 은행 상담으로 갈 수 있다는 신호다. 목록에서
- * 다시 진단 허브를 거치면 오래된 resume 단계가 등기부 화면으로 되돌릴 수 있어,
- * 이 상태는 상담 목록으로 바로 보낸다. 상담 화면도 같은 신호등을 재검사한다.
- */
-function openProperty(property: PropertyCandidate) {
+/** 목록에서 상담을 마친 뒤에도 다시 목록으로 돌아올 수 있게 출발지를 남긴다. */
+function openProperty(property: (typeof properties.value)[number]) {
   const path = acceptsConsultation(property.trafficLight)
     ? `/property/${planId}/${property.propertyId}/consultations`
     : `/property/${planId}/${property.propertyId}`;
-
-  // 목록에서 상담 화면을 바로 열었으면, 상담 흐름을 마친 뒤 "이전"은
-  // 등기부가 아니라 이 목록으로 돌아와야 한다. 워크플로의 기본 이전 단계와
-  // 실제 진입 지점을 구분하려고 출발지만 주소에 남긴다.
   return navigateTo({ path, query: { from: 'property-list' } });
 }
 
@@ -64,6 +57,44 @@ function openProperty(property: PropertyCandidate) {
  * 카드를 다시 열어 들어가야 한다.
  */
 const settled = computed(() => properties.value.find((item) => item.trafficLight === 'BLUE'));
+
+/**
+ * 삭제 확인 중인 매물. 등록은 되돌릴 수 없는 조회(건축물대장·실거래)를 다시 하게 하므로
+ * 실수 삭제를 한 번 막는다. 계약·최종선택 매물은 서버가 막아 여기서 에러로 알린다.
+ */
+const deletingId = ref<number | null>(null);
+const removing = ref(false);
+const deleteError = ref('');
+
+const deletingLabel = computed(() => {
+  const index = properties.value.findIndex((item) => item.propertyId === deletingId.value);
+  return index >= 0 ? labelOf(index) : '';
+});
+
+function askRemove(propertyId: number) {
+  deletingId.value = propertyId;
+  deleteError.value = '';
+}
+
+async function confirmRemove() {
+  if (deletingId.value === null || removing.value) return;
+  removing.value = true;
+  deleteError.value = '';
+  try {
+    const id = deletingId.value;
+    await remove(planId, id);
+    // 판정 캐시(verdicts)의 이 항목은 카드가 사라져 더 읽히지 않으므로 그대로 둔다.
+    properties.value = properties.value.filter((item) => item.propertyId !== id);
+    deletingId.value = null;
+  } catch (cause) {
+    deleteError.value = messageFrom(
+      cause,
+      '이 매물은 삭제할 수 없어요. 최종 선택했거나 계약에 사용한 매물일 수 있어요.',
+    );
+  } finally {
+    removing.value = false;
+  }
+}
 
 onMounted(async () => {
   try {
@@ -87,79 +118,117 @@ onMounted(async () => {
     }),
   );
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.preContract]"
-    title="매물"
+    brand
     base="2루"
-    @back="navigateTo(`/result/${planId}/spec`)"
   >
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
+
+      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
+
+      <div class="flex w-full items-center gap-2">
+        <h1 class="text-question text-ink-card flex-1">매물 목록</h1>
+        <span class="text-label2 text-ink-label">{{ properties.length }}/{{ MAX_PROPERTIES }}</span>
+      </div>
+
+      <!--
+        신호등 네 색의 뜻을 목록 머리에 한 줄로 적는다(시안 `687:14221`). 카드마다
+        글자가 붙어 있긴 하지만, 색이 무슨 순서인지는 여기서만 알 수 있다.
+      -->
+      <p v-if="properties.length" class="text-micro text-ink-label">
+        🔴 불가 · 🟡 등기부 확인 필요 · 🟢 은행 상담 가능 · 🔵 상담 완료
+      </p>
+
       <p v-if="pending" class="text-label2 text-ink-muted">매물을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
-      <template v-else>
-        <p class="text-caption1 text-ink-label font-medium">2루 · 진단 결과</p>
-        <div class="flex items-center justify-between">
-          <h1 class="text-section text-ink-card font-bold">매물 목록</h1>
-          <span class="text-headline2 text-ink-muted"
-            >{{ properties.length }}/{{ MAX_PROPERTIES }}</span
-          >
-        </div>
-        <div class="text-caption2 text-ink-muted flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span><i class="bg-danger mr-1 inline-block size-2.5 rounded-full" />불가</span>
-          <span
-            ><i class="bg-warning-strong mr-1 inline-block size-2.5 rounded-full" />등기부 확인
-            필요</span
-          >
-          <span
-            ><i class="bg-success mr-1 inline-block size-2.5 rounded-full" />은행 상담 가능</span
-          >
-          <span
-            ><i class="bg-primary-strong mr-1 inline-block size-2.5 rounded-full" />상담 완료</span
-          >
-        </div>
+      <div
+        v-else-if="!properties.length"
+        class="bg-surface border-line rounded-field flex flex-col items-center gap-3 border px-4 pt-9 pb-10 text-center"
+      >
+        <h2 class="text-section text-ink-strong font-bold">아직 등록한 매물이 없어요</h2>
+        <!--
+          시안은 이 줄을 노란색(#fbd773)으로 칠했다. 흰 바탕에 노란 14px 은 읽히지
+          않아서 본문색으로 둔다 — 색만 바꿔도 뜻이 달라지지 않는 자리다.
+        -->
+        <p class="text-body3 text-ink-card-body font-bold">
+          KB 부동산에서 마음에 드는 매물을 찾아 등록하면 여기에 카드로 쌓여요
+        </p>
 
-        <div
-          v-if="!properties.length"
-          class="border-line rounded-field flex flex-col items-center gap-3 border px-4 pt-9 pb-10 text-center"
-        >
-          <h2 class="text-headline1 text-ink-strong">아직 등록한 매물이 없어요</h2>
-          <p class="text-body3 text-ink-hero-body font-bold">
-            KB 부동산에서 마음에 드는 매물을 찾아 등록하면 여기에 카드로 쌓여요
-          </p>
-
-          <!-- 어디서 찾는지를 글자로만 적으면 2루가 첫 화면에서 멈춘다. 나갈 길을 준다. -->
-          <button
-            type="button"
-            class="text-label2 text-primary-strong font-bold"
-            @click="navigateTo(KB_LAND_URL, { external: true })"
-          >
-            KB부동산에서 매물 찾기 ↗
-          </button>
-        </div>
-
-        <!-- 초록·파랑 매물은 은행 상담으로, 나머지는 현재 진단 단계로 보낸다. -->
+        <!-- 어디서 찾는지를 글자로만 적으면 2루가 첫 화면에서 멈춘다. 나갈 길을 준다. -->
         <button
-          v-for="(property, index) in properties"
-          :key="property.propertyId"
           type="button"
-          class="text-left"
-          @click="openProperty(property)"
+          class="bg-kb text-kb-ink rounded-field text-body3 w-full px-4 py-2.5 font-bold"
+          @click="navigateTo(KB_LAND_URL, { external: true })"
         >
+          KB부동산에서 매물 찾기 ↗
+        </button>
+      </div>
+
+      <!--
+        카드는 STEP 1 허브로 보낸다. 매물 상세로 바로 보내면 아직 STEP 2 에 머문
+        매물까지 뒷 화면으로 들어가 입력을 다 하고 저장에서 409 로 막힌다.
+
+        목록 응답에는 단계가 실려 오지 않는다. 여기서 카드마다 `resume` 을 따로
+        물어 보낼 수도 있지만, 그러면 탭과 이동 사이에 왕복이 하나 끼고 그 요청이
+        실패하면 눌러도 아무 일이 없는 카드가 된다. 허브는 어차피 열리면서 단계를
+        묻고 하단 버튼을 그 단계에 맞춰 세운다 — 묻는 자리를 하나로 둔다.
+      -->
+      <div
+        v-for="(property, index) in properties"
+        :key="property.propertyId"
+        class="flex flex-col gap-1"
+      >
+        <button type="button" class="text-left" @click="openProperty(property)">
           <PropertyCard
             :property="property"
             :label="labelOf(index)"
             :verdicts="verdicts[property.propertyId] ?? []"
           />
         </button>
-      </template>
+        <div class="flex justify-end pr-1">
+          <button
+            type="button"
+            class="text-caption2 text-ink-muted hover:text-danger py-0.5 font-medium"
+            @click="askRemove(property.propertyId)"
+          >
+            매물 삭제
+          </button>
+        </div>
+      </div>
     </div>
 
+    <DimOverlay v-if="deletingId !== null" placement="center" @close="deletingId = null">
+      <p class="text-headline2 text-ink">이 매물을 삭제할까요?</p>
+      <p class="text-label2 text-ink-muted text-center">
+        {{ deletingLabel }}의 진단 결과가 함께 사라져요.
+      </p>
+      <p v-if="deleteError" class="text-label2 text-danger text-center">{{ deleteError }}</p>
+      <div class="flex w-full gap-2.5 pt-2">
+        <div class="flex-1">
+          <AppButton variant="white" @click="deletingId = null">취소</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" :disabled="removing" @click="confirmRemove">
+            {{ removing ? '삭제 중…' : '삭제' }}
+          </AppButton>
+        </div>
+      </div>
+    </DimOverlay>
+
     <template #footer>
-      <footer class="px-gutter-tight flex shrink-0 flex-col gap-2.5 pt-2.5 pb-cta-pad">
+      <footer
+        class="px-gutter-tight border-line pt-2.5 pb-cta-pad flex shrink-0 flex-col gap-2.5 border-t"
+      >
         <!-- 잠긴 버튼만 두면 왜 안 눌리는지 모른다. 이유를 버튼 위에 적는다. -->
         <p v-if="full" class="text-caption2 text-ink-muted text-center">
           매물은 최대 {{ MAX_PROPERTIES }}개까지 등록할 수 있어요

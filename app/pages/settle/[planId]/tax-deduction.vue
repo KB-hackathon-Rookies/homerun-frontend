@@ -9,6 +9,8 @@ import {
   estimateRefund,
 } from '~/components/settle/tax';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-8 · 연말정산 소득공제.
@@ -60,15 +62,24 @@ onMounted(() => {
     })
     .catch(() => {});
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="연말정산 소득공제" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.taxDeduction]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        매년 1월이야. 주택임차차입금 원리금상환액 소득공제로 낸 이자를 일부 돌려받을 수 있어
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">연말정산 소득공제</h1>
 
       <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4.5">
         <p class="text-caption-tight text-on-brand font-normal">예상 환급액</p>
@@ -113,16 +124,16 @@ onMounted(() => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(HOMETAX_URL, { external: true })">
-          홈택스 열기
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(HOMETAX_URL, { external: true })">
+            홈택스 열기
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

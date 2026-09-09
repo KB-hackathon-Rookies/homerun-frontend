@@ -3,6 +3,8 @@ import { useContractApi, type ContractEntry } from '~/api/contract';
 import { usePlanApi } from '~/api/plan';
 import { needsCompanyDocs } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 5 · 회사 서류 요청 (D-30).
@@ -35,6 +37,10 @@ const applies = computed(() =>
   needsCompanyDocs(entry.value?.loanProductKind ?? null, companySize.value),
 );
 
+/** 해당자면 서류 4종을 다 확인해야 다음으로 넘어갈 수 있다. */
+const allChecked = computed(() => DOCS.every((doc) => checked.value[doc]));
+const canProceed = computed(() => !applies.value || allChecked.value);
+
 const next = () => navigateTo(`/contract/${planId}/bank-visit`);
 
 onMounted(async () => {
@@ -51,14 +57,24 @@ onMounted(async () => {
     pending.value = false;
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="D-30 회사 서류"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/schedule`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.companyDocs]"
+    brand
+    base="3루"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">3루 · 서류</p>
+
+      <h1 class="text-question text-ink-card">D-30 회사 서류</h1>
       <p v-if="pending" class="text-label2 text-ink-muted">불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
 
@@ -89,29 +105,20 @@ onMounted(async () => {
         <h2 class="text-body3 text-ink-hero font-bold">회사에 요청할 것</h2>
 
         <CheckItem v-for="doc in DOCS" :key="doc" v-model="checked[doc]">{{ doc }}</CheckItem>
-
-        <CoachTip label="이렇게 말하세요">
-          "전세자금대출 중소기업 우대금리를 받으려면 회사 주업종코드가 적힌 서류가 필요해요.
-          사업자등록증과 함께 부탁드립니다"
-        </CoachTip>
-
-        <DetailLink @open="navigateTo(`/contract/${planId}/company-docs-detail`)">
-          서류 4종·요청 대본 상세보기
-        </DetailLink>
       </template>
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/schedule`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/schedule`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" :disabled="pending || !canProceed" @click="next">
+          다음
         </AppButton>
-      </div>
-      <AppButton variant="strong" :disabled="pending" @click="next">
-        {{ applies ? '일정 확인' : '다음 단계로' }}
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

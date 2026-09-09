@@ -83,10 +83,7 @@ async function finish() {
 
 onMounted(async () => {
   const id = String(route.params.moduleId);
-  const code = educationCode(
-    id,
-    COACH_MODULES.map((item) => item.id),
-  );
+  const code = educationCode(id, COACH_MODULES);
   if (!code) return;
   try {
     serverModule.value = await useEducationApi().detail(code);
@@ -97,7 +94,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame fill>
     <div class="h-statusbar bg-surface shrink-0" />
     <BrandBar />
     <PageBar :title="pageTitle" />
@@ -122,7 +119,7 @@ onMounted(async () => {
 
     <!-- 학습 -->
     <template v-else-if="phase === 'read'">
-      <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+      <div class="bg-canvas-soft flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-6">
         <p class="text-caption-tight text-ink-label font-medium">
           {{ module.base }} · 모듈 {{ index + 1 }}/{{ COACH_MODULES.length }} ·
           {{ module.minutes }}분
@@ -213,7 +210,7 @@ onMounted(async () => {
 
     <!-- 퀴즈 -->
     <template v-else-if="phase === 'quiz' && question">
-      <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+      <div class="bg-canvas-soft flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-6">
         <!-- 문제 수만큼 칸을 나눈다. 지금까지 온 칸이 파랗다. -->
         <div class="flex items-center gap-1.5">
           <span

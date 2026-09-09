@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RENEWAL_RECHECKS, RENEWAL_WAYS } from '~/components/settle/lifecycle';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-9 · 갱신 판정.
@@ -14,15 +16,24 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="갱신 판정" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.renewalCheck]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        계약 만료 6개월 전이야. 갱신할지 나갈지 먼저 정해야 조건 협상 기회를 잡을 수 있어
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">갱신 판정</h1>
 
       <div class="flex gap-2">
         <button
@@ -71,16 +82,16 @@ const planId = Number(route.params.planId);
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/renewal-detail`)">
-          갱신 검토
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/renewal-detail`)">
+            갱신 검토
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

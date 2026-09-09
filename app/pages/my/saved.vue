@@ -138,7 +138,5 @@ onMounted(async () => {
         <FactRow v-if="row.rejection" label="안 되는 이유" :value="row.rejection" tone="bad" />
       </SectionCard>
     </div>
-
-    <TabBar active="my" :plan-id="planId" />
   </PhoneFrame>
 </template>

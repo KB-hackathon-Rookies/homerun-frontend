@@ -2,6 +2,8 @@
 import { useSettlementApi, type PostAssetReview } from '~/api/settlement';
 import { MISSED_ASSETS } from '~/components/settle/aftercare';
 import { statusFrom } from '~/utils/error';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-3 · 사후자산심사.
@@ -33,12 +35,24 @@ onMounted(() => {
       if (statusFrom(cause) === 404) needsLoan.value = true;
     });
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="사후자산심사" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.assetReview]"
+    brand
+    base="홈"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="2" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
+
+      <h1 class="text-question text-ink-card">사후자산심사</h1>
       <!-- 대상 여부는 실행된 대출 상품이 정한다. 없으면 어느 쪽으로도 단정하지 않는다. -->
       <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
         <p class="text-card-title text-primary-strong font-bold">대출 정보를 먼저 등록해주세요</p>
@@ -68,10 +82,6 @@ onMounted(() => {
         </p>
       </div>
 
-      <CoachTip>
-        가산금리는 되돌릴 수 없어. 신청 시점에 자산을 정확히 신고했는지 확인해봐
-      </CoachTip>
-
       <h2 class="text-card-title text-ink-hero font-bold">빠뜨리기 쉬운 항목</h2>
 
       <CheckItem
@@ -97,17 +107,17 @@ onMounted(() => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <!-- 필수 요소 3번. 앞 단계는 보증료 지원 신청이다. -->
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}/fee-support`)">
-          이전
-        </AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <!-- 필수 요소 3번. 앞 단계는 보증료 지원 신청이다. -->
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}/fee-support`)">
+            이전
+          </AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>

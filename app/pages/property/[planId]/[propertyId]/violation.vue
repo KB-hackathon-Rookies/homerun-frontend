@@ -2,14 +2,14 @@
 import { usePropertyApi } from '~/api/property';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 import { COACH_TIME } from '~/components/property/coachSheets';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루 매물 진단 STEP 3 — 위반건축물 확인.
  *
  * 이 값은 자동으로 못 가져온다. 정부24에서 건축물대장을 열람해야 나오고,
- * 열람은 사람이 직접 한다. 그래서 화면이 "가서 보고 오세요" 를 먼저 말하고,
- * 봤다는 확인을 받은 뒤에야 결과를 고를 수 있게 한다 — 안 보고 찍으면
- * 뒤 단계 판정이 통째로 어긋난다.
+ * 열람은 사람이 직접 한다. 그래서 화면이 "가서 보고 오세요" 를 먼저 말한 뒤에
+ * 결과를 받는다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -17,7 +17,6 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
 
-const checked = ref(false);
 const violation = ref<boolean | null>(null);
 const saving = ref(false);
 
@@ -43,35 +42,48 @@ async function next() {
     saving.value = false;
   }
 }
+
+/** 안내 줄의 ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.buildingLedger]"
-    title="매물 등록"
+    brand
     base="2루"
     @back="navigateTo(`/property/${planId}/${propertyId}`)"
   >
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
-      <CoachTip
-        >위반건축물은 자동으로 못 봐. 정부24 건축물대장을 직접 열람하고 와야 정확해</CoachTip
-      >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
-      <h2 class="text-headline1 text-ink-hero">
+      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
+      <h1 class="text-question text-ink-card">
         정부24에서 건축물대장을 열람해서 위반건축물 여부를 확인해주세요
-      </h2>
+      </h1>
 
       <AppCard>
-        <p class="text-label2 text-ink-hero-body">
+        <p class="text-label2 text-ink-card-body">
           정부24(gov.kr)에서 건축물대장 열람 → 표제부 상단의 위반건축물 표시를 확인하세요
         </p>
       </AppCard>
 
+      <!--
+        시안(`687:14055`)의 확인 줄. 체크 동그라미 없이 글자만 있고, 14px 한 줄이다.
+
+        ⓘ 는 이 줄에 붙인다. `확인했다` 를 읽는 순간이 "그래서 뭘 보라는 거지" 가
+        떠오르는 때라, 거기서 `건축물대장 보는 법` 을 편다.
+      -->
       <AppCard>
-        <AppCheckbox v-model="checked">표제부 상단의 위반건축물 표시를 확인했다</AppCheckbox>
+        <div class="flex items-center gap-1.5">
+          <p class="text-body3 text-ink-strong font-medium">
+            표제부 상단의 위반건축물 표시를 확인했다
+          </p>
+          <InfoDot @click="coachOpen = true" />
+        </div>
       </AppCard>
 
-      <!-- 확인했다고 눌러야 결과를 고를 수 있다. 순서가 뒤집히면 확인이 형식이 된다. -->
       <div class="flex gap-2">
         <button
           v-for="option in [
@@ -86,7 +98,6 @@ async function next() {
               ? 'bg-primary-strong text-white'
               : 'bg-canvas text-ink-hero-body'
           "
-          :disabled="!checked"
           @click="violation = option.value"
         >
           {{ option.label }}

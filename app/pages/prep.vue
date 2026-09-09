@@ -205,11 +205,11 @@ async function submit() {
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame fill>
     <div class="h-statusbar bg-surface shrink-0" />
     <BrandBar bordered />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
+    <div class="px-gutter-tight flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-4">
       <SubStep :steps="steps" :current="step" />
 
       <div class="flex flex-col gap-4">

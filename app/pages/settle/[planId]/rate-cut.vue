@@ -3,6 +3,8 @@ import { usePolicyApi, type PreferentialRateChange } from '~/api/policy';
 import { usePropertyApi } from '~/api/property';
 import { useSettlementApi, type RateCutRight } from '~/api/settlement';
 import { statusFrom } from '~/utils/error';
+import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-6 · 금리인하요구권.
@@ -64,14 +66,19 @@ onMounted(() => {
     .then((found) => (changes.value = found))
     .catch(() => {});
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="금리인하요구권" base="홈" @back="navigateTo(`/settle/${planId}`)">
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        은행 대출을 받은 사람만 해당돼. 버팀목은 국토부 고시 금리라 은행이 깎아줄 권한이 없어
-      </CoachTip>
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.rateCut]" brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
+
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">금리인하요구권</h1>
 
       <!-- 판정은 실행된 대출 상품에서 나온다. 없으면 대상 여부를 단정하지 않는다. -->
       <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">

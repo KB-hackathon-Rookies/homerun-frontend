@@ -18,9 +18,6 @@ definePageMeta({ middleware: 'auth' });
 
 const { isDone } = useCoachProgress();
 
-/** 슬러그를 백엔드 code(M0…)로 매핑하려면 전체 순서가 필요하다. */
-const orderedIds = COACH_MODULES.map((module) => module.id);
-
 /** 백엔드에 본문이 있는 code 집합. 목록을 못 불러오면 비어 있어 로컬 본문만으로 판단한다. */
 const serverContentCodes = ref<Set<string>>(new Set());
 
@@ -36,7 +33,7 @@ onMounted(async () => {
 /** 열 수 있는 모듈인가 — 번들에 본문이 있거나 백엔드에 콘텐츠가 있으면. */
 function hasContent(module: CoachModule) {
   if (module.body) return true;
-  const code = educationCode(module.id, orderedIds);
+  const code = educationCode(module.id, COACH_MODULES);
   return code !== null && serverContentCodes.value.has(code);
 }
 
@@ -57,12 +54,12 @@ const percent = computed(() => Math.round((doneCount.value / COACH_MODULES.lengt
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame fill>
     <div class="h-statusbar bg-surface shrink-0" />
     <BrandBar />
     <PageBar title="코치 교육" />
 
-    <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+    <div class="bg-canvas-soft flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-6">
       <div class="bg-primary-strong rounded-button flex flex-col gap-2.5 p-4">
         <p class="text-caption-tight text-on-brand-body font-medium">전세 코치 교육 모듈</p>
         <p class="text-metric text-on-brand">

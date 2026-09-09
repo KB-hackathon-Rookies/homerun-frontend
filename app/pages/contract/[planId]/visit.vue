@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 1 · 임장.
  *
@@ -25,15 +27,24 @@ const CHECKS = [
 ];
 
 const checked = ref<Record<string, boolean>>({});
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="부동산 방문" base="3루" @back="navigateTo(`/property/${planId}`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.visitChecklist]"
+    brand
+    base="3루"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        부동산 방문 전 임장 리스트를 꼭 확인해. 공인중개사에게 원하는 정보를 모두 전달해야 해
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 계약</p>
+
+      <h1 class="text-question text-ink-card">부동산 방문</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">공인중개사에게 전달할 것</h2>
 
@@ -53,11 +64,11 @@ const checked = ref<Record<string, boolean>>({});
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/sign`)">
-        계약 단계로
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/sign`)">
+          계약 단계로
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>
