@@ -41,6 +41,19 @@ export default defineNuxtConfig({
    */
   nitro: { compressPublicAssets: true },
 
+  /*
+   * /api 를 백엔드로 프록시해 브라우저에는 프론트와 같은 오리진으로 보이게 한다.
+   *
+   * 프론트(Vercel)와 백엔드(homerun.서버.한국)가 서로 다른 사이트라, httpOnly refresh_token
+   * 쿠키가 서드파티가 되어 교차 사이트 요청에 실리지 않는다(브라우저의 서드파티 쿠키 차단) →
+   * /auth/refresh 가 AUTH_005 로 실패했다. 프록시로 same-origin 이 되면 쿠키가 1st-party 로
+   * 정상 전송된다. (루트 vercel.json 의 rewrites 는 Nitro 배포 산출물에 덮여 무시되므로 여기서
+   * 처리한다.) NUXT_PUBLIC_API_BASE 를 빈 값으로 두어 axios 가 /api 상대경로로 호출해야 탄다.
+   */
+  routeRules: {
+    '/api/**': { proxy: 'https://homerun.xn--hk3b17f.xn--3e0b707e/api/**' },
+  },
+
   app: {
     head: {
       // 탭 제목 틀(titleTemplate)은 함수 형식이라 런타임 useHead 에서만 써서
