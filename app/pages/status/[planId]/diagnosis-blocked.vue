@@ -3,6 +3,9 @@ import { usePlanApi, type PlanInput } from '~/api/plan';
 import { missingRequired } from '~/components/my/required';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '진단 중단 안내' });
+
 /**
  * ST-01 진단할 수 없습니다.
  *

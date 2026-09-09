@@ -8,6 +8,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 import { STAGE_CHIP, displayStage } from '~/utils/stage';
 
+// 브라우저 탭 제목.
+useHead({ title: '마이 홈' });
+
 /**
  * MY-01 마이.
  *

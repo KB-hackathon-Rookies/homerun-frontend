@@ -4,6 +4,9 @@ import { emailSchema, messageOf, passwordSchema, passes } from '~/schemas/signup
 import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '회원가입' });
+
 /**
  * AU-04 회원가입 · 이메일과 비밀번호.
  *

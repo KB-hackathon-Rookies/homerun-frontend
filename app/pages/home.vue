@@ -8,6 +8,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { displayStage, laterStage, resumePath } from '~/utils/stage';
 
+// 브라우저 탭 제목.
+useHead({ title: '홈' });
+
 /**
  * 홈 대시보드. 시안 0-3 · 메인 1~5.
  *

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// 브라우저 탭 제목.
+useHead({ title: '환영합니다' });
 /**
  * AU-02 웰컴.
  *

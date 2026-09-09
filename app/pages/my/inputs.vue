@@ -5,6 +5,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
+// 브라우저 탭 제목.
+useHead({ title: '입력 정보' });
+
 /**
  * MY-03 입력값 수정.
  *

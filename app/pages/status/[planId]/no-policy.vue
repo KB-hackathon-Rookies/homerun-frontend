@@ -4,6 +4,9 @@ import { usePlanApi } from '~/api/plan';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '해당 정책 없음' });
+
 /**
  * ST-02 적용 가능한 정책이 없습니다.
  *
