@@ -25,13 +25,14 @@ const coachOpen = ref(false);
   <StageShell
     v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.troubleResponse]"
+    coach-above-footer="compact"
     brand
     base="홈"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <h1 class="text-question text-ink-card">보증금 미반환 대응</h1>
+      <HomeBackLink :plan-id="planId" title="보증금 미반환 대응" />
       <div class="bg-surface border-danger-deep rounded-field flex flex-col gap-1 border p-4">
         <p class="text-stage text-danger-deep font-bold">절대 전입신고를 빼지 마세요</p>
         <p class="text-caption-tight text-ink-hero font-semibold">

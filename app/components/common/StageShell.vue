@@ -28,8 +28,8 @@ const props = withDefaults(
     coachStage?: PlanStage;
     /** 화면이 준비해 둔 코치 TIME 문구. */
     coachSheets?: CoachSheet[];
-    /** 고정 푸터가 있어도 기본 높이로 둘 화면인가. */
-    coachAboveFooter?: boolean;
+    /** 고정 푸터와의 간격. 홈 상세는 `compact` 로 조금만 띄운다. */
+    coachAboveFooter?: boolean | 'compact';
   }>(),
   {
     title: undefined,

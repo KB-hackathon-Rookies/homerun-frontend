@@ -15,11 +15,11 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <StageShell brand base="홈">
+  <StageShell coach-above-footer="compact" brand base="홈">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <h1 class="text-question text-ink-card">교육과 예방</h1>
+      <HomeBackLink :plan-id="planId" title="교육과 예방" />
 
       <div
         v-for="module in EDUCATION_MODULES"

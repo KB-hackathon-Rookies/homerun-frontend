@@ -22,11 +22,17 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.moveOut]" brand base="홈">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.moveOut]"
+    coach-above-footer="compact"
+    brand
+    base="홈"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <h1 class="text-question text-ink-card">퇴거 준비</h1>
+      <HomeBackLink :plan-id="planId" title="퇴거 준비" />
 
       <h2 class="text-card-title text-ink-hero font-bold">퇴거 순서</h2>
 

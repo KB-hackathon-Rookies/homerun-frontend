@@ -71,13 +71,14 @@ const coachOpen = ref(false);
   <StageShell
     v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.taxDeduction]"
+    coach-above-footer="compact"
     brand
     base="홈"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <h1 class="text-question text-ink-card">연말정산 소득공제</h1>
+      <HomeBackLink :plan-id="planId" title="연말정산 소득공제" />
 
       <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4.5">
         <p class="text-caption-tight text-on-brand font-normal">예상 환급액</p>

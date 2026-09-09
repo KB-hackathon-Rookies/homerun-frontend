@@ -41,7 +41,7 @@ const {
    */
   fill?: boolean;
   /** 고정 푸터가 있는 흐름 화면에서 코치 FAB을 CTA 위로 올린다. */
-  coachAboveFooter?: boolean;
+  coachAboveFooter?: boolean | 'compact';
 }>();
 
 /** 화면 안의 다른 버튼(코치 팁 등)도 같은 시트를 열 수 있게 밖으로 뺀다. */
