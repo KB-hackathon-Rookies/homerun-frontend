@@ -32,7 +32,10 @@ export type DiagnosisStep =
   | 'EMPLOYMENT_PERIOD'
   | 'FINANCIAL'
   | 'HOPE_DEPOSIT'
-  | 'REGION';
+  | 'REGION'
+  // 문항이 아니라 "다 채웠다" 를 확정하는 단계다. 서버 `DiagnosisInputStep` 에 있고
+  // `nextStep`·`resumeStep` 으로 실제로 돌아온다 — 빼 두면 타입이 거짓말을 한다.
+  | 'REVIEW';
 
 export type HouseholderStatus = 'CURRENT' | 'EXPECTED' | 'NOT_HOUSEHOLDER';
 export type MaritalStatus = 'SINGLE' | 'MARRIED';
@@ -134,14 +137,12 @@ export interface PlanInputPatch {
 }
 
 /** 진단 이어하기(`/input/resume`). REVIEW 는 문진의 마지막 확인 단계다. */
-export type DiagnosisResumeStep = DiagnosisStep | 'REVIEW';
-
 export interface PlanInputResume {
   /** 다음에 보여줄 STEP. 서버가 분기·완료를 반영해 고른다. 다 끝났으면 null. */
-  resumeStep: DiagnosisResumeStep | null;
-  completedSteps: DiagnosisResumeStep[];
+  resumeStep: DiagnosisStep | null;
+  completedSteps: DiagnosisStep[];
   /** 분기로 건너뛴 STEP(예: 프리랜서의 회사규모·재직기간). */
-  skippedSteps: DiagnosisResumeStep[];
+  skippedSteps: DiagnosisStep[];
   progressPercent: number;
   revision: number;
   /** 지금까지 저장된 답. 화면이 이걸로 복원한다. 입력이 없으면 null. */
@@ -238,7 +239,7 @@ export function usePlanApi() {
      */
     async saveStep(
       planId: number,
-      step: DiagnosisStep | 'REVIEW',
+      step: DiagnosisStep,
       expectedRevision: number,
       patch: DiagnosisStepPatch,
     ) {

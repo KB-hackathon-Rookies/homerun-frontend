@@ -20,7 +20,8 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm build",
     "commit": "node scripts/commit.cjs",
     "postinstall": "nuxt prepare",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:enums": "node scripts/check-enums.mjs"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,vue}": [
