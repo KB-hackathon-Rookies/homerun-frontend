@@ -55,6 +55,39 @@ type QueueEntry = {
   reject: (reason: unknown) => void;
 };
 
+/**
+ * 실패한 요청의 이유를 콘솔에 남긴다.
+ *
+ * 브라우저가 기본으로 찍는 줄은 `... 409 (Conflict)` 가 전부라, 서버가 왜 거절했는지
+ * 알 수 없다. 이유는 응답 본문의 `code`·`message` 에 있는데 아무도 꺼내 보지 않았다.
+ * 그래서 무엇이 왜 실패했는지 한 줄로 편다.
+ *
+ * **요청 본문은 찍지 않는다.** 소득·자산 같은 값이 그대로 콘솔에 남는다
+ * (`LLM_CONTEXT.md` 의 Zero-retention). 어떤 요청이었는지는 메서드와 경로로 충분하다.
+ *
+ * 개발에서만 찍도록 막지 않았다. 찍는 것은 서버가 이미 이 브라우저에 보낸 응답의
+ * `code`·`message` 라 새로 드러나는 정보가 없고, 데모 중에 난 실패를 프로덕션 빌드에서
+ * 그대로 볼 수 있어야 원인을 짚을 수 있다.
+ */
+function logFailure(error: AxiosError<ApiErrorBody>) {
+  const { config, response } = error;
+  const where = `${config?.method?.toUpperCase() ?? '?'} ${config?.url ?? '?'}`;
+
+  // 응답 자체가 없으면 서버에 닿지 못한 것이다(네트워크 끊김·CORS·서버 미기동).
+  if (!response) {
+    console.error(`[API] ${where} — 응답 없음: ${error.message}`);
+    return;
+  }
+
+  const body = response.data;
+  const detail = body?.fieldErrors?.length
+    ? ` · ${body.fieldErrors.map((f) => `${f.field}: ${f.message}`).join(', ')}`
+    : '';
+  console.error(
+    `[API] ${where} → ${response.status} ${body?.code ?? '(코드 없음)'}: ${body?.message ?? '(문구 없음)'}${detail}`,
+  );
+}
+
 function createApi(baseURL: string): AxiosInstance {
   // 플러그인 setup 안이라 여기서만 부를 수 있다. 인터셉터 안에서는 이미 늦다.
   const router = useRouter();
@@ -144,6 +177,9 @@ function createApi(baseURL: string): AxiosInstance {
       const isAuthFailure = error.response?.status === 401;
 
       if (!original || !isAuthFailure || original._retry || original.skipAuthRefresh) {
+        // 여기까지 온 실패는 되돌릴 방법이 없다. 갱신으로 조용히 살아나는 401 은
+        // 위 조건에서 이미 빠져나갔으므로 찍지 않는다.
+        logFailure(error);
         return Promise.reject(error);
       }
 
