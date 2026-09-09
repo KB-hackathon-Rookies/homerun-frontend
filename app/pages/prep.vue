@@ -116,8 +116,9 @@ const canProceed = computed(() => {
   if (step.value === 0) return !!situation.value;
   // 월세를 고른 채로는 넘어가지 않는다. 준비 중 안내가 전세로 되돌릴 때까지 막는다.
   if (step.value === 1) return lease.value === 'JEONSE';
-  // 형식이 틀린 보증금은 채워진 것이 아니다. 그대로 두면 0원으로 저장된다.
-  return !!deposit.value && !parsedDeposit.value.error;
+  // 값이 있어야(value !== null) 넘어간다. 공백만 있으면 value 는 null 이라 error 없이도 막힌다 —
+  // `!error` 로 보면 공백이 통과해 0원으로 저장된다.
+  return parsedDeposit.value.value !== null;
 });
 
 function chooseLease(value: string | null) {
