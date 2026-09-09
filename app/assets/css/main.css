@@ -130,7 +130,7 @@
   --color-ink-card-body: #4e5968; /* 교육 카드 설명 */
 
   /* 코치 교육 허브(시안 메인 6~10) */
-  --color-canvas-soft: #f7fafc; /* 허브·목록 화면 바탕 */
+  --color-canvas-soft: #ffffff; /* 화면 바탕. 흰색으로 통일(입력창·칩 bg-canvas 는 회색 유지) */
   --color-ink-label: #8b95a1; /* 그룹 라벨, 다 읽은 항목, 예정 번호 */
   --color-ink-chevron: #b0b8c1; /* 목록 오른쪽 화살표 */
   --color-line-list: #e5e8eb; /* 목록 카드 테두리 */
