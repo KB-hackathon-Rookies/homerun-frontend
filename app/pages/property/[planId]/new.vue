@@ -194,7 +194,6 @@ watch(coachOpen, (open) => {
           <p class="text-body2 text-primary-strong flex-1 font-bold">
             1루 조건에 맞는 매물을 먼저 찾아보세요
           </p>
-          <InfoDot @click="openCoach(COACH_TIME.propertyFilter)" />
         </div>
         <p class="text-label2 text-ink-hero-body">{{ searchConditions }}</p>
         <button
@@ -273,7 +272,6 @@ watch(coachOpen, (open) => {
           <p class="text-body3 text-ink-card flex-1 font-bold">
             임대인에게 전세대출 협조를 확인하셨나요?
           </p>
-          <InfoDot @click="openCoach(COACH_TIME.landlordConsent)" />
         </div>
         <PillGroup v-model="consent" :options="CONSENT_OPTIONS" />
         <p v-if="consentNotice" class="text-caption2 text-ink-hero-body">{{ consentNotice }}</p>

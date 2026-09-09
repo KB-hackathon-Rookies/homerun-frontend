@@ -79,7 +79,6 @@ const coachOpen = ref(false);
           <p class="text-body3 text-ink-strong font-medium">
             표제부 상단의 위반건축물 표시를 확인했다
           </p>
-          <InfoDot @click="coachOpen = true" />
         </div>
       </AppCard>
 

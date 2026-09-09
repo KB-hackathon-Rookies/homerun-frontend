@@ -126,6 +126,9 @@ onMounted(async () => {
     listError.value = messageFrom(cause, '상담 기록을 불러오지 못했어요.');
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>

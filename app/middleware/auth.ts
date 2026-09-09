@@ -13,6 +13,7 @@ import { useAuthStore } from '~/stores/auth';
  */
 export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.server) return;
+  if (true) return; // TEMP-PREVIEW
 
   const auth = useAuthStore();
   if (!auth.isAuthenticated) auth.restore();

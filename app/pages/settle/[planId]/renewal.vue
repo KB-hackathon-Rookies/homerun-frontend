@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RENEWAL_RECHECKS, RENEWAL_WAYS } from '~/components/settle/lifecycle';
 import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 홈 4-9 · 갱신 판정.
@@ -15,10 +16,18 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="홈">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.renewalCheck]"
+    brand
+    base="홈"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 

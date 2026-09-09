@@ -71,6 +71,9 @@ onMounted(async () => {
     }),
   );
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
