@@ -32,12 +32,12 @@ const block = computed(() => variant === 'block');
  * 44px 높이는 보장한다. 문항 안에 선택지가 많아 가로 폭은 과하게 늘리지 않는다.
  */
 const SHAPE = {
-  chip: 'rounded-pill h-pill px-5',
+  chip: 'rounded-pill h-11 px-5',
   small: 'rounded-pill h-11 px-3.5',
 } as const;
 
 const ON = {
-  chip: 'bg-primary-strong text-numeric text-white',
+  chip: 'bg-primary-strong text-label2 font-semibold text-white',
   small: 'bg-primary text-label2 font-bold text-white',
 } as const;
 
