@@ -44,6 +44,13 @@ export default defineNuxtConfig({
 
       link: [
         /*
+         * 폰트는 외부(jsdelivr=Pretendard, google=Work Sans 워드마크)에서 받는다.
+         * 미리 연결해 두면 CSS·폰트 요청 때 TLS 왕복을 아껴 첫 렌더가 빨라진다.
+         */
+        { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: '' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        /*
          * 매니페스트 링크를 직접 건다. SPA 로 뽑을 때는 모듈이 이 링크를 넣어
          * 주지 않아서, 없으면 브라우저가 설치 가능한 앱으로 보지 않는다.
          */
@@ -54,6 +61,11 @@ export default defineNuxtConfig({
 
       meta: [
         { name: 'theme-color', content: '#3366ff' },
+        // 검색결과·공유 미리보기에 쓰는 한 줄 소개. 없으면 SEO 감사에서 빠진다.
+        {
+          name: 'description',
+          content: '전세·월세 계약을 1루부터 홈까지, 단계별 체크와 AI 코치로 함께 챙기는 주거 준비 도우미 홈런.',
+        },
         /*
          * iOS 에서 주소창 없이 뜨게 한다. `black-translucent` 는 상태바를 화면
          * 위에 겹치는데, 그 두께는 `env(safe-area-inset-top)` 이 받는다.
