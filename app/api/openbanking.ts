@@ -139,6 +139,18 @@ export function useOpenBankingApi() {
       return data.data.authorizationUrl;
     },
 
+    /**
+     * 데모용 가짜 연결. 금융결제원 인가(팝업·콜백) 없이 연결만 세운다.
+     *
+     * 실연동이 불가한 데모에서 인가 페이지를 거치지 않고 바로 연결해, 이후 계좌·요약이
+     * 샘플 데이터로 답하게 한다. 연동 연출 지연은 화면(progress)이 만들고 이 호출은 즉시
+     * 끝난다. 백엔드는 `mock-data=true` 일 때만 이 경로를 연다(운영은 404).
+     */
+    async mockConnect() {
+      const { data } = await $api.post<ApiResponse<OpenBankingConnection>>(`${BASE}/mock-connect`);
+      return data.data;
+    },
+
     /** 연결됐는지 확인한다. 인가 페이지에서 돌아왔는지 알 방법이 이것뿐이다. */
     async connection() {
       const { data } = await $api.get<ApiResponse<OpenBankingConnection>>(`${BASE}/connection`);
