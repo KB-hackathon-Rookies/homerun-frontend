@@ -10,6 +10,7 @@ import {
 } from '~/components/contract/labels';
 import { loadDocSituation } from '~/components/contract/situation';
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 7 · 서류 일괄 발급 (D-14).
@@ -121,6 +122,11 @@ const errands = computed(() => {
 const myChecks = computed(() => CHECKS.filter(applies));
 const skippedChecks = computed(() => CHECKS.filter((check) => !applies(check)));
 
+/** 해당하는 확인 항목을 다 체크해야 다음으로 넘어갈 수 있다. pending 중엔 아직 모른다. */
+const allChecked = computed(
+  () => pending.value || myChecks.value.every((item) => checked.value[item.text]),
+);
+
 /** 주민센터에 갈 일이 남았는가. 없으면 오늘 발로 뛸 곳이 하나도 없다. */
 const needsVisit = computed(() =>
   errands.value.some((errand) => errand.site === '주민센터' && errand.mine.length > 0),
@@ -136,19 +142,27 @@ onMounted(async () => {
   unfiltered.value = situation.value === null;
   pending.value = false;
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.docTiming]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
       <p class="text-caption1 text-ink-label font-medium">3루 · 서류</p>
 
       <h1 class="text-question text-ink-card">D-14 서류 일괄 발급</h1>
-      <CoachTip v-else>
-        서류가 열 개 넘어서 막막하죠? 사이트별로 묶으면 몇 군데서 끝나요. 게다가 이번엔 주민센터에
-        갈 일이 없어서 전부 온라인으로 끝나요
+      <CoachTip>
+        서류가 열 개 넘어서 막막하죠? 사이트별로 묶으면 다섯 군데서 끝나요. 온라인이 안 되는 건
+        전입세대확인서 하나뿐이에요
       </CoachTip>
 
       <p v-if="unfiltered" class="bg-badge-warning rounded-field text-caption2 text-ink-hero p-3.5">
@@ -156,24 +170,15 @@ onMounted(async () => {
         있어요.
       </p>
 
-      <div class="bg-badge-warning rounded-field flex flex-col gap-1.5 p-3.5">
-        <p class="text-label2 text-warning-strong font-semibold">
-          대출 제출용 = 1개월 이내 발급분만 인정
-        </p>
-        <p class="text-caption2 text-ink-hero">
-          너무 미리 떼면 재발급이 필요해요. D-14 전후에 한번에 몰아서 발급.
-        </p>
-      </div>
-
-      <h2 class="text-body3 text-ink-hero font-bold">하루 만에 끝내기 · 이 순서대로</h2>
-
       <!--
         내 계약·진단 값이 오기 전까지는 동선을 그리지 않는다. 전부 그렸다가 접으면
         줄이 튄다. 값을 못 받으면 `situation` 이 null 이라 전부 해당하는 것으로 그린다.
       -->
       <p v-if="pending" class="text-label2 text-ink-muted px-1">내 상황에 맞춰 고르는 중이에요…</p>
 
-      <AppCard v-else class="flex flex-col gap-2.5">
+      <AppCard v-else class="flex flex-col gap-3">
+        <h2 class="text-body3 text-ink-hero font-bold">하루 만에 끝내기 · 이 순서대로</h2>
+
         <!-- 해당 없는 사이트도 자리에 남긴다. 번호만 건너뛴다. -->
         <div v-for="errand in errands" :key="errand.site" class="flex items-start gap-2.5">
           <span
@@ -223,7 +228,7 @@ onMounted(async () => {
         </p>
       </AppCard>
 
-      <template v-if="!pending">
+      <AppCard v-if="!pending" class="flex flex-col gap-2">
         <h2 class="text-body3 text-ink-hero font-bold">떼고 나서 확인할 것</h2>
 
         <CheckItem v-for="item in myChecks" :key="item.text" v-model="checked[item.text]">
@@ -243,7 +248,7 @@ onMounted(async () => {
             해당 없음
           </span>
         </div>
-      </template>
+      </AppCard>
 
       <DetailLink @open="navigateTo(`/contract/${planId}/documents`)">
         서류별 발급 방법 상세보기
@@ -251,15 +256,24 @@ onMounted(async () => {
     </div>
 
     <template #footer>
-      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-        <div class="w-28 shrink-0">
-          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/bank-visit`)">
-            이전
+      <footer class="px-gutter-tight flex shrink-0 flex-col items-center gap-2.5 pt-3 pb-cta-pad">
+        <p class="text-caption2 text-ink-label text-center">
+          대출 제출용은 1개월 이내 발급분만 인정돼요
+        </p>
+        <div class="flex w-full gap-2">
+          <div class="w-28 shrink-0">
+            <AppButton variant="white" @click="navigateTo(`/contract/${planId}/bank-visit`)">
+              이전
+            </AppButton>
+          </div>
+          <AppButton
+            variant="strong"
+            :disabled="!allChecked"
+            @click="navigateTo(`/contract/${planId}/resident-cert`)"
+          >
+            다음
           </AppButton>
         </div>
-        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/resident-cert`)">
-          다음
-        </AppButton>
       </footer>
     </template>
   </StageShell>

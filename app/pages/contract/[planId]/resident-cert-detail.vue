@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 8 · 전입세대확인서 상세.
  *
@@ -26,7 +27,11 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <GuideFrame title="전입세대확인서 상세" @back="navigateTo(`/contract/${planId}/resident-cert`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.residentCert]"
+    title="전입세대확인서 상세"
+    @back="navigateTo(`/contract/${planId}/resident-cert`)"
+  >
     <div class="bg-badge-warning rounded-field flex flex-col gap-1.5 p-3.5">
       <p class="text-label2 text-warning-strong font-semibold">해당하는 경우에만 필요해요</p>
       <p class="text-caption2 text-ink-hero">

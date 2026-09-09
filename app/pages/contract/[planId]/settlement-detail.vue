@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 11 · 잔금일 상세.
  *
@@ -28,7 +29,11 @@ const COMPARE = [
 </script>
 
 <template>
-  <GuideFrame title="잔금일 상세" @back="navigateTo(`/contract/${planId}/settlement`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.registryTrap]"
+    title="잔금일 타임라인"
+    @back="navigateTo(`/contract/${planId}/settlement`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">오늘의 타임라인</h2>
 
     <AppCard class="flex flex-col gap-1 p-2.5">
@@ -78,7 +83,7 @@ const COMPARE = [
         :key="row.label"
         class="border-line-soft flex items-center gap-2.5 border-b p-2.5 last:border-b-0"
       >
-        <span class="text-label2 text-ink-hero flex-1 font-semibold">{{ row.label }}</span>
+        <span class="text-label2 text-ink-hero flex-1 font-semibold">☐ {{ row.label }}</span>
         <span class="text-micro text-warning-strong shrink-0">{{ row.stop }}</span>
       </div>
     </AppCard>
@@ -115,7 +120,7 @@ const COMPARE = [
 
     <template #cta>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
-        잔금일 화면으로
+        돌아가기
       </AppButton>
     </template>
   </GuideFrame>

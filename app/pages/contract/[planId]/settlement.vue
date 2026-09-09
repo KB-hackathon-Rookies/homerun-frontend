@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { useContractApi, type RegistryComparison } from '~/api/contract';
+import { useContractApi, type RegistryComparison, type RegistryFacts } from '~/api/contract';
 import { usePlanApi } from '~/api/plan';
-import {
-  OWNER_OPTIONS,
-  PRESENCE_NEW_OPTIONS,
-  useRegistrySnapshot,
-} from '~/composables/useRegistrySnapshot';
 import { messageFrom } from '~/utils/error';
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 11 · 잔금일.
@@ -33,19 +29,31 @@ const TIMELINE = [
   { when: '오후', what: '주민센터에서 전입신고 (18시까지)' },
 ];
 
-const {
-  owner,
-  seizure,
-  leasehold,
-  auction,
-  trust,
-  seniorDebt,
-  mortgageCount,
-  seniorDebtError,
-  mortgageCountError,
-  answered,
-  facts,
-} = useRegistrySnapshot();
+// 시안(11. 잔금일) 그대로: 소유자·채권최고액·근저당 건수·압류·가압류
+// 네 줄짜리 체크리스트다. 다른 화면 체크리스트와 같이 저장하지 않고,
+// 다 체크해야 다음(대조 요청)이 열린다.
+const checkedOwner = ref(false);
+const checkedSeniorDebt = ref(false);
+const checkedMortgageCount = ref(false);
+const checkedSeizure = ref(false);
+
+const answered = computed(
+  () =>
+    checkedOwner.value &&
+    checkedSeniorDebt.value &&
+    checkedMortgageCount.value &&
+    checkedSeizure.value,
+);
+
+const facts = computed<RegistryFacts>(() => ({
+  ownerMatchesContractParty: checkedOwner.value ? true : null,
+  seizureOrDispositionRestricted: checkedSeizure.value ? false : null,
+  leaseholdRegistered: null,
+  auctionInProgress: null,
+  trustRegistered: null,
+  seniorDebt: checkedSeniorDebt.value ? 0 : null,
+  mortgageCount: checkedMortgageCount.value ? 0 : null,
+}));
 
 const result = ref<RegistryComparison | null>(null);
 const saving = ref(false);
@@ -65,7 +73,7 @@ const datesReady = computed(() => !!balancePaidAt.value && !!moveInReportAt.valu
  * 안 그러면 "같아요" 로 통과한 뒤 답을 고쳐도 통과가 남아 잔금을 보낼 수 있다.
  * 이 화면에서 그건 그냥 두면 안 되는 상태다.
  */
-watch([owner, seizure, leasehold, auction, trust, seniorDebt, mortgageCount], () => {
+watch([checkedOwner, checkedSeniorDebt, checkedMortgageCount, checkedSeizure], () => {
   result.value = null;
 });
 
@@ -129,10 +137,18 @@ async function finish() {
     completing.value = false;
   }
 }
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.registryTrap]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="4" />
 
@@ -157,53 +173,31 @@ async function finish() {
 
       <h2 class="text-body3 text-ink-hero font-bold">송금 전 대조표</h2>
 
-      <AppCard class="flex flex-col gap-3">
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">소유자가 계약 때와 같나요</p>
-          <PillGroup v-model="owner" :options="OWNER_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">압류·가압류가 새로 생겼나요</p>
-          <PillGroup v-model="seizure" :options="PRESENCE_NEW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">전세권이 새로 설정됐나요</p>
-          <PillGroup v-model="leasehold" :options="PRESENCE_NEW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">경매·공매가 시작됐나요</p>
-          <PillGroup v-model="auction" :options="PRESENCE_NEW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">신탁 등기가 새로 생겼나요</p>
-          <PillGroup v-model="trust" :options="PRESENCE_NEW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">오늘 채권최고액 (만 원)</p>
-          <input
-            v-model="seniorDebt"
-            :error="seniorDebtError"
-            inputmode="numeric"
-            placeholder="없으면 0을 입력하세요"
-            class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
-          />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">오늘 근저당 건수</p>
-          <input
-            v-model="mortgageCount"
-            :error="mortgageCountError"
-            inputmode="numeric"
-            placeholder="없으면 0을 입력하세요"
-            class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
-          />
-        </div>
+      <AppCard class="flex flex-col gap-1 p-2.5">
+        <CheckItem v-model="checkedOwner" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>소유자</span>
+            <span class="text-micro text-warning-strong font-normal">다르면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedSeniorDebt" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>채권최고액</span>
+            <span class="text-micro text-warning-strong font-normal">늘었으면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedMortgageCount" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>근저당 건수</span>
+            <span class="text-micro text-warning-strong font-normal">늘었으면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedSeizure" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>압류·가압류</span>
+            <span class="text-micro text-warning-strong font-normal">새로 생겼으면 중단</span>
+          </span>
+        </CheckItem>
       </AppCard>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -265,7 +259,7 @@ async function finish() {
           {{ isBlock ? '잔금을 보낼 수 없어요' : '확인이 더 필요해요' }}
         </AppButton>
         <AppButton v-else variant="strong" :disabled="!answered || saving" @click="compare">
-          {{ saving ? '대조 중…' : '대조 완료 · 잔금 송금하기' }}
+          {{ saving ? '대조 중…' : '잔금 송금' }}
         </AppButton>
       </footer>
     </template>

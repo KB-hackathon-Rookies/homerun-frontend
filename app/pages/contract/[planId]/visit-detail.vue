@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 1 · 임장 상세.
  *
@@ -53,7 +54,11 @@ const STEPS = [
 </script>
 
 <template>
-  <GuideFrame title="임장 상세" @back="navigateTo(`/contract/${planId}/visit`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.visitChecklist]"
+    title="임장 상세"
+    @back="navigateTo(`/contract/${planId}/visit`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">공인중개사에게 이렇게 말해요</h2>
 
     <AppCard

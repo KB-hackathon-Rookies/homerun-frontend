@@ -2,6 +2,7 @@
 import { useContractApi, type ContractEntry } from '~/api/contract';
 import { COLLATERAL_LABEL, includesReturnGuarantee } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 12 · 잔금일 이후 상세.
@@ -36,7 +37,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <GuideFrame title="잔금일 이후 상세" @back="navigateTo(`/contract/${planId}/after-settlement`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.moveInCheck]"
+    title="잔금일 이후 상세"
+    @back="navigateTo(`/contract/${planId}/after-settlement`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">지금 어디까지 왔나요</h2>
 
     <AppCard class="flex flex-col gap-1">

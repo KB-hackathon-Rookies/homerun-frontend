@@ -1,164 +1,92 @@
 <script setup lang="ts">
-import { useContractApi } from '~/api/contract';
-import { TERMS } from '~/components/contract/terms';
-import {
-  OWNER_OPTIONS,
-  PRESENCE_NOW_OPTIONS,
-  useRegistrySnapshot,
-} from '~/composables/useRegistrySnapshot';
-import { messageFrom } from '~/utils/error';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
 
 /**
- * 3루 2 · 계약.
+ * 3루 2 · 계약 (시안 `687:2778`).
  *
- * 특약 네 개가 이 화면의 전부다. **계약서에 안 적히면 없는 것**이라,
- * 무엇을 적어야 하는지부터 보여준다.
- *
- * 계약 때 등기부도 여기서 남긴다(CONTRACT_SIGNING). 이 기준이 있어야 잔금일에
- * 서버가 계약 때와 대조해 SAFE 를 판정할 수 있다. 기준을 남기지 않으면 잔금일
- * 대조가 늘 NEED_INFO 에 걸린다.
+ * 이 화면은 필수 특약 4종을 보여주는 게 전부다. **계약서에 안 적히면
+ * 없는 것**이라, 무엇을 적어야 하는지부터 짚는다. 각 특약의 실제 조항 문구는
+ * 상세 화면(`sign-detail`)이 맡는다 — 화면을 짧게 두어야 사람이 훑고 넘어가지
+ * 않고 한 카드씩 읽는다.
  */
 definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const {
-  owner,
-  seizure,
-  leasehold,
-  auction,
-  trust,
-  seniorDebt,
-  mortgageCount,
-  seniorDebtError,
-  mortgageCountError,
-  answered,
-  facts,
-} = useRegistrySnapshot();
-
-const saving = ref(false);
-const error = ref('');
-
-const today = () => new Date().toISOString().slice(0, 10);
-
-/**
- * 계약 때 등기부를 기준으로 남기고 다음으로 넘어간다.
- *
- * 스냅샷 저장은 계약이 있어야 하므로 먼저 초안을 확정(prefill)한다 — 3루에서
- * 넣은 값은 건드리지 않는다. 저장에 실패하면 넘어가지 않는다.
- */
-async function proceed() {
-  if (!answered.value || saving.value) return;
-
-  saving.value = true;
-  error.value = '';
-  try {
-    const api = useContractApi();
-    await api.prefill(planId);
-    await api.recordRegistry(planId, 'CONTRACT_SIGNING', today(), facts.value);
-    await navigateTo(`/contract/${planId}/fixed-date`);
-  } catch (cause) {
-    error.value = messageFrom(cause, '등기부를 기록하지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    saving.value = false;
-  }
+interface Term {
+  index: number;
+  title: string;
+  body: string;
 }
+
+const TERMS: Term[] = [
+  {
+    index: 1,
+    title: '대출 미승인 시 계약 무효',
+    body: '대출 승인 불가 시 임대인은 계약금 전액 반환',
+  },
+  {
+    index: 2,
+    title: '잔금일 다음날까지 권리관계 유지',
+    body: '전입신고·확정일자 완료 전까지 새로운 근저당·전세권·압류 등 금지',
+  },
+  {
+    index: 3,
+    title: '반환보증 가입 불가 시 계약 무효',
+    body: '전세보증금반환보증 가입 불가 시 계약금 전액 반환',
+  },
+  {
+    index: 4,
+    title: '전세대출 절차 협조',
+    body: '대출·보증 절차에 필요한 서류 제공·절차 협조',
+  },
+];
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.contractTerms]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="0" />
 
       <p class="text-caption1 text-ink-label font-medium">3루 · 계약</p>
-
       <h1 class="text-question text-ink-card">계약</h1>
 
-      <h2 class="text-body3 text-ink-hero font-bold">필수 특약 4종</h2>
+      <p class="text-body3 text-ink-strong font-bold">필수 특약 4종</p>
 
-      <AppCard v-for="(term, index) in TERMS" :key="term.title" class="flex flex-col gap-1">
-        <p class="text-label2 text-ink-hero font-bold">{{ index + 1 }}. {{ term.title }}</p>
-        <p class="text-caption2 text-ink-hero-body">{{ term.short }}</p>
+      <!-- 시안(`687:2828`~`687:2837`)의 특약 카드 네 장. 제목 굵게 + 부연 한 줄. -->
+      <AppCard v-for="term in TERMS" :key="term.index" class="flex flex-col gap-1">
+        <p class="text-body3 text-ink-strong font-bold">{{ term.index }}. {{ term.title }}</p>
+        <p class="text-caption2 text-ink-card-body">{{ term.body }}</p>
       </AppCard>
 
-      <p class="bg-surface-brand rounded-chip text-caption2 text-ink-hero-body p-3">
-        ⚠️ 계약금은 등기부상 소유자 명의 계좌로만 송금. 이체확인증 필수 보관
-      </p>
-
-      <h2 class="text-body3 text-ink-hero font-bold">계약 때 등기부 기록</h2>
-      <p class="text-caption2 text-ink-hero-body">
-        지금 뗀 등기부를 남겨두면, 잔금일에 서버가 계약 때와 대조해 달라진 위험을 잡아줘요
-      </p>
-
-      <AppCard class="flex flex-col gap-3">
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">소유자가 계약 상대와 같나요</p>
-          <PillGroup v-model="owner" :options="OWNER_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">압류·가압류가 있나요</p>
-          <PillGroup v-model="seizure" :options="PRESENCE_NOW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">전세권이 설정돼 있나요</p>
-          <PillGroup v-model="leasehold" :options="PRESENCE_NOW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">경매·공매가 진행 중인가요</p>
-          <PillGroup v-model="auction" :options="PRESENCE_NOW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">신탁 등기가 있나요</p>
-          <PillGroup v-model="trust" :options="PRESENCE_NOW_OPTIONS" />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">채권최고액 (만 원)</p>
-          <input
-            v-model="seniorDebt"
-            :error="seniorDebtError"
-            inputmode="numeric"
-            placeholder="없으면 0을 입력하세요"
-            class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
-          />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-label2 text-ink-hero font-semibold">근저당 건수</p>
-          <input
-            v-model="mortgageCount"
-            :error="mortgageCountError"
-            inputmode="numeric"
-            placeholder="없으면 0을 입력하세요"
-            class="bg-canvas rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-11 px-3.5 outline-none"
-          />
-        </div>
-      </AppCard>
-
-      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/sign-detail`)">
-        특약·계약 체크·중개보수 상세보기
-      </DetailLink>
+      <!--
+        상세 화면(`687:2852`)이 실제 조항 문구와 왜 필요한지, 계약 때 챙길 것,
+        중개보수 계산까지 다 담고 있다. 이 화면은 요약이라 링크로 넘긴다.
+      -->
+      <button
+        type="button"
+        class="border-line-follow bg-surface-brand rounded-field text-body3 text-primary-strong h-11 w-full border font-bold"
+        @click="navigateTo(`/contract/${planId}/sign-detail`)"
+      >
+        특약·계약 체크·중개보수 상세보기 →
+      </button>
     </div>
 
-    <template #footer>
-      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-        <div class="w-28 shrink-0">
-          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/visit`)"
-            >이전</AppButton
-          >
-        </div>
-        <AppButton variant="strong" :disabled="!answered || saving" @click="proceed">
-          {{ saving ? '기록 중…' : '확정일자 받기' }}
-        </AppButton>
-      </footer>
-    </template>
+    <StepFooter
+      @back="navigateTo(`/contract/${planId}/visit`)"
+      @next="navigateTo(`/contract/${planId}/fixed-date`)"
+    >
+      확정일자 받기
+    </StepFooter>
   </StageShell>
 </template>

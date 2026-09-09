@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 10 · 심사 확인 (D-3).
  *
@@ -20,10 +21,21 @@ const CHECKS = [
 ];
 
 const checked = ref<Record<string, boolean>>({});
+
+/** 전화 체크리스트를 다 확인해야 심사 정상으로 넘어갈 수 있다. */
+const allChecked = computed(() => CHECKS.every((item) => checked.value[item]));
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.loanReview]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
@@ -42,13 +54,9 @@ const checked = ref<Record<string, boolean>>({});
       >
         <span class="text-label2 text-danger font-bold">거절 통보를 받았어요</span>
         <span class="text-micro text-ink-hero-body">
-          당황하지 말고 순서대로 대응. 눌러서 대응 절차 보기
+          당황하지 말고 순서대로 대응. 하단 "대출 거절 대응" 화면 참고
         </span>
       </button>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/review-detail`)">
-        확인 대본·상황별 대응 상세보기
-      </DetailLink>
     </div>
 
     <template #footer>
@@ -58,8 +66,12 @@ const checked = ref<Record<string, boolean>>({});
             이전
           </AppButton>
         </div>
-        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
-          심사 정상 · D-day 준비
+        <AppButton
+          variant="strong"
+          :disabled="!allChecked"
+          @click="navigateTo(`/contract/${planId}/settlement`)"
+        >
+          다음
         </AppButton>
       </footer>
     </template>

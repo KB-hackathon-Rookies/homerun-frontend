@@ -3,6 +3,7 @@ import { useContractApi, type ContractEntry } from '~/api/contract';
 import { COLLATERAL_LABEL, includesReturnGuarantee } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 12 · 잔금일 이후, 그리고 3루 13 · 안착.
@@ -45,10 +46,18 @@ onMounted(async () => {
     error.value = messageFrom(cause, '계약 정보를 불러오지 못했어요.');
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.moveInCheck]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="4" />
 
@@ -89,44 +98,42 @@ onMounted(async () => {
           <span class="text-micro text-ink-hero-body flex-1">{{ branch.next }}</span>
         </div>
       </AppCard>
-
-      <p class="bg-surface-brand rounded-chip text-micro text-ink-hero-body p-3">
-        ⚠️ 보증료 지원은 예산 소진 시 조기 마감. 반환보증 가입 직후 바로 신청하세요
-      </p>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/after-settlement-detail`)">
-        담보별 표·사후자산심사 상세보기
-      </DetailLink>
     </div>
 
     <template #footer>
-      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-        <div class="w-28 shrink-0">
-          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
-            이전
-          </AppButton>
+      <footer class="px-gutter-tight flex shrink-0 flex-col items-center gap-2 pt-3 pb-cta-pad">
+        <p class="text-caption2 text-ink-label text-center">
+          홈에서 반환보증과 보증료 지원을 챙겨요
+        </p>
+        <div class="flex w-full gap-2">
+          <div class="w-28 shrink-0">
+            <AppButton variant="white" @click="navigateTo(`/contract/${planId}/settlement`)">
+              이전
+            </AppButton>
+          </div>
+          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
         </div>
-        <AppButton variant="strong" @click="navigateTo(`/settle/${planId}`)">정착 시작</AppButton>
       </footer>
     </template>
 
-    <!-- 3루 안착 축하(시안 3루 13). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
+    <!-- 3루 안착 축하(시안 3루 13, `687:5410`). 딤 위에 터치로 넘긴다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">
-      <div class="flex flex-col items-center gap-2 text-center">
-        <p class="text-caption1 text-primary-strong">3루 안착!</p>
-        <h2 class="text-headline1 text-ink-hero">잔금까지 무사히 끝났어</h2>
-        <p class="text-caption2 text-ink-hero-body">
-          계약, 서류, 대출 실행, 잔금 송금까지 마쳤어. 이제 홈에서 정착을 챙기자
+      <div class="flex flex-col items-center gap-2.5 text-center">
+        <img src="/tiger/done.png" alt="" class="mb-1 h-[122px] w-[150px] object-contain" />
+        <p class="text-title2 text-primary-strong">3루 안착!</p>
+        <p class="text-headline2 text-ink-hero">잔금까지 무사히 끝났어</p>
+        <p class="text-caption2 text-ink-hero-body leading-5">
+          계약, 서류, 대출 실행, 잔금 송금까지 마쳤어.<br />
+          이제 홈에서 정착을 챙기자
         </p>
 
         <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
           ⚾ 다음은 홈 · 정착
         </p>
-
-        <div class="mt-3 w-full">
-          <AppButton variant="strong" @click="dismissCelebration">남은 할 일 보기</AppButton>
-        </div>
       </div>
+      <template #hint>
+        <p class="text-caption2 text-white/80 text-center">화면을 터치하면 계속돼</p>
+      </template>
     </DimOverlay>
   </StageShell>
 </template>

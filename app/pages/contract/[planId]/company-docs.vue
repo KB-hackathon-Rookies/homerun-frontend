@@ -4,6 +4,7 @@ import { usePlanApi } from '~/api/plan';
 import { needsCompanyDocs } from '~/components/contract/labels';
 import { messageFrom } from '~/utils/error';
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 5 · 회사 서류 요청 (D-30).
@@ -36,6 +37,10 @@ const applies = computed(() =>
   needsCompanyDocs(entry.value?.loanProductKind ?? null, companySize.value),
 );
 
+/** 해당자면 서류 4종을 다 확인해야 다음으로 넘어갈 수 있다. */
+const allChecked = computed(() => DOCS.every((doc) => checked.value[doc]));
+const canProceed = computed(() => !applies.value || allChecked.value);
+
 const next = () => navigateTo(`/contract/${planId}/bank-visit`);
 
 onMounted(async () => {
@@ -52,10 +57,18 @@ onMounted(async () => {
     pending.value = false;
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.companyDocs]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
@@ -92,10 +105,6 @@ onMounted(async () => {
         <h2 class="text-body3 text-ink-hero font-bold">회사에 요청할 것</h2>
 
         <CheckItem v-for="doc in DOCS" :key="doc" v-model="checked[doc]">{{ doc }}</CheckItem>
-
-        <DetailLink @open="navigateTo(`/contract/${planId}/company-docs-detail`)">
-          서류 4종·요청 대본 상세보기
-        </DetailLink>
       </template>
     </div>
 
@@ -106,8 +115,8 @@ onMounted(async () => {
             이전
           </AppButton>
         </div>
-        <AppButton variant="strong" :disabled="pending" @click="next">
-          {{ applies ? '일정 확인' : '다음 단계로' }}
+        <AppButton variant="strong" :disabled="pending || !canProceed" @click="next">
+          다음
         </AppButton>
       </footer>
     </template>

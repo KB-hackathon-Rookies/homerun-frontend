@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 10 · 심사 확인 상세.
  *
@@ -21,7 +22,11 @@ const checked = ref<Record<string, boolean>>({});
 </script>
 
 <template>
-  <GuideFrame title="심사 확인 상세" @back="navigateTo(`/contract/${planId}/review`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.loanReview]"
+    title="심사 확인 상세"
+    @back="navigateTo(`/contract/${planId}/review`)"
+  >
     <h2 class="text-option text-ink-hero px-1 pt-2">은행 담당자 확인 대본</h2>
 
     <p class="bg-surface-info rounded-field text-caption2 text-ink-hero px-3.5 py-3 font-medium">

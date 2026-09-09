@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 9 · 대출 신청 (D-10).
  *
@@ -23,10 +24,21 @@ const DOCS = [
 ];
 
 const checked = ref<Record<string, boolean>>({});
+
+/** 챙길 것을 다 확인해야 신청 완료로 넘어갈 수 있다. */
+const allChecked = computed(() => DOCS.every((doc) => checked.value[doc]));
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="3루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.loanApply]"
+    brand
+    base="3루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
@@ -50,14 +62,6 @@ const checked = ref<Record<string, boolean>>({});
 
       <CheckItem v-for="doc in DOCS" :key="doc" v-model="checked[doc]">{{ doc }}</CheckItem>
 
-      <p class="bg-warning-strong rounded-chip text-micro p-3 font-bold text-white">
-        💡 질권설정 통지가 임대인에게 도달하지 않으면 대출이 진행 안 될 수 있어요. 미리 알려두세요
-      </p>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/documents`)">
-        서류 발급 방법 보기
-      </DetailLink>
-
       <DetailLink @open="navigateTo(`/contract/${planId}/loan-apply-detail`)">
         신청 두 갈래·서류·질권설정 상세보기
       </DetailLink>
@@ -70,8 +74,12 @@ const checked = ref<Record<string, boolean>>({});
             이전
           </AppButton>
         </div>
-        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/review`)">
-          신청 완료
+        <AppButton
+          variant="strong"
+          :disabled="!allChecked"
+          @click="navigateTo(`/contract/${planId}/review`)"
+        >
+          다음
         </AppButton>
       </footer>
     </template>
