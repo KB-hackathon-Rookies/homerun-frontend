@@ -153,7 +153,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 은행 상담</p>
       <h1 class="text-question text-ink-card">은행 상담</h1>
       <AppCard v-if="property" class="flex flex-col gap-2">
         <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid" class="self-start">

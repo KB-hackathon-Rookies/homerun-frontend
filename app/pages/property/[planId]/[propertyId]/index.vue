@@ -80,7 +80,6 @@ onMounted(async () => {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
       <h1 class="text-question text-ink-card">매물 등록</h1>
 
       <!--

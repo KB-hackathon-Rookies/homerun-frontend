@@ -45,6 +45,7 @@ const coachSheets = computed(() => {
     :coach-sheets="coachSheets"
     :title="doc?.title ?? verdict?.policyName ?? '상품 상세'"
     base="2루"
+    :show-progress="false"
     @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
   >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
