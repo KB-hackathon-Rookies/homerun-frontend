@@ -4,6 +4,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 
+// 브라우저 탭 제목.
+useHead({ title: '저장한 정책' });
+
 /**
  * MY-02 저장함.
  *

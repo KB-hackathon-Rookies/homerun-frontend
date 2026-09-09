@@ -9,6 +9,9 @@
 const { title = '' } = defineProps<{ title?: string }>();
 
 const router = useRouter();
+
+// 헤더 제목을 브라우저 탭 제목으로도 쓴다.
+useHead(() => ({ title: title || undefined }));
 </script>
 
 <template>

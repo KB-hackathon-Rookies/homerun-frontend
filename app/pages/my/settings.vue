@@ -8,6 +8,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '설정' });
+
 /**
  * MY-05 설정.
  *

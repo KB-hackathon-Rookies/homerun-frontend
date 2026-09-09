@@ -6,9 +6,12 @@
  * 곁길**이라 3루 어디까지 왔는지를 다시 보여줄 이유가 없다. 본 화면에서
  * "상세보기" 로 들어와 다시 나가는 자리다.
  */
-defineProps<{ title: string }>();
+const props = defineProps<{ title: string }>();
 
 defineEmits<{ back: [] }>();
+
+// 헤더 제목을 브라우저 탭 제목으로도 쓴다.
+useHead(() => ({ title: props.title }));
 </script>
 
 <template>

@@ -4,6 +4,9 @@ import {
   type OpenBankingConnection,
 } from '~/api/openbanking-connection';
 
+// 브라우저 탭 제목.
+useHead({ title: '오픈뱅킹 연결 실패' });
+
 /**
  * ST-03 계좌를 연결하지 못했습니다.
  *

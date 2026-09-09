@@ -34,7 +34,7 @@ defineEmits<{ close: []; chat: [] }>();
         <div class="flex items-center gap-2.5">
           <!-- 시안 `Tiger/안내 중` — 손가락을 세워 설명하는 포즈다. 이미 있는 에셋을 쓴다. -->
           <img
-            src="/tiger/face-coach.png"
+            src="/tiger/face-coach.webp"
             alt=""
             class="size-10 shrink-0 rounded-full object-cover"
           />

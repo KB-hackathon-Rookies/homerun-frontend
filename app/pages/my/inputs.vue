@@ -6,6 +6,9 @@ import { messageFrom, statusFrom } from '~/utils/error';
 import { manwonFromWon, parseManwon } from '~/utils/amount';
 import { formatKoreanMoney } from '~/utils/money';
 
+// 브라우저 탭 제목.
+useHead({ title: '입력 정보' });
+
 /**
  * MY-03 입력값 수정.
  *

@@ -6,6 +6,9 @@ import { useAuthStore } from '~/stores/auth';
 import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '약관 동의' });
+
 /**
  * AU-05 약관 동의.
  *

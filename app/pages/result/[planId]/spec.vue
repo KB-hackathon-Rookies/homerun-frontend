@@ -154,7 +154,7 @@ onMounted(() => {
 
     <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" placement="center" @close="dismissCelebration">
-      <img src="/tiger/search.png" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
+      <img src="/tiger/search.webp" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
 
       <p class="text-title3 text-primary-strong">1루 안착!</p>
       <h2 class="text-stage text-ink-card font-bold">받을 수 있는 대출, 다 찾았어</h2>

@@ -5,6 +5,9 @@ import { parseManwon } from '~/utils/amount';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '준비 중' });
+
 /**
  * 독립 준비 문진(시안 벤치 1~4).
  *

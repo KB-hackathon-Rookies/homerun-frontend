@@ -3,6 +3,9 @@ import { socialLoginUrl } from '~/api/auth';
 import { useAuthStore } from '~/stores/auth';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '로그인' });
+
 /**
  * AU-03 로그인.
  *

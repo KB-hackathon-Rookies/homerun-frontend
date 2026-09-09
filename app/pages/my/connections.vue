@@ -7,6 +7,9 @@ import { useVerificationApi, type PendingCondition } from '~/api/verification';
 import { currentPlan } from '~/utils/currentPlan';
 import { formatDotDate } from '~/utils/date';
 
+// 브라우저 탭 제목.
+useHead({ title: '연결 관리' });
+
 /**
  * MY-04 연결 관리.
  *
