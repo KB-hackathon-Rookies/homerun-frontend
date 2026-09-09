@@ -110,7 +110,6 @@ const title = computed(() => TITLES[step.value] ?? '');
  * `-100` 이 100만 원으로 뒤집힌다.
  */
 const parsedDeposit = computed(() => parseManwon(deposit.value));
-const depositAmount = computed(() => parsedDeposit.value.value ?? 0);
 
 const canProceed = computed(() => {
   if (step.value === 0) return !!situation.value;
@@ -185,7 +184,10 @@ async function submit() {
     await saveInput(plan.id, {
       livesApartFromParents: situation.value === 'RENTING',
       ...(birthDate ? { birthDate } : {}),
-      ...(asksDeposit.value ? { currentDeposit: depositAmount.value } : {}),
+      // 검증된 값이 있을 때만 보낸다. 0 을 fallback 으로 넣지 않는다(공백=0원 방지).
+      ...(asksDeposit.value && parsedDeposit.value.value !== null
+        ? { currentDeposit: parsedDeposit.value.value }
+        : {}),
     });
 
     /*

@@ -208,9 +208,10 @@ async function next() {
     let financePatch: DiagnosisStepPatch;
     if (manual.value) {
       financePatch = {
-        monthlyIncome: parsedIncome.value.value ?? 0,
+        // canProceed 가 manual 일 때 income·assets 를 non-null 로 보장한다. 0 fallback 이 아니다.
+        monthlyIncome: parsedIncome.value.value!,
         incomeSource: 'MANUAL',
-        netAssets: parsedAssets.value.value ?? 0,
+        netAssets: parsedAssets.value.value!,
         assetSource: 'MANUAL',
       };
     } else {
@@ -227,7 +228,7 @@ async function next() {
 
     await save('FINANCIAL', {
       ...financePatch,
-      availableCash: parsedCash.value.value ?? 0,
+      availableCash: parsedCash.value.value!,
       /*
        * 기존 전세자금대출은 화면에서 묻지 않고 **없음으로 두고 판정한다.**
        *
@@ -242,7 +243,7 @@ async function next() {
       existingJeonseLoan: false,
       financialDataConfirmed: true,
     });
-    await save('HOPE_DEPOSIT', { hopeDeposit: parsedDeposit.value.value ?? 0 });
+    await save('HOPE_DEPOSIT', { hopeDeposit: parsedDeposit.value.value! });
     await save('REGION', { regionId: Number(regionId.value) });
     await submitFirstBase();
   } catch (cause) {
