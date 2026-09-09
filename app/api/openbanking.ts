@@ -4,9 +4,10 @@ import type { ApiResponse } from '~/types/api';
 /**
  * 오픈뱅킹 API.
  *
- * 연동은 금융결제원 인가 페이지를 거친다. 인가 URL 을 받아 사용자를 보내고,
- * 돌아왔는지 `connection` 으로 확인하고, 확인되면 `financial-summary` 로
- * 자산·소득을 가져온다.
+ * 실연동은 금융결제원 인가 페이지를 거치지만(인가 URL → 팝업 → 콜백), 사업자 등록 전
+ * 데모에서는 그 페이지를 쓸 수 없다. 그래서 `mock-connect` 로 인가 없이 연결만 세우고,
+ * `connection` 으로 확인한 뒤 `financial-summary` 로 자산·소득을 가져온다. 계좌와 요약은
+ * 백엔드가 샘플 데이터로 답한다.
  *
  * 요약은 숫자만 말한다 — 무엇이 연결됐는지는 `accounts` 가 말한다. 연동이
  * 정말 됐다는 것을 사용자가 눈으로 확인하는 곳이라 요약과 따로 둔다.
@@ -133,17 +134,14 @@ export function useOpenBankingApi() {
   const { $api } = useNuxtApp();
 
   return {
-    /** 인가 URL 을 받는다. 이 주소를 열어야 계좌 등록·동의가 시작된다. */
-    async connect() {
-      const { data } = await $api.get<ApiResponse<{ authorizationUrl: string }>>(`${BASE}/connect`);
-      return data.data.authorizationUrl;
-    },
-
     /**
-     * 데모용 가짜 연결. 금융결제원 인가(팝업·콜백) 없이 연결만 세운다.
+     * 연결을 세운다. **데모에서는 이것 하나뿐이다.**
      *
-     * 실연동이 불가한 데모에서 인가 페이지를 거치지 않고 바로 연결해, 이후 계좌·요약이
-     * 샘플 데이터로 답하게 한다. 연동 연출 지연은 화면(progress)이 만들고 이 호출은 즉시
+     * 실연동용 `GET /connect`(인가 URL 을 받아 팝업으로 여는 것)는 지웠다. 화면이 이미
+     * 부르지 않는데 남겨 두면 팝업 흐름이 되살아나기 쉽다 — 사업자 등록 전이라 그
+     * 인가 페이지 자체를 쓸 수 없다. 실연동을 붙일 때 git 이력에서 되살린다.
+     *
+     * 인가 페이지를 거치지 않고 바로 연결해, 이후 계좌·요약이 샘플 데이터로 답하게 한다. 연동 연출 지연은 화면(progress)이 만들고 이 호출은 즉시
      * 끝난다. 백엔드는 `mock-data=true` 일 때만 이 경로를 연다(운영은 404).
      */
     async mockConnect() {
