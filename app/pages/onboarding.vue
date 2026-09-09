@@ -20,8 +20,6 @@ interface Step {
   base: Base;
   title: string;
   description: string;
-  /** 문진 위에 얹는 씬 이미지. 시안이 각 카드마다 다른 호랑이를 세운다. */
-  image: string;
   note: string;
   noteTone?: 'primary' | 'success';
   card:
@@ -33,7 +31,6 @@ interface Step {
 const STEPS: Step[] = [
   {
     base: '1루',
-    image: '/illust/scene-search.png',
     title: '내가 받을 수 있는\n대출·정책을 찾아요',
     description: '내 조건과 정책 조건을 자동으로 매칭해줘요.',
     note: '공고 원문의 기준값과 대조합니다 · 규칙 버전 v2026.09-01',
@@ -49,7 +46,6 @@ const STEPS: Step[] = [
   },
   {
     base: '2루',
-    image: '/illust/scene-house.png',
     title: '내 매물이\n안전한지 확인해요',
     description: '등기부·위반건축물·반환보증 조건을 함께 판정해요.',
     note: '매물 정보를 검증 기준과 대조합니다 · 검증 규칙 v2026.09-01',
@@ -65,7 +61,6 @@ const STEPS: Step[] = [
   },
   {
     base: '3루',
-    image: '/illust/scene-checklist.png',
     title: '계약과 대출\n실행까지 챙겨드려요',
     description: '잔금일부터 이사까지, 챙길 서류와 순서를 알아서 정리해요.',
     note: '잔금일까지 자동 알림으로 놓치지 않아요.',
@@ -84,7 +79,6 @@ const STEPS: Step[] = [
   },
   {
     base: '홈',
-    image: '/illust/scene-celebrate.png',
     title: '이사 후\n정착까지 함께해요',
     description: '이사 후에 챙길 것들을, 때에 맞춰 알려드려요.',
     note: '홈런이 든든한 코치가 되어 끝까지 함께할게요!',
@@ -129,63 +123,48 @@ function back() {
 
 <template>
   <PhoneFrame>
-    <!--
-      시안(0-1 온보딩 4장)은 씬 이미지가 카드 뒤 배경으로 깔리고 그 위에
-      진행바·제목·카드가 얹힌다. 씬은 세로 긴 배경판(1170×2436)이라
-      `absolute inset-0 object-cover object-top` 로 전체를 덮고, 콘텐츠는
-      `relative z-10` 로 그 위에 뜬다.
-    -->
-    <div class="relative flex flex-1 flex-col overflow-hidden">
-      <img
-        :src="step.image"
-        alt=""
-        class="absolute inset-0 z-0 h-full w-full object-cover object-top"
-      />
+    <div class="flex flex-1 flex-col">
+      <div class="h-statusbar shrink-0" />
 
-      <div class="relative z-10 flex flex-1 flex-col">
-        <div class="h-statusbar shrink-0" />
+      <header class="h-topbar px-gutter flex shrink-0 items-center">
+        <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
+          <AppIcon name="chevron-left" class="size-icon" />
+        </button>
+      </header>
 
-        <header class="h-topbar px-gutter flex shrink-0 items-center">
-          <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="back">
-            <AppIcon name="chevron-left" class="size-icon" />
-          </button>
-        </header>
+      <div class="px-gutter flex flex-1 flex-col gap-6 pt-2 pb-6">
+        <StepIndicator :current="step.base" />
 
-        <div class="px-gutter flex flex-1 flex-col gap-6 pt-2 pb-6">
-          <StepIndicator :current="step.base" />
-
-          <!-- 씬 배경이 상단을 채우도록 제목·카드는 아래쪽에 몰아둔다. -->
-          <div class="flex flex-col gap-3 pt-32">
-            <h1 class="text-title2 text-ink whitespace-pre-line">{{ step.title }}</h1>
-            <p class="text-body2 text-ink-body">{{ step.description }}</p>
-          </div>
-
-          <MatchCard
-            v-if="step.card.kind === 'match'"
-            :badge="step.card.badge"
-            :rows="step.card.rows"
-          />
-          <TaskCard
-            v-else-if="step.card.kind === 'task'"
-            :label="step.card.label"
-            :value="step.card.value"
-            :progress="step.card.progress"
-            :tasks="step.card.tasks"
-          />
-          <SettleCard
-            v-else
-            :label="step.card.label"
-            :value="step.card.value"
-            :progress="step.card.progress"
-            :rows="step.card.rows"
-          />
+        <div class="flex flex-col gap-3">
+          <h1 class="text-title2 text-ink whitespace-pre-line">{{ step.title }}</h1>
+          <p class="text-body2 text-ink-body">{{ step.description }}</p>
         </div>
 
-        <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pb-cta-pad">
-          <NoteCard :tone="step.noteTone">{{ step.note }}</NoteCard>
-          <AppButton @click="next">{{ isLast ? '시작하기' : '다음' }}</AppButton>
-        </footer>
+        <MatchCard
+          v-if="step.card.kind === 'match'"
+          :badge="step.card.badge"
+          :rows="step.card.rows"
+        />
+        <TaskCard
+          v-else-if="step.card.kind === 'task'"
+          :label="step.card.label"
+          :value="step.card.value"
+          :progress="step.card.progress"
+          :tasks="step.card.tasks"
+        />
+        <SettleCard
+          v-else
+          :label="step.card.label"
+          :value="step.card.value"
+          :progress="step.card.progress"
+          :rows="step.card.rows"
+        />
       </div>
+
+      <footer class="px-gutter flex shrink-0 flex-col gap-2.5 pb-cta-pad">
+        <NoteCard :tone="step.noteTone">{{ step.note }}</NoteCard>
+        <AppButton @click="next">{{ isLast ? '시작하기' : '다음' }}</AppButton>
+      </footer>
     </div>
   </PhoneFrame>
 </template>

@@ -11,10 +11,19 @@ defineEmits<{ click: [] }>();
 <template>
   <button
     type="button"
-    class="border-ink-chevron text-badge text-ink-label flex size-3.5 shrink-0 items-center justify-center rounded-full border"
+    class="border-ink-chevron text-ink-label flex size-3.5 shrink-0 items-center justify-center rounded-full border"
     aria-label="이 질문을 왜 묻는지 보기"
     @click="$emit('click')"
   >
-    i
+    <svg viewBox="0 0 24 24" class="size-2" aria-hidden="true">
+      <circle cx="12" cy="6.5" r="2" fill="currentColor" />
+      <path
+        d="M12 11v7"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+    </svg>
   </button>
 </template>

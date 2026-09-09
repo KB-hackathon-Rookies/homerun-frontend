@@ -7,7 +7,9 @@
  *
  * 1. 그냥 입력 (이름, 생년월일)
  * 2. 비밀번호 — 오른쪽에 보기 토글
- * 3. 인증 — 오른쪽에 "인증번호 받기" 버튼. 이때는 바깥 테두리가 r14 로 감싼다
+ * 3. 인증 — 오른쪽에 "인증번호 받기" 버튼. 이때는 바깥 테두리가 r14 로 감싸고,
+ *    바탕과 테두리를 그 바깥 상자가 혼자 갖는다. 안쪽이 제 바탕을 또 깔면 높이가
+ *    1px 만 어긋나도(브라우저 축소 등) 바깥 아래 선을 덮어 상자가 잘려 보인다.
  *
  * 값이 차면 지우기(X)가 붙는다. 모바일에서 긴 입력을 한 글자씩 지우는 건 고통이고,
  * 특히 오타 난 이메일·휴대전화처럼 통째로 다시 쓰는 자리가 많다.
@@ -75,13 +77,17 @@ const hasAction = computed(() => !!slots.action);
     <div
       class="flex items-center"
       :class="[
-        hasAction ? 'rounded-button h-14 border' : '',
+        hasAction ? 'bg-surface rounded-button h-field border' : '',
         hasAction ? (error ? 'border-danger' : 'border-line') : '',
       ]"
     >
       <div
-        class="bg-surface rounded-field h-field flex flex-1 items-center gap-2 px-4"
-        :class="hasAction ? '' : error ? 'border-danger border' : 'border-line border'"
+        class="flex min-w-0 flex-1 items-center gap-2 px-4"
+        :class="
+          hasAction
+            ? 'h-full'
+            : ['bg-surface rounded-field h-field border', error ? 'border-danger' : 'border-line']
+        "
       >
         <input
           ref="field"
@@ -92,7 +98,7 @@ const hasAction = computed(() => !!slots.action);
           :readonly="readonly"
           :aria-invalid="error ? 'true' : undefined"
           :aria-describedby="error ? errorId : undefined"
-          class="text-input text-ink placeholder:text-ink-placeholder w-full bg-transparent outline-none"
+          class="text-input text-ink placeholder:text-ink-placeholder w-full min-w-0 bg-transparent outline-none"
           :class="readonly ? 'cursor-pointer' : ''"
         />
 

@@ -171,26 +171,26 @@ const coachOpen = ref(false);
 
       <h2 class="text-body3 text-ink-hero font-bold">송금 전 대조표</h2>
 
-      <AppCard class="flex flex-col gap-1 p-2.5">
-        <CheckItem v-model="checkedOwner" tone="filled">
+      <AppCard class="flex flex-col gap-2.5">
+        <CheckItem v-model="checkedOwner">
           <span class="flex items-center justify-between gap-2">
             <span>소유자</span>
             <span class="text-micro text-warning-strong font-normal">다르면 중단</span>
           </span>
         </CheckItem>
-        <CheckItem v-model="checkedSeniorDebt" tone="filled">
+        <CheckItem v-model="checkedSeniorDebt">
           <span class="flex items-center justify-between gap-2">
             <span>채권최고액</span>
             <span class="text-micro text-warning-strong font-normal">늘었으면 중단</span>
           </span>
         </CheckItem>
-        <CheckItem v-model="checkedMortgageCount" tone="filled">
+        <CheckItem v-model="checkedMortgageCount">
           <span class="flex items-center justify-between gap-2">
             <span>근저당 건수</span>
             <span class="text-micro text-warning-strong font-normal">늘었으면 중단</span>
           </span>
         </CheckItem>
-        <CheckItem v-model="checkedSeizure" tone="filled">
+        <CheckItem v-model="checkedSeizure">
           <span class="flex items-center justify-between gap-2">
             <span>압류·가압류</span>
             <span class="text-micro text-warning-strong font-normal">새로 생겼으면 중단</span>

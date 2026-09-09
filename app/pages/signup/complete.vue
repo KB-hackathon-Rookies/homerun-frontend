@@ -22,12 +22,8 @@ const greeting = computed(() =>
     <div class="h-statusbar shrink-0" />
 
     <div class="flex flex-1 flex-col items-center justify-center gap-4 px-6">
-      <!--
-        시안(가입 완료 화면)은 깃발 든 호랑이를 파란 원 위에 얹는다. `tiger/flag.png` 는
-        꽃가루가 함께 있는 컷이라 이 자리에 그대로 맞는다.
-      -->
-      <span class="bg-surface-info size-hero grid place-items-center overflow-hidden rounded-full">
-        <img src="/tiger/flag.png" alt="" class="h-25 w-auto" />
+      <span class="bg-surface size-hero grid place-items-center overflow-hidden rounded-full">
+        <img src="/tiger/main.webp" alt="" class="h-25 w-auto" />
       </span>
 
       <h1 class="text-title3 text-ink-hero">가입 완료!</h1>
