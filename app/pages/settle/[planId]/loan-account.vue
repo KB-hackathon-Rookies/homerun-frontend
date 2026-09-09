@@ -240,8 +240,6 @@ async function save() {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
-
       <h1 class="text-question text-ink-card">실행 대출 등록</h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">대출 정보를 불러오는 중이에요…</p>

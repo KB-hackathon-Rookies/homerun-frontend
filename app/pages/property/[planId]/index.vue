@@ -134,7 +134,7 @@ const coachOpen = ref(false);
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
       <div class="flex w-full items-center gap-2">
-        <h1 class="text-title2 text-ink-card flex-1">매물 목록</h1>
+        <h1 class="text-question text-ink-card flex-1">매물 목록</h1>
         <span class="text-label2 text-ink-label">{{ properties.length }}/{{ MAX_PROPERTIES }}</span>
       </div>
 

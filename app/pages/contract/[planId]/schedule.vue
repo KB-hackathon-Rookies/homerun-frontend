@@ -88,7 +88,7 @@ async function start() {
   if (push.permission.value === 'denied') {
     pushNotice.value = '알림이 차단되어 있어요. 브라우저 사이트 설정에서 알림을 허용해주세요.';
   } else if (push.permission.value === 'granted') {
-    pushNotice.value = '알림은 허용됐지만 기기 등록에 실패했어요. 잠시 후 다시 시도해주세요.';
+    pushNotice.value = '알림은 허용됐어요. 기기 등록을 다시 시도해주세요.';
   } else if (push.permission.value === 'unsupported') {
     pushNotice.value = '이 브라우저에서는 푸시 알림을 받을 수 없어요.';
   } else {
@@ -110,7 +110,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="1" />
 
-      <p class="text-caption1 text-ink-label font-medium">3루 · 일정</p>
       <h1 class="text-question text-ink-card">일정 만들기</h1>
 
       <AppCard class="flex flex-col gap-2">

@@ -11,12 +11,15 @@ import type { Base } from '~/components/common/StepIndicator.vue';
  * 뒤로가기는 그 아래 줄에 따로 둔다. 한 줄에 모두 몰아넣으면 긴 제목과 홈 이동이
  * 서로 밀려, 깊은 화면일수록 나가기가 어려워진다.
  */
-defineProps<{
-  title: string;
-  base: Base;
-  /** 상세 화면은 현재 루 진행띠를 숨기고 내용에 집중한다. */
-  showProgress?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    title: string;
+    base: Base;
+    /** 상세 화면만 명시적으로 false를 넘긴다. 기본은 전체 여정을 표시한다. */
+    showProgress?: boolean;
+  }>(),
+  { showProgress: true },
+);
 
 defineEmits<{ back: [] }>();
 </script>
@@ -26,7 +29,7 @@ defineEmits<{ back: [] }>();
 
   <BrandBar bordered />
 
-  <BaseStrip v-if="showProgress !== false" :base="base" />
+  <BaseStrip v-if="showProgress" :base="base" />
 
   <header
     class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
@@ -35,6 +38,6 @@ defineEmits<{ back: [] }>();
       <AppIcon name="chevron-left" class="size-icon" />
     </button>
 
-    <h1 class="text-headline2 text-ink-hero min-w-0 flex-1 truncate">{{ title }}</h1>
+    <h1 class="text-question text-ink-hero min-w-0 flex-1 truncate">{{ title }}</h1>
   </header>
 </template>

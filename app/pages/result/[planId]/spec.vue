@@ -139,7 +139,6 @@ onMounted(() => {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3.5 px-4 pt-4 pb-6">
       <SubStep :steps="SUB_STEPS" :current="3" />
 
-      <p class="text-caption1 text-ink-label font-medium">1루 · 예상 진단</p>
       <h1 class="text-question text-ink-card">받을 수 있는 대출을 모두 찾았어요</h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>

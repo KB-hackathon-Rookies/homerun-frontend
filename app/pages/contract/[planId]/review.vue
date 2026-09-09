@@ -39,8 +39,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
-      <p class="text-caption1 text-ink-label font-medium">3루 · 대출 신청</p>
-
       <h1 class="text-question text-ink-card">D-3 심사 확인</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">전화 통화 체크리스트</h2>

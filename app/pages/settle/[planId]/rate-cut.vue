@@ -76,8 +76,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
-
       <h1 class="text-question text-ink-card">금리인하요구권</h1>
 
       <!-- 판정은 실행된 대출 상품에서 나온다. 없으면 대상 여부를 단정하지 않는다. -->

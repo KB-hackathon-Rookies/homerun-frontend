@@ -15,19 +15,27 @@ import type { Base } from '~/components/common/StepIndicator.vue';
  * 머리가 두 가지다. 기본은 뒤로가기 + 제목(`StageBar`)이고, 시안 1루 화면들은
  * 제목 줄 없이 워드마크로 시작한다(`brand`). 뒤로가기는 그때 하단 `이전` 이 맡는다.
  */
-const props = defineProps<{
-  /** `brand` 가 아닐 때 상단 바에 세우는 제목. */
-  title?: string;
-  base: Base;
-  /** 제목 줄 대신 워드마크 + 야구 단계 띠로 시작한다. */
-  brand?: boolean;
-  /** 상세 안내처럼 여정 진행띠가 필요 없는 화면인가. */
-  showProgress?: boolean;
-  /** 경로로 알 수 없는 화면이 코치 FAB 에 넘기는 단계. */
-  coachStage?: PlanStage;
-  /** 화면이 준비해 둔 코치 TIME 문구. */
-  coachSheets?: CoachSheet[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    /** `brand` 가 아닐 때 상단 바에 세우는 제목. */
+    title?: string;
+    base: Base;
+    /** 제목 줄 대신 워드마크 + 야구 단계 띠로 시작한다. */
+    brand?: boolean;
+    /** 상세 안내처럼 여정 진행띠가 필요 없는 화면인가. 기본은 반드시 표시한다. */
+    showProgress?: boolean;
+    /** 경로로 알 수 없는 화면이 코치 FAB 에 넘기는 단계. */
+    coachStage?: PlanStage;
+    /** 화면이 준비해 둔 코치 TIME 문구. */
+    coachSheets?: CoachSheet[];
+  }>(),
+  {
+    title: undefined,
+    showProgress: true,
+    coachStage: undefined,
+    coachSheets: undefined,
+  },
+);
 
 defineEmits<{ back: [] }>();
 
@@ -50,7 +58,7 @@ const slots = useSlots();
     <template v-if="brand">
       <div class="h-statusbar bg-surface shrink-0" />
       <BrandBar />
-      <BaseStrip v-if="props.showProgress !== false" :base="base" />
+      <BaseStrip v-if="props.showProgress" :base="base" />
     </template>
     <StageBar
       v-else

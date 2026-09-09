@@ -34,8 +34,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="3" />
 
-      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
-
       <h1 class="text-question text-ink-card">중개보수·이사비 지원</h1>
 
       <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4.5">

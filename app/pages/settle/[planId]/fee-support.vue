@@ -60,8 +60,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="1" />
 
-      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
-
       <h1 class="text-question text-ink-card">보증료 지원 신청</h1>
 
       <!--

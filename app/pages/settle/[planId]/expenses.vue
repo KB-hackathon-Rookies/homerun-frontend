@@ -90,8 +90,6 @@ async function remove(expenseId: number) {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
-
       <h1 class="text-question text-ink-card">고정지출 등록</h1>
       <AppCard class="flex flex-col gap-3">
         <AppInput v-model="name" label="항목 이름" placeholder="예: 관리비" />
