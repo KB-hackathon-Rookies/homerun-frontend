@@ -3,6 +3,7 @@ import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
 import { useSettlementApi, type LoanAccount, type SettlementDashboard } from '~/api/settlement';
 import { PRODUCT_LABEL } from '~/components/contract/labels';
+import { COACH_TIME } from '~/components/home/coachSheets';
 import type { BadgeTone } from '~/components/settle/StatusBadge.vue';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
@@ -38,6 +39,7 @@ const loan = ref<LoanAccount | null>(null);
 const loanChecked = ref(false);
 const pending = ref(true);
 const error = ref('');
+const coachOpen = ref(false);
 
 /** 아직 등록 전인가. 확인이 끝나기 전엔 없다고 단정하지 않는다. */
 const needsLoan = computed(() => loanChecked.value && !loan.value);
@@ -114,7 +116,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell brand base="홈">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.settlementHome]"
+    :coach-above-footer="false"
+    brand
+    base="홈"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">정착 현황을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>

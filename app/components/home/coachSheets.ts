@@ -11,6 +11,23 @@ import type { CoachSheet } from '~/components/coach/sheet';
 const TODO = '📝 시안 문구는 홈 코치 TIME 노드에서 pull 해서 채워야 한다.';
 
 export const COACH_TIME = {
+  /** 홈 정착 대시보드 */
+  settlementHome: {
+    title: '정착 관리, 같이 챙겨볼게',
+    intro:
+      '입주 뒤에도 대출·보증금·생활비는 계속 확인해야 해요. 지금 해야 할 일부터 하나씩 끝내면 돼요.',
+    qa: [
+      {
+        q: '무엇부터 보면 되나요?',
+        a: '화면 맨 위의 ‘지금 해야 할 일’을 먼저 확인하세요. 마감이 가까운 일부터 정리해드려요.',
+      },
+      {
+        q: '매달 챙길 건 무엇인가요?',
+        a: '실행 대출과 고정지출을 등록하면 월 이자와 주거비를 계속 살펴볼 수 있어요.',
+      },
+    ],
+    related: [{ id: 'safe-contract-333', label: '안심계약 3·3·3 법칙' }],
+  },
   /** 홈 2 · 반환보증 가입 (`687:9717`) */
   returnGuarantee: { title: '반환보증 가입', intro: TODO, qa: [] },
   /** 홈 3 · 보증료 지원 신청 (`687:9819`) */
