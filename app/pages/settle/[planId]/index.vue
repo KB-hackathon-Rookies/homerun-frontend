@@ -3,6 +3,7 @@ import { useDashboardApi, type Dashboard } from '~/api/dashboard';
 import { usePropertyApi, type PropertyDecision } from '~/api/property';
 import { useSettlementApi, type LoanAccount, type SettlementDashboard } from '~/api/settlement';
 import { PRODUCT_LABEL } from '~/components/contract/labels';
+import { COACH_TIME } from '~/components/home/coachSheets';
 import type { BadgeTone } from '~/components/settle/StatusBadge.vue';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
@@ -38,6 +39,7 @@ const loan = ref<LoanAccount | null>(null);
 const loanChecked = ref(false);
 const pending = ref(true);
 const error = ref('');
+const coachOpen = ref(false);
 
 /** 아직 등록 전인가. 확인이 끝나기 전엔 없다고 단정하지 않는다. */
 const needsLoan = computed(() => loanChecked.value && !loan.value);
@@ -114,7 +116,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="홈" base="홈" @back="navigateTo('/home')">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.settlementHome]"
+    :coach-above-footer="false"
+    brand
+    base="홈"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">정착 현황을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -240,12 +248,5 @@ onMounted(async () => {
         </AppButton>
       </footer>
     </template>
-
-    <!--
-      정착 화면에서 메인으로 돌아갈 길이 헤더의 뒤로가기 화살표뿐이었다.
-      홈·마이와 같은 탭바를 놓아 어디서든 한 번에 옮겨 갈 수 있게 한다.
-      이 계획의 단계가 홈(4루)이라 `home` 을 현재 탭으로 둔다.
-    -->
-    <TabBar active="home" :plan-id="planId" />
   </StageShell>
 </template>

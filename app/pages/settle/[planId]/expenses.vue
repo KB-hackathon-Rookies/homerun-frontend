@@ -86,11 +86,11 @@ async function remove(expenseId: number) {
 </script>
 
 <template>
-  <StageShell brand base="홈">
+  <StageShell coach-above-footer="compact" brand base="홈">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 
-      <h1 class="text-question text-ink-card">고정지출 등록</h1>
+      <HomeBackLink :plan-id="planId" title="고정지출 등록" />
       <AppCard class="flex flex-col gap-3">
         <AppInput v-model="name" label="항목 이름" placeholder="예: 관리비" />
         <label class="text-label2 text-ink flex flex-col gap-1.5">

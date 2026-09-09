@@ -28,12 +28,15 @@ const props = withDefaults(
     coachStage?: PlanStage;
     /** 화면이 준비해 둔 코치 TIME 문구. */
     coachSheets?: CoachSheet[];
+    /** 고정 푸터와의 간격. 홈 상세는 `compact` 로 조금만 띄운다. */
+    coachAboveFooter?: boolean | 'compact';
   }>(),
   {
     title: undefined,
     showProgress: true,
     coachStage: undefined,
     coachSheets: undefined,
+    coachAboveFooter: undefined,
   },
 );
 
@@ -53,7 +56,7 @@ const slots = useSlots();
     fill
     :coach-stage="coachStage"
     :coach-sheets="coachSheets"
-    :coach-above-footer="Boolean(slots.footer)"
+    :coach-above-footer="props.coachAboveFooter ?? Boolean(slots.footer)"
   >
     <template v-if="brand">
       <div class="h-statusbar bg-surface shrink-0" />

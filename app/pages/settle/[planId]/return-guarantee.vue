@@ -128,13 +128,13 @@ const coachOpen = ref(false);
   <StageShell
     v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.returnGuarantee]"
+    coach-above-footer="compact"
     brand
     base="홈"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="0" />
-
-      <h1 class="text-question text-ink-card">반환보증 가입</h1>
+      <HomeBackLink :plan-id="planId" title="반환보증 가입" />
 
       <!--
         내 담보가 무엇이냐로 이 화면의 쓸모가 갈린다. 담보를 아직 모르면

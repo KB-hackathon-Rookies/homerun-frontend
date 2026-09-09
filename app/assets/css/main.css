@@ -383,6 +383,8 @@
   --spacing-fab-lift: calc(92px + env(safe-area-inset-bottom, 0px));
   /* 안내문까지 포함한 고정 푸터는 CTA만 있을 때보다 높다. FAB은 항상 그 위에 둔다. */
   --spacing-fab-footer-lift: calc(172px + env(safe-area-inset-bottom, 0px));
+  /* 홈 상세는 단일 CTA 위에 24px만 띄워 코치가 내용과 멀어지지 않게 한다. */
+  --spacing-fab-footer-compact: calc(116px + env(safe-area-inset-bottom, 0px));
   --spacing-step-circle: 28px; /* 홈 진행 카드 · 단계 원 */
   --spacing-badge: 14px; /* 알림 개수 원 */
   --spacing-row: 52px; /* 마이 한 줄 */

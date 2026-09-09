@@ -83,9 +83,9 @@ const coachOpen = ref(false);
 
     <StepFooter
       @back="navigateTo(`/contract/${planId}/visit`)"
-      @next="navigateTo(`/contract/${planId}/fixed-date`)"
+      @next="navigateTo(`/contract/${planId}/registry`)"
     >
-      확정일자 받기
+      계약 당시 등기부 기록하기
     </StepFooter>
   </StageShell>
 </template>

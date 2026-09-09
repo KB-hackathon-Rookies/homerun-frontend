@@ -26,7 +26,7 @@
  */
 defineProps<{
   /** 이전·다음과 안내문이 있는 고정 푸터를 넘겨 띄운다. */
-  aboveFooter?: boolean;
+  aboveFooter?: boolean | 'compact';
 }>();
 
 defineEmits<{ open: [] }>();
@@ -39,7 +39,13 @@ defineEmits<{ open: [] }>();
         type="button"
         aria-label="코치에게 물어보기"
         class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
-        :class="aboveFooter ? 'bottom-fab-footer-lift' : 'bottom-fab-lift'"
+        :class="
+          aboveFooter === 'compact'
+            ? 'bottom-fab-footer-compact'
+            : aboveFooter
+              ? 'bottom-fab-footer-lift'
+              : 'bottom-fab-lift'
+        "
         @click="$emit('open')"
       >
         <img src="/tiger/face-default.webp" alt="" class="size-11 rounded-full object-cover" />

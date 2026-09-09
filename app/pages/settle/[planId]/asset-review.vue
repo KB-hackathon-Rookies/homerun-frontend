@@ -44,13 +44,14 @@ const coachOpen = ref(false);
   <StageShell
     v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.assetReview]"
+    coach-above-footer="compact"
     brand
     base="홈"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="2" />
 
-      <h1 class="text-question text-ink-card">사후자산심사</h1>
+      <HomeBackLink :plan-id="planId" title="사후자산심사" />
       <!-- 대상 여부는 실행된 대출 상품이 정한다. 없으면 어느 쪽으로도 단정하지 않는다. -->
       <div v-if="needsLoan" class="bg-surface-info rounded-field flex flex-col gap-2 p-4">
         <p class="text-card-title text-primary-strong font-bold">대출 정보를 먼저 등록해주세요</p>

@@ -54,13 +54,14 @@ const coachOpen = ref(false);
   <StageShell
     v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.feeSupport]"
+    coach-above-footer="compact"
     brand
     base="홈"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="1" />
 
-      <h1 class="text-question text-ink-card">보증료 지원 신청</h1>
+      <HomeBackLink :plan-id="planId" title="보증료 지원 신청" />
 
       <!--
         판정 문구가 금액 라벨 자리를 덮고 있었다. 그러면 "최대 40만원" 이 무슨

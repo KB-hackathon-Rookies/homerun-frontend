@@ -23,7 +23,7 @@ const {
   stage: PlanStage;
   sheets?: CoachSheet[];
   /** 고정 CTA와 겹치지 않도록 FAB을 푸터 위로 올린다. */
-  aboveFooter?: boolean;
+  aboveFooter?: boolean | 'compact';
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
