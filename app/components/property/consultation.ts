@@ -72,20 +72,20 @@ export const BANKS = [
 /**
  * 2루를 닫을 수 있는 상담인가.
  *
- * 서버(`second-base/complete`)는 상품·담보·승인한도·금리를 **모두 확인한** 상담만
- * 최종 조건으로 받는다. "가능" 만 보고 고르면 확정(`decision`)은 지나가고 완료에서
- * 409 로 막혀, 확정은 이미 기록됐는데 계획은 2루에 갇힌다.
+ * "가능" 만 보고 고르면 확정(`decision`)은 지나가고 완료에서 409 로 막혀,
+ * 확정은 이미 기록됐는데 계획은 2루에 갇힌다. 그래서 고르는 쪽이 상품·담보·
+ * 승인한도를 다 채운 상담만 최종 조건으로 본다.
  *
- * 그래서 고르는 쪽이 서버와 같은 조건으로 걸러야 한다. 상담을 저장할 때는
- * "못 들었어요" 를 그대로 받는 게 맞고(안 들은 걸 지어내면 안 된다), 그중
- * 무엇으로 2루를 닫을지는 여기서 가른다 — 저장 규칙과 확정 규칙은 다른 문제다.
+ * 금리는 화면에서 안 받는다(상담 결과 입력에 금리 문항이 없다) — 그래서 여기
+ * 조건에도 넣지 않는다. 상담을 저장할 때는 "못 들었어요" 를 그대로 받는 게
+ * 맞고(안 들은 걸 지어내면 안 된다), 그중 무엇으로 2루를 닫을지는 여기서
+ * 가른다 — 저장 규칙과 확정 규칙은 다른 문제다.
  */
 export const isFinalTerms = (item: Consultation) =>
   item.resultStatus === 'POSSIBLE' &&
   item.loanProduct !== 'UNKNOWN' &&
   item.collateralMethod !== 'UNKNOWN' &&
-  item.approvedLimit !== null &&
-  item.quotedRate !== null;
+  item.approvedLimit !== null;
 
 /**
  * 이 상담이 2루를 닫기에 무엇이 모자란가. 화면에 그대로 나열한다.
@@ -98,7 +98,6 @@ export function missingFinalTerms(item: Consultation): string[] {
   if (item.loanProduct === 'UNKNOWN') missing.push('상품');
   if (item.collateralMethod === 'UNKNOWN') missing.push('담보');
   if (item.approvedLimit === null) missing.push('승인한도');
-  if (item.quotedRate === null) missing.push('금리');
   return missing;
 }
 
