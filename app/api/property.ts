@@ -160,6 +160,21 @@ export function usePropertyApi() {
     },
 
     /**
+     * 매물을 지우지 않고 워크플로를 첫 STEP(BUILDING)으로 되돌린다.
+     *
+     * 잘못 입력해 불가가 난 매물을 삭제·재등록 없이 고칠 때 쓴다. 사람이 답한 값
+     * (위반건축물·등기부 체크리스트)만 지워지고 주소·조회값은 남는다. 새 workflow
+     * (단계·revision)를 돌려주므로, 이어서 그 단계 화면으로 보낸다. 최종 선택·계약
+     * 매물은 서버가 막는다(409).
+     */
+    async reDiagnose(planId: number, propertyId: number) {
+      const { data } = await $api.post<ApiResponse<PropertyWorkflow>>(
+        `${properties(planId)}/${propertyId}/re-diagnose`,
+      );
+      return data.data;
+    },
+
+    /**
      * 매물을 등록하고 건축물대장·실거래를 한 번에 조회한다.
      *
      * 주소 검색 결과를 통째로 넘긴다. 조회에 필요한 법정동 코드와 지번이

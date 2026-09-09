@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { LoanCard } from '~/api/policy';
+import { usePropertyApi } from '~/api/property';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
 import { useProperty } from '~/composables/useProperty';
 import { trafficTone } from '~/components/property/trafficLight';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
+import { messageFrom } from '~/utils/error';
 import { COACH_TIME } from '~/components/property/coachSheets';
 import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
@@ -58,6 +60,30 @@ const available = computed(() => cards.value.filter((card) => !failedCodes.value
 const unavailable = computed(() => results.value.filter((result) => result.verdict === 'FAIL'));
 
 const open = (code: string) => navigateTo(`/property/${planId}/${propertyId}/products/${code}`);
+
+/**
+ * 재진단 — 입력이 잘못돼 불가가 났을 때 삭제·재등록 없이 처음 STEP 부터 다시 답한다.
+ *
+ * 워크플로가 단방향이라 이 화면에서 앞 STEP 을 직접 열 수 없고, 서버가 위반·등기부
+ * 답을 지우고 BUILDING 으로 되돌린다. 되돌린 뒤 그 STEP(건축물대장 입력)로 보낸다.
+ */
+const confirming = ref(false);
+const rediagnosing = ref(false);
+const rediagnoseError = ref('');
+
+async function reDiagnose() {
+  if (rediagnosing.value) return;
+  rediagnosing.value = true;
+  rediagnoseError.value = '';
+  try {
+    await usePropertyApi().reDiagnose(planId, propertyId);
+    await navigateTo(`/property/${planId}/${propertyId}/building`);
+  } catch (cause) {
+    rediagnoseError.value = messageFrom(cause, '재진단하지 못했어요. 잠시 후 다시 시도해주세요.');
+  } finally {
+    rediagnosing.value = false;
+  }
+}
 
 /** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
 const coachOpen = ref(false);
@@ -121,8 +147,38 @@ const coachOpen = ref(false);
             <AppIcon name="chevron-right" class="text-ink-muted size-4 shrink-0" />
           </button>
         </section>
+
+        <!-- 입력이 잘못돼 불가가 났을 때 삭제 없이 처음부터 다시 답하는 길. -->
+        <button
+          type="button"
+          class="text-caption2 text-ink-muted hover:text-ink-body self-center py-1 font-medium underline"
+          @click="confirming = true"
+        >
+          입력이 잘못됐나요? 매물 다시 진단하기
+        </button>
       </template>
     </div>
+
+    <DimOverlay v-if="confirming" placement="center" @close="confirming = false">
+      <p class="text-headline2 text-ink">이 매물을 다시 진단할까요?</p>
+      <p class="text-label2 text-ink-muted text-center">
+        위반건축물·등기부 답변이 지워지고 주택정보 입력부터 다시 진행해요. 주소·조회 결과는
+        그대로예요.
+      </p>
+      <p v-if="rediagnoseError" class="text-label2 text-danger text-center">
+        {{ rediagnoseError }}
+      </p>
+      <div class="flex w-full gap-2.5 pt-2">
+        <div class="flex-1">
+          <AppButton variant="white" @click="confirming = false">취소</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" :disabled="rediagnosing" @click="reDiagnose">
+            {{ rediagnosing ? '되돌리는 중…' : '다시 진단' }}
+          </AppButton>
+        </div>
+      </div>
+    </DimOverlay>
 
     <template #footer>
       <StepFooter
