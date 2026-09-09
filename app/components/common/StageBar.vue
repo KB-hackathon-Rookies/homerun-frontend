@@ -13,6 +13,9 @@ import type { Base } from '~/components/common/StepIndicator.vue';
 defineProps<{ title: string; base: Base }>();
 
 defineEmits<{ back: [] }>();
+
+const { hasUnread, refresh } = useUnreadNotifications();
+onMounted(refresh);
 </script>
 
 <template>
@@ -39,7 +42,13 @@ defineEmits<{ back: [] }>();
       aria-label="알림"
       @click="navigateTo('/notifications')"
     >
-      <AppIcon name="bell" class="size-icon" />
+      <span class="relative inline-flex">
+        <AppIcon name="bell" class="size-icon" />
+        <span
+          v-if="hasUnread"
+          class="bg-danger-deep ring-surface absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2"
+        />
+      </span>
     </button>
     <button
       type="button"

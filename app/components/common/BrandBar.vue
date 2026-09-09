@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 워드마크와 내 정보·홈이 있는 상단 바.
+ * 워드마크와 알림·마이가 있는 상단 바.
  *
  * 시안 메인 1~10 이 전부 이 줄로 시작한다. 홈은 이것만 쓰고, 하위 화면은
  * 아래에 제목 줄(`PageBar`)을 한 겹 더 얹는다 — 그때는 아래 선을 제목 줄이
@@ -12,6 +12,9 @@ const { bordered = false } = defineProps<{
   /** 아래 구분선. 이 줄로 상단이 끝날 때만 켠다. */
   bordered?: boolean;
 }>();
+
+const { hasUnread, refresh } = useUnreadNotifications();
+onMounted(refresh);
 </script>
 
 <template>
@@ -27,7 +30,14 @@ const { bordered = false } = defineProps<{
 
     <!-- 오른쪽엔 알림·마이 둘만. 클릭 영역 40px(p-2 + 24px 아이콘). -->
     <button type="button" class="p-2" aria-label="알림" @click="navigateTo('/notifications')">
-      <AppIcon name="bell" class="text-ink-hero size-6" />
+      <span class="relative inline-flex">
+        <AppIcon name="bell" class="text-ink-hero size-6" />
+        <!-- 안 읽은 알림이 있을 때만. 상태가 없으면(0건) 안 켠다. -->
+        <span
+          v-if="hasUnread"
+          class="bg-danger-deep ring-surface absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2"
+        />
+      </span>
     </button>
     <button type="button" class="-mr-2 p-2" aria-label="마이페이지" @click="navigateTo('/my')">
       <AppIcon name="user" class="text-ink-hero size-6" />
