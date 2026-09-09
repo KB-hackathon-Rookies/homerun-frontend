@@ -37,6 +37,8 @@ const pending = ref(true);
 const error = ref('');
 /** 대출이 아직 등록되지 않았는가(404). 에러가 아니라 다음에 할 일이다. */
 const needsLoan = ref(false);
+/** 확정 조건 조회가 실패했는가. 못 읽은 것을 "안 넣었다" 로 말하지 않기 위해 따로 센다. */
+const decisionFailed = ref(false);
 
 const checked = ref<Record<string, boolean>>({});
 
@@ -77,7 +79,7 @@ onMounted(() => {
       principal.value = found.consultation?.approvedLimit ?? null;
       rate.value = found.consultation?.quotedRate ?? null;
     })
-    .catch(() => {});
+    .catch(() => (decisionFailed.value = true));
 
   useSettlementApi()
     .cashFlow(planId)
@@ -104,7 +106,6 @@ onMounted(() => {
 
 <template>
   <StageShell title="이번 달 상태" base="홈" @back="navigateTo(`/settle/${planId}`)">
-
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <CoachTip>
         매달 얼마가 나가는지 알아야 연체를 막을 수 있어. 첫 달만 잡아두면 그다음은 쉬워
@@ -163,6 +164,9 @@ onMounted(() => {
           <template v-else-if="needsLoan">
             등록된 실행 대출이 없어요. 위에서 대출을 먼저 등록해주세요.
           </template>
+          <template v-else-if="decisionFailed">
+            확정한 대출 조건을 불러오지 못했어요. 값이 없는 게 아니라 지금 읽지 못한 거예요.
+          </template>
           <template v-else>
             확정한 대출 조건과 월 소득·관리비가 모두 있어야 셀 수 있어요. 아직 하나가 비어 있어요.
           </template>
@@ -200,25 +204,25 @@ onMounted(() => {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
-      <!--
+      <footer class="px-gutter-tight bg-surface flex shrink-0 flex-col gap-2 pt-2.5 pb-cta-pad">
+        <!--
         관리비가 주거비의 절반을 가른다. 등록 화면(`expenses`)이 이미 있는데
         여기서 잠겨 있어 아무도 닿지 못했다.
       -->
-      <div class="flex gap-2.5">
-        <div class="w-29 shrink-0">
-          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        <div class="flex gap-2.5">
+          <div class="w-29 shrink-0">
+            <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+          </div>
+          <div class="flex-1">
+            <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
+              고정지출 등록
+            </AppButton>
+          </div>
         </div>
-        <div class="flex-1">
-          <AppButton variant="strong" @click="navigateTo(`/settle/${planId}/expenses`)">
-            고정지출 등록
-          </AppButton>
-        </div>
-      </div>
-      <p class="text-micro text-ink-muted text-center">
-        관리비를 넣으면 주거비와 RIR 이 더 정확해져요
-      </p>
-    </footer>
-</template>
+        <p class="text-micro text-ink-muted text-center">
+          관리비를 넣으면 주거비와 RIR 이 더 정확해져요
+        </p>
+      </footer>
+    </template>
   </StageShell>
 </template>

@@ -24,6 +24,9 @@ const changes = ref<PreferentialRateChange[]>([]);
 const guide = ref<RateCutRight | null>(null);
 /** 대출이 아직 등록되지 않았는가(404). 판정이 실행된 대출 상품에서 나온다. */
 const needsLoan = ref(false);
+/** 조회가 실패했는가. 대출을 안 넣은 것(404)과 못 읽은 것을 섞으면 안 된다. */
+const guideFailed = ref(false);
+const decisionFailed = ref(false);
 
 const eligible = computed(() => guide.value?.applicable ?? null);
 
@@ -43,14 +46,17 @@ onMounted(() => {
   usePropertyApi()
     .decision(planId)
     .then((found) => (product.value = found.consultation?.loanProduct ?? null))
-    .catch(() => {});
+    .catch(() => (decisionFailed.value = true));
 
   useSettlementApi()
     .rateCutRight(planId)
     .then((found) => (guide.value = found))
     .catch((cause) => {
       // 대출 미등록이면 404 다. 판정을 지어내지 않고 등록부터 안내한다.
+      // 그 밖의 실패는 "안 넣었다" 가 아니라 "못 읽었다" 라 따로 말한다 — 전에는
+      // 아무것도 띄우지 않아서, 화면이 비어 있는 이유를 알 길이 없었다.
       if (statusFrom(cause) === 404) needsLoan.value = true;
+      else guideFailed.value = true;
     });
 
   usePolicyApi()
@@ -62,7 +68,6 @@ onMounted(() => {
 
 <template>
   <StageShell title="금리인하요구권" base="홈" @back="navigateTo(`/settle/${planId}`)">
-
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>
         은행 대출을 받은 사람만 해당돼. 버팀목은 국토부 고시 금리라 은행이 깎아줄 권한이 없어
@@ -81,6 +86,21 @@ onMounted(() => {
         >
           실행 대출 등록하러 가기 →
         </button>
+      </div>
+
+      <!--
+        못 읽었을 뿐인데 화면이 비면 대상이 아닌 것으로 읽힌다. 그래서 이유를 적는다.
+        다만 대출 등록 안내가 먼저다 — 그건 지금 할 수 있는 일이고 이건 기다리는 일이다.
+      -->
+      <div
+        v-else-if="guideFailed || decisionFailed"
+        class="bg-badge-warning rounded-field flex flex-col gap-2 p-4"
+      >
+        <p class="text-card-title text-warning-strong font-bold">정보를 불러오지 못했어요</p>
+        <p class="text-step text-ink-hero-body font-normal">
+          금리인하요구권 대상인지 아직 판단하지 못했어요. 대상이 아니라는 뜻은 아니에요 — 잠시 후
+          다시 열어봐 주세요.
+        </p>
       </div>
 
       <div
@@ -148,21 +168,23 @@ onMounted(() => {
       확인으로 둔다.
     -->
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton
-          v-if="eligible"
-          variant="strong"
-          @click="navigateTo(`/settle/${planId}/rate-cut-detail`)"
-        >
-          은행에 신청
-        </AppButton>
-        <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)">확인</AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}`)">이전</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton
+            v-if="eligible"
+            variant="strong"
+            @click="navigateTo(`/settle/${planId}/rate-cut-detail`)"
+          >
+            은행에 신청
+          </AppButton>
+          <AppButton v-else variant="strong" @click="navigateTo(`/settle/${planId}`)"
+            >확인</AppButton
+          >
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>
