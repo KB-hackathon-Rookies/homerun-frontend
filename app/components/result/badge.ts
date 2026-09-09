@@ -25,11 +25,13 @@ export function matchBadge(card: LoanCard): Badge {
  * 조건을 통과했어도 자기자금이 모자라면 당장은 못 쓴다. 그 차이를 뱃지로
  * 드러낸다 — 통과한 카드가 넷이어도 오늘 쓸 수 있는 건 둘일 수 있다.
  *
- * 상담 안내에는 금액이 없어 이 잣대를 댈 수 없다. 뱃지를 안 붙인다 —
- * 비교할 수 없는 카드에 비교 결과를 붙이면 그게 곧 잘못된 추천이다.
+ * 상담 안내에는 금액이 없어 이 잣대를 댈 수 없다. matchBadge 와 같이
+ * "항상 매칭" 을 붙인다 — 조건을 안 보는 상품이라는 뜻이지, 비교 결과가 아니다.
  */
 export function specBadge(card: LoanCard): Badge | null {
-  if (card.type === 'CONSULTATION' || card.ownFundsShortfall === null) return null;
+  // matchBadge 와 같은 처리 — 상담 안내는 조건을 안 보는 상품이라 "항상 매칭" 이다.
+  if (card.type === 'CONSULTATION') return { tone: 'informative', label: '항상 매칭' };
+  if (card.ownFundsShortfall === null) return null;
   return card.ownFundsShortfall > 0
     ? { tone: 'negative', label: '부족' }
     : { tone: 'informative', label: '추천' };

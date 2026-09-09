@@ -326,11 +326,7 @@ function back() {
       <p class="text-caption1 text-ink-label font-medium">1루 · 추가 정보</p>
       <h1 class="text-question text-ink-card">자산과 희망 조건을 알려주세요</h1>
 
-      <QuestionBlock
-        v-if="hasSummary"
-        question="오픈뱅킹으로 조회한 정보예요. 맞나요?"
-        @info="coachOpen = true"
-      >
+      <QuestionBlock v-if="hasSummary" question="오픈뱅킹으로 조회한 정보예요. 맞나요?">
         <div class="border-line rounded-field flex w-full gap-8 border px-4 py-3">
           <div class="flex flex-col gap-1">
             <span class="text-micro text-ink-label">금융자산</span>
@@ -361,7 +357,6 @@ function back() {
         question="아래 정보를 직접 입력해주세요"
         :follow="hasSummary"
         :hint="hasSummary ? `추가 입력 · '아니에요'를 고르면 나타나요` : undefined"
-        @info="coachOpen = true"
       >
         <!-- 왜 직접 입력으로 왔는지 말해 준다. 적어 둔 값이 그대로면 실패로 읽힌다. -->
         <p v-if="preservedIncomeNotice" class="text-caption2 text-ink-card-body">
@@ -383,7 +378,7 @@ function back() {
         />
       </QuestionBlock>
 
-      <QuestionBlock question="지금 쓸 수 있는 현금이 얼마인가요?" @info="coachOpen = true">
+      <QuestionBlock question="지금 쓸 수 있는 현금이 얼마인가요?">
         <AppInput
           v-model="availableCash"
           :error="parsedCash.error ?? ''"
@@ -393,7 +388,7 @@ function back() {
         />
       </QuestionBlock>
 
-      <QuestionBlock question="희망하는 전세 보증금을 입력해주세요" @info="coachOpen = true">
+      <QuestionBlock question="희망하는 전세 보증금을 입력해주세요">
         <AppInput
           v-model="deposit"
           :error="parsedDeposit.error ?? ''"
@@ -404,7 +399,7 @@ function back() {
         <p v-if="depositNotice" class="text-caption2 text-ink-card-body">{{ depositNotice }}</p>
       </QuestionBlock>
 
-      <QuestionBlock question="어디에서 거주하고 싶으신가요?" @info="coachOpen = true">
+      <QuestionBlock question="어디에서 거주하고 싶으신가요?">
         <PillGroup v-model="regionId" variant="small" :options="REGION_OPTIONS" />
         <p v-if="!regions.length" class="text-caption2 text-ink-label">
           지역 목록을 불러오지 못했어요.
