@@ -38,21 +38,19 @@ onMounted(refresh);
     <div class="flex-1" />
     <button
       type="button"
-      class="text-ink p-1"
+      class="text-ink relative flex items-center justify-center p-1"
       aria-label="알림"
       @click="navigateTo('/notifications')"
     >
-      <span class="relative inline-flex">
-        <AppIcon name="bell" class="size-icon" />
-        <span
-          v-if="hasUnread"
-          class="bg-danger-deep ring-surface absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2"
-        />
-      </span>
+      <AppIcon name="bell" class="size-icon" />
+      <span
+        v-if="hasUnread"
+        class="bg-danger-deep ring-surface absolute top-0.5 right-0.5 size-2 rounded-full ring-2"
+      />
     </button>
     <button
       type="button"
-      class="text-ink -mr-1 p-1"
+      class="text-ink -mr-1 flex items-center justify-center p-1"
       aria-label="마이페이지"
       @click="navigateTo('/my')"
     >

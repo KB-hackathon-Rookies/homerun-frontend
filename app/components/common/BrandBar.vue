@@ -28,18 +28,27 @@ onMounted(refresh);
     </button>
     <span class="flex-1" />
 
-    <!-- 오른쪽엔 알림·마이 둘만. 클릭 영역 40px(p-2 + 24px 아이콘). -->
-    <button type="button" class="p-2" aria-label="알림" @click="navigateTo('/notifications')">
-      <span class="relative inline-flex">
-        <AppIcon name="bell" class="text-ink-hero size-6" />
-        <!-- 안 읽은 알림이 있을 때만. 상태가 없으면(0건) 안 켠다. -->
-        <span
-          v-if="hasUnread"
-          class="bg-danger-deep ring-surface absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2"
-        />
-      </span>
+    <!-- 오른쪽엔 알림·마이 둘만. 둘 다 flex-center 로 두어 아이콘 높이를 맞춘다
+         (한쪽만 span 으로 감싸면 baseline 이 어긋난다). 클릭 영역 40px(p-2 + 24px). -->
+    <button
+      type="button"
+      class="relative flex items-center justify-center p-2"
+      aria-label="알림"
+      @click="navigateTo('/notifications')"
+    >
+      <AppIcon name="bell" class="text-ink-hero size-6" />
+      <!-- 안 읽은 알림이 있을 때만. 상태가 없으면(0건) 안 켠다. -->
+      <span
+        v-if="hasUnread"
+        class="bg-danger-deep ring-surface absolute top-1 right-1 size-2 rounded-full ring-2"
+      />
     </button>
-    <button type="button" class="-mr-2 p-2" aria-label="마이페이지" @click="navigateTo('/my')">
+    <button
+      type="button"
+      class="-mr-2 flex items-center justify-center p-2"
+      aria-label="마이페이지"
+      @click="navigateTo('/my')"
+    >
       <AppIcon name="user" class="text-ink-hero size-6" />
     </button>
   </header>
