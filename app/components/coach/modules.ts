@@ -8,6 +8,8 @@
  * 5가지. 나머지는 제목·소요시간만 시안에 있어서 `body` 를 비워 두고 화면에서
  * "준비 중" 으로 보여준다. 없는 내용을 지어내지 않는다.
  */
+import type { EducationCode } from '~/api/education';
+
 export type ModuleBase = '1루 시작' | '2루 · 매물 검증' | '3루 · 계약과 실행' | '홈 · 정착';
 
 export const MODULE_BASES: ModuleBase[] = [
@@ -32,6 +34,14 @@ export interface QuizQuestion {
 
 export interface CoachModule {
   id: string;
+  /**
+   * 짝이 되는 백엔드 모듈 code. 짝이 없으면 null 이다.
+   *
+   * 순서로 계산하지 않고 모듈마다 직접 적는다. 순서로 만들면 목록에 하나만 끼워 넣어도
+   * 그 뒤 모듈이 전부 남의 본문을 끌어오고, 진행률도 엉뚱한 모듈에 기록된다.
+   * 선택 항목이 아니라 필수라서, 모듈을 새로 추가하면 짝을 정할 때까지 타입체크가 막는다.
+   */
+  code: EducationCode | null;
   base: ModuleBase;
   title: string;
   minutes: number;
@@ -51,6 +61,7 @@ export interface CoachModule {
 export const COACH_MODULES: CoachModule[] = [
   {
     id: 'safe-contract-333',
+    code: 'M0',
     base: '1루 시작',
     title: '안심계약 3·3·3 법칙',
     minutes: 3,
@@ -121,12 +132,14 @@ export const COACH_MODULES: CoachModule[] = [
   },
   {
     id: 'contract-check-8',
+    code: 'M1',
     base: '2루 · 매물 검증',
     title: '계약 전에 확인할 8가지',
     minutes: 4,
   },
   {
     id: 'fraud-types-5',
+    code: 'M2',
     base: '2루 · 매물 검증',
     title: '전세사기 유형 5가지',
     minutes: 4,
@@ -193,17 +206,57 @@ export const COACH_MODULES: CoachModule[] = [
       },
     ],
   },
-  { id: 'building-ledger', base: '2루 · 매물 검증', title: '건축물대장 보는 법', minutes: 3 },
-  { id: 'registry-reading', base: '2루 · 매물 검증', title: '등기부등본 보는 법', minutes: 5 },
-  { id: 'empty-jeonse', base: '2루 · 매물 검증', title: '깡통전세란', minutes: 2 },
-  { id: 'verify-landlord', base: '2루 · 매물 검증', title: '임대인 확인하기', minutes: 3 },
-  { id: 'visit-checklist', base: '3루 · 계약과 실행', title: '임장 체크리스트', minutes: 4 },
-  { id: 'contract-terms', base: '3루 · 계약과 실행', title: '계약서와 특약', minutes: 5 },
-  { id: 'fixed-date', base: '3루 · 계약과 실행', title: '대항력과 확정일자', minutes: 4 },
-  { id: 'move-in-check', base: '홈 · 정착', title: '입주 사전점검', minutes: 2 },
-  { id: 'when-trouble', base: '홈 · 정착', title: '사고가 났다면', minutes: 2 },
+  {
+    id: 'building-ledger',
+    code: 'M3',
+    base: '2루 · 매물 검증',
+    title: '건축물대장 보는 법',
+    minutes: 3,
+  },
+  {
+    id: 'registry-reading',
+    code: 'M4',
+    base: '2루 · 매물 검증',
+    title: '등기부등본 보는 법',
+    minutes: 5,
+  },
+  { id: 'empty-jeonse', code: 'M5', base: '2루 · 매물 검증', title: '깡통전세란', minutes: 2 },
+  {
+    id: 'verify-landlord',
+    code: 'M6',
+    base: '2루 · 매물 검증',
+    title: '임대인 확인하기',
+    minutes: 3,
+  },
+  {
+    id: 'visit-checklist',
+    code: 'M7',
+    base: '3루 · 계약과 실행',
+    title: '임장 체크리스트',
+    minutes: 4,
+  },
+  {
+    id: 'contract-terms',
+    code: 'M8',
+    base: '3루 · 계약과 실행',
+    title: '계약서와 특약',
+    minutes: 5,
+  },
+  {
+    id: 'fixed-date',
+    code: 'M9',
+    base: '3루 · 계약과 실행',
+    title: '대항력과 확정일자',
+    minutes: 4,
+  },
+  { id: 'move-in-check', code: 'M10', base: '홈 · 정착', title: '입주 사전점검', minutes: 2 },
+  { id: 'when-trouble', code: 'M11', base: '홈 · 정착', title: '사고가 났다면', minutes: 2 },
   {
     id: 'changes-2026',
+    // 백엔드 V71 시드(M0~M12)에 '2026년 달라진 것' 에 해당하는 콘텐츠가 없다.
+    // 순서로 코드를 만들던 시절엔 이 자리가 M12 '도움받을 곳' 을 끌어와, 제목은 여기 것이고
+    // 본문은 남의 것인 화면이 됐다. 짝이 없으면 없다고 적는다 — 억지로 갖다 붙이지 않는다.
+    code: null,
     base: '홈 · 정착',
     title: '2026년 달라진 것',
     minutes: 3,
