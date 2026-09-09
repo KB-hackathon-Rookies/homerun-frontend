@@ -31,11 +31,8 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      // 페이지가 `useHead({ title })` 로 준 제목 뒤에 서비스명을 붙인다. 제목이
-      // 없으면(브랜드 화면 등) 기본 '홈런' 이 탭에 남는다. 안 넣으면 모든 탭이
-      // 주소(localhost:3000)로만 보인다.
-      titleTemplate: (title) => (title ? `${title} · 홈런` : '홈런'),
-      title: '홈런',
+      // 탭 제목 틀(titleTemplate)은 함수 형식이라 런타임 useHead 에서만 써서
+      // app.vue 에 뒀다. 여기엔 정적인 값만 둔다.
       // 한국어 화면이므로 문서 언어를 명시한다 — 스크린 리더·번역이 이 값을 본다.
       htmlAttrs: { lang: 'ko' },
       /*
