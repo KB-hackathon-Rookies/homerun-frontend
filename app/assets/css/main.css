@@ -130,7 +130,7 @@
   --color-ink-card-body: #4e5968; /* 교육 카드 설명 */
 
   /* 코치 교육 허브(시안 메인 6~10) */
-  --color-canvas-soft: #f7fafc; /* 허브·목록 화면 바탕 */
+  --color-canvas-soft: #ffffff; /* 화면 바탕. 흰색으로 통일(입력창·칩 bg-canvas 는 회색 유지) */
   --color-ink-label: #8b95a1; /* 그룹 라벨, 다 읽은 항목, 예정 번호 */
   --color-ink-chevron: #b0b8c1; /* 목록 오른쪽 화살표 */
   --color-line-list: #e5e8eb; /* 목록 카드 테두리 */
@@ -432,7 +432,12 @@
   body {
     font-family: var(--font-sans);
     color: var(--color-ink);
-    background-color: var(--color-canvas);
+    /*
+     * 프레임 바깥(폰 프레임 둘레) 배경. 흰색으로 둬야 PWA 전체화면에서 흰 프레임이 회색 위에
+     * 떠 잘린 것처럼 보이지 않는다. `--color-canvas`(회색)는 입력창·칩 채움에 그대로 쓰이므로
+     * 그 토큰을 바꾸지 않고 여기서만 surface(흰색)로 맞춘다.
+     */
+    background-color: var(--color-surface);
 
     /*
      * 한국어를 어절 중간에서 자르지 않는다.
