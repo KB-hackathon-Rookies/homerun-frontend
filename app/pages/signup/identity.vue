@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAddressApi, type AddressResult } from '~/api/address';
+import type { AddressResult } from '~/api/address';
 import { useAuthApi } from '~/api/auth';
 import { useRegionApi, type RegionOption } from '~/api/region';
 import type { Term } from '~/components/common/TermsAgreement.vue';
@@ -69,11 +69,9 @@ const phone = ref(signup.phone);
 const phoneCode = ref('');
 const addressDetail = ref('');
 
-const keyword = ref('');
-const results = ref<AddressResult[]>([]);
 const chosen = ref<AddressResult | null>(null);
-const searching = ref(false);
-const notice = ref('');
+/** 주소 검색 화면(전체화면 시트)이 열려 있는가. */
+const addressSearching = ref(false);
 
 const regionOptions = ref<RegionOption[]>([]);
 
@@ -167,20 +165,10 @@ onMounted(async () => {
   }
 });
 
-async function search() {
-  const text = keyword.value.trim();
-  if (text.length < 2 || searching.value) return;
-  searching.value = true;
-  error.value = '';
-  chosen.value = null;
-  try {
-    results.value = (await useAddressApi().search(text)).addresses;
-    notice.value = results.value.length ? '' : '찾는 주소가 없어요. 도로명으로 다시 검색해보세요.';
-  } catch (cause) {
-    error.value = messageFrom(cause, '주소를 검색하지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    searching.value = false;
-  }
+/** 검색 시트에서 고른 주소를 폼에 반영하고 시트를 닫는다. */
+function onAddressSelect(result: AddressResult) {
+  chosen.value = result;
+  addressSearching.value = false;
 }
 
 async function sendPhone() {
@@ -331,42 +319,18 @@ async function submit() {
 
         <div class="flex flex-col gap-2">
           <span class="text-label2 text-ink-body">주소</span>
-          <div
-            class="bg-surface border-line rounded-field flex items-center gap-2 border px-3.5 py-3"
-          >
-            <input
-              v-model="keyword"
-              type="search"
-              placeholder="도로명 주소를 검색하세요"
-              class="text-input text-ink-strong placeholder:text-ink-muted w-full bg-transparent outline-none"
-              @keydown.enter.prevent="search"
-            />
-            <button
-              type="button"
-              class="text-label2 text-primary-strong shrink-0 font-bold disabled:opacity-50"
-              :disabled="keyword.trim().length < 2 || searching"
-              @click="search"
-            >
-              {{ searching ? '검색 중' : '검색' }}
-            </button>
-          </div>
-
-          <p v-if="notice" class="text-label2 text-ink-muted">{{ notice }}</p>
-
           <button
-            v-for="result in results"
-            :key="result.roadAddress + result.mainLotNumber + result.subLotNumber"
             type="button"
-            class="rounded-field border p-4 text-left transition-colors"
-            :class="
-              chosen === result ? 'border-primary-strong bg-surface-info' : 'border-line bg-surface'
-            "
-            @click="chosen = result"
+            class="bg-surface border-line rounded-field flex items-center gap-2 border px-3.5 py-3 text-left"
+            @click="addressSearching = true"
           >
-            <p class="text-body2 text-ink-hero font-bold">{{ result.roadAddress }}</p>
-            <p class="text-label2 text-ink-hero-body mt-3">
-              {{ result.buildingName || result.jibunAddress }}
-            </p>
+            <span
+              class="text-input w-full truncate"
+              :class="chosen ? 'text-ink-strong' : 'text-ink-muted'"
+            >
+              {{ chosen ? chosen.roadAddress : '도로명 주소를 검색하세요' }}
+            </span>
+            <span class="text-label2 text-primary-strong shrink-0 font-bold">주소 검색</span>
           </button>
 
           <p v-if="chosen && region" class="text-label2 text-primary-strong">
@@ -394,6 +358,12 @@ async function submit() {
         v-if="pickingBirthDate"
         v-model="birthDate"
         @close="pickingBirthDate = false"
+      />
+
+      <AddressSearchSheet
+        v-if="addressSearching"
+        @select="onAddressSelect"
+        @close="addressSearching = false"
       />
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
