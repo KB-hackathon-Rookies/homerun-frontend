@@ -108,6 +108,17 @@ export const parseCount = (input: string): Parsed<number> => parse(countFromInpu
 /** 전용면적(㎡). 빈 값은 `{ value: null, error: null }` 이다. */
 export const parseArea = (input: string): Parsed<number> => parse(areaFromInput, input);
 
+/** 매월 납부일. 1~31 정수. `32`·`1.5`·`abc` 를 거른다. */
+export const dayOfMonthFromInput = z
+  .string()
+  .transform((value) => value.trim())
+  .refine((value) => /^\d{1,2}$/.test(value), { message: '납부일은 1~31 사이 숫자로 입력해주세요' })
+  .transform(Number)
+  .refine((day) => day >= 1 && day <= 31, { message: '납부일은 1~31 사이여야 해요' });
+
+/** 납부일. 빈 값은 미입력(`{ value: null, error: null }`)이다. */
+export const parseDay = (input: string): Parsed<number> => parse(dayOfMonthFromInput, input);
+
 /**
  * 저장된 원 단위 금액을 만 원 입력칸에 되돌려 놓는다.
  *

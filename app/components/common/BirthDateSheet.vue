@@ -28,10 +28,20 @@ const RADIUS = 2;
  * 바뀔 때마다 낡는다. 시작은 정의서의 1960 을 쓴다.
  */
 const FIRST_YEAR = 1960;
-const lastYear = new Date().getFullYear();
+const NOW = new Date();
+const THIS_YEAR = NOW.getFullYear();
+const THIS_MONTH = NOW.getMonth() + 1;
+const TODAY = NOW.getDate();
 
-const years = Array.from({ length: lastYear - FIRST_YEAR + 1 }, (_, i) => FIRST_YEAR + i);
-const months = Array.from({ length: 12 }, (_, i) => i + 1);
+const years = Array.from({ length: THIS_YEAR - FIRST_YEAR + 1 }, (_, i) => FIRST_YEAR + i);
+
+/**
+ * 생년월일은 미래일 수 없다. 올해를 고르면 이번 달까지만, 이번 달을 고르면 오늘까지만
+ * 고를 수 있게 목록 자체를 자른다 — 뒤에서 막고 경고를 띄우는 것보다, 애초에 못 고르게 한다.
+ */
+const months = computed(() =>
+  Array.from({ length: year.value === THIS_YEAR ? THIS_MONTH : 12 }, (_, i) => i + 1),
+);
 
 /** 들어온 값에서 숫자만 뽑는다. `1998. 05. 14` 도 `1998-05-14` 도 받는다. */
 function parse(value?: string) {
@@ -49,11 +59,24 @@ const year = ref(initial?.year ?? 1998);
 const month = ref(initial?.month ?? 5);
 const day = ref(initial?.day ?? 14);
 
-/** 그 달의 마지막 날. 0일은 전달 마지막 날이라 이 한 줄로 윤년까지 맞는다. */
-const lastDay = computed(() => new Date(year.value, month.value, 0).getDate());
+/**
+ * 그 달의 마지막 날. 0일은 전달 마지막 날이라 이 한 줄로 윤년까지 맞는다.
+ * 올해 이번 달이면 오늘까지만 — 미래 날짜를 막는다.
+ */
+const lastDay = computed(() => {
+  const monthLast = new Date(year.value, month.value, 0).getDate();
+  return year.value === THIS_YEAR && month.value === THIS_MONTH
+    ? Math.min(monthLast, TODAY)
+    : monthLast;
+});
 const days = computed(() => Array.from({ length: lastDay.value }, (_, i) => i + 1));
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/** 올해를 골라 이번 달을 넘는 월이 사라졌으면 마지막 월로 당긴다. */
+watch(months, (list) => {
+  if (month.value > list.length) month.value = list.length;
+});
 
 /** 2월을 고르면 31일이 사라진다. 고르고 있던 날이 없어졌으면 마지막 날로 당긴다. */
 watch(lastDay, (last) => {

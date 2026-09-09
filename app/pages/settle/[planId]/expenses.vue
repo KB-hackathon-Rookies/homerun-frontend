@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettlementApi, type ExpenseCategory, type FixedExpense } from '~/api/settlement';
-import { parseManwon } from '~/utils/amount';
+import { parseManwon, parseDay } from '~/utils/amount';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { HOME_STEPS } from '~/components/home/steps';
@@ -25,6 +25,8 @@ const api = useSettlementApi();
  * `-100` 이 100만 원으로 뒤집힌다.
  */
 const parsedAmount = computed(() => parseManwon(amount.value));
+/** 납부일(선택). 비면 null, 적었으면 1~31 정수여야 한다. */
+const parsedDay = computed(() => parseDay(dueDay.value));
 
 async function load() {
   const result = await api.fixedExpenses(planId);
@@ -37,15 +39,24 @@ onMounted(() =>
 );
 
 async function add() {
-  if (!name.value.trim() || !amount.value.trim() || busy.value) return;
+  // 버튼뿐 아니라 함수에서도 다시 본다. 금액은 유효값이 있어야 하고(0 대체 금지),
+  // 납부일은 비었거나(선택) 1~31 정수여야 한다.
+  if (
+    !name.value.trim() ||
+    parsedAmount.value.value === null ||
+    parsedDay.value.error !== null ||
+    busy.value
+  ) {
+    return;
+  }
   busy.value = true;
   error.value = '';
   try {
     await api.addFixedExpense(planId, {
       name: name.value.trim(),
       category: category.value,
-      amount: parsedAmount.value.value ?? 0,
-      dueDay: dueDay.value ? Number(dueDay.value) : null,
+      amount: parsedAmount.value.value,
+      dueDay: parsedDay.value.value,
       autopay: autopay.value,
     });
     name.value = '';
@@ -99,9 +110,20 @@ async function remove(expenseId: number) {
           placeholder="숫자만 입력"
           :error="parsedAmount.error ?? ''"
         />
-        <AppInput v-model="dueDay" label="납부일 (선택)" type="tel" placeholder="1~31" />
+        <AppInput
+          v-model="dueDay"
+          label="납부일 (선택)"
+          type="tel"
+          placeholder="1~31"
+          :error="parsedDay.error ?? ''"
+        />
         <AppCheckbox v-model="autopay">자동이체를 등록했어요</AppCheckbox>
-        <AppButton :disabled="!name.trim() || parsedAmount.value === null || busy" @click="add">
+        <AppButton
+          :disabled="
+            !name.trim() || parsedAmount.value === null || parsedDay.error !== null || busy
+          "
+          @click="add"
+        >
           {{ busy ? '저장 중…' : '고정지출 추가' }}
         </AppButton>
       </AppCard>

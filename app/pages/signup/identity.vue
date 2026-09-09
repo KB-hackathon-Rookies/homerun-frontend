@@ -120,15 +120,32 @@ const region = computed<RegionOption | null>(() => {
   return regionOptions.value.find((option) => option.code === code) ?? null;
 });
 
-const canSubmit = computed(
-  () =>
-    !!name.value &&
+/** 서버로 보낼 주소 문자열(도로명 + 상세). 서버 상한과 같게 255자로 본다. */
+const fullDetailAddress = computed(() =>
+  [chosen.value?.roadAddress ?? '', addressDetail.value]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(' '),
+);
+
+/**
+ * 제출 가능 여부. 서버 조건과 맞춘다 — 이름 1~50자(공백만 금지), 휴대전화 9~20자리,
+ * 주소 255자 이내. 생년월일은 미래를 못 고르게 시트가 막으므로 형식만 본다.
+ */
+const canSubmit = computed(() => {
+  const trimmedName = name.value.trim();
+  return (
+    trimmedName.length >= 1 &&
+    trimmedName.length <= 50 &&
     !!birthDateIso.value &&
     phoneDigits.value.length >= 9 &&
+    phoneDigits.value.length <= 20 &&
     signup.isPhoneVerified &&
     !!region.value &&
-    !pending.value,
-);
+    fullDetailAddress.value.length <= 255 &&
+    !pending.value
+  );
+});
 
 /**
  * 앞 단계(이메일 인증)를 건너뛰고 들어오면 보낼 것이 없다. 처음으로 돌려보낸다.
@@ -173,7 +190,8 @@ async function sendPhone() {
 }
 
 async function confirmPhone() {
-  if (phoneCode.value.length !== 6 || pending.value || codeExpired.value) return;
+  // 서버는 숫자 6자리를 받는다. 길이만 보면 `12ab56` 같은 값이 확인 요청으로 나간다.
+  if (!/^\d{6}$/.test(phoneCode.value) || pending.value || codeExpired.value) return;
   pending.value = true;
   error.value = '';
   try {
@@ -197,15 +215,14 @@ async function submit() {
 
   pending.value = true;
   error.value = '';
-  const detailAddress = [chosen.value.roadAddress, addressDetail.value]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(' ');
+  // 검증을 통과한 값만 보낸다 — 이름은 앞뒤 공백을 뗀 값, 주소는 검사에 쓴 합산 문자열.
+  const name_ = name.value.trim();
+  const detailAddress = fullDetailAddress.value;
   try {
     if (isSocial.value) {
       // 약관 동의는 앞의 terms 화면에서 이미 서버에 남겼다(소셜도 그리로 온다).
       auth.user = await socialSignup({
-        name: name.value,
+        name: name_,
         birthDate: birthDateIso.value,
         phone: phoneDigits.value,
         phoneVerificationToken: signup.phoneVerificationToken,
@@ -213,7 +230,7 @@ async function submit() {
         detailAddress: detailAddress || undefined,
       });
     } else {
-      signup.name = name.value;
+      signup.name = name_;
       signup.birthDate = birthDateIso.value;
       signup.phone = phoneDigits.value;
       signup.regionId = region.value.id;
@@ -275,7 +292,7 @@ async function submit() {
             <InputAction
               :disabled="
                 !phoneSent ||
-                phoneCode.length !== 6 ||
+                !/^\d{6}$/.test(phoneCode) ||
                 pending ||
                 signup.isPhoneVerified ||
                 codeExpired
