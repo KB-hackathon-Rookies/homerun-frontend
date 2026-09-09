@@ -13,6 +13,9 @@ import type { Base } from '~/components/common/StepIndicator.vue';
 defineProps<{ title: string; base: Base }>();
 
 defineEmits<{ back: [] }>();
+
+const { hasUnread, refresh } = useUnreadNotifications();
+onMounted(refresh);
 </script>
 
 <template>
@@ -27,17 +30,31 @@ defineEmits<{ back: [] }>();
     <h1 class="text-headline2 text-ink-hero">{{ title }}</h1>
 
     <!--
-      피그마의 상단 바에는 마이·홈 아이콘이 늘 붙어 있다. 이게 빠져 있어서
-      여정 화면에서 나가려면 뒤로가기를 단계 수만큼 눌러야 했다 — 3루 안쪽에서는
-      열다섯 번을 눌러도 홈에 닿지 못했다. 45개 화면이 이 머리를 함께 쓰므로
-      여기 한 번만 두면 어디서든 한 번에 나갈 수 있다.
+      상단 바 오른쪽엔 알림·마이가 늘 붙어 있다. 이게 빠져 있으면 여정 화면에서
+      나가려면 뒤로가기를 단계 수만큼 눌러야 한다 — 3루 안쪽에서는 열다섯 번을
+      눌러도 못 나갔다. 마이가 홈으로 가는 문(마이 상단의 홈런 워드마크)까지 잇는다.
+      45개 화면이 이 머리를 함께 쓰므로 여기 한 번만 두면 어디서든 한 번에 나간다.
     -->
     <div class="flex-1" />
-    <button type="button" class="text-ink p-1" aria-label="마이" @click="navigateTo('/my')">
-      <AppIcon name="user" class="size-icon" />
+    <button
+      type="button"
+      class="text-ink relative flex items-center justify-center p-1"
+      aria-label="알림"
+      @click="navigateTo('/notifications')"
+    >
+      <AppIcon name="bell" class="size-icon" />
+      <span
+        v-if="hasUnread"
+        class="bg-danger-deep ring-surface absolute top-0.5 right-0.5 size-2 rounded-full ring-2"
+      />
     </button>
-    <button type="button" class="text-ink -mr-1 p-1" aria-label="홈" @click="navigateTo('/home')">
-      <AppIcon name="home" class="size-icon" />
+    <button
+      type="button"
+      class="text-ink -mr-1 flex items-center justify-center p-1"
+      aria-label="마이페이지"
+      @click="navigateTo('/my')"
+    >
+      <AppIcon name="user" class="size-icon" />
     </button>
   </header>
 

@@ -434,6 +434,19 @@
   }
 
   /*
+   * 앱처럼 보이게 스크롤바를 전역에서 숨긴다.
+   *
+   * 모바일 PWA 라 회색 스크롤 막대가 뜨면 앱 느낌이 깨지고, 폭을 갉아먹기도 한다.
+   * 스크롤 동작은 그대로 두고 막대만 감춘다(개별 `scrollbar-hide` 유틸을 전역으로 올린 것).
+   */
+  * {
+    scrollbar-width: none; /* Firefox */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome·Safari·Edge */
+  }
+
+  /*
    * 누를 수 있는 것에는 손가락 커서를 돌려준다.
    *
    * Tailwind v4 는 preflight 에서 버튼 커서를 default 로 바꿨다(v3 까지는

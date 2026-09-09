@@ -248,7 +248,7 @@ async function recoverPlan() {
 </script>
 
 <template>
-  <PhoneFrame :coach-stage="dashboard?.currentStage">
+  <PhoneFrame fill :coach-stage="dashboard?.currentStage">
     <!-- 대시보드는 경로로 루를 알 수 없다. 계획이 오면 그 단계를 코치 FAB 에 넘긴다. -->
     <div class="h-statusbar bg-surface shrink-0" />
 
@@ -258,7 +258,9 @@ async function recoverPlan() {
       `isolate` 로 이 안에서만 쌓임 순서를 따진다. 마스코트를 `-z-10` 으로 깔면
       바깥 배경은 그대로 두고 이 안의 내용 뒤로만 들어간다.
     -->
-    <div class="px-gutter relative isolate flex flex-1 flex-col gap-4 pt-5 pb-20">
+    <div
+      class="px-gutter relative isolate flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pt-5 pb-20"
+    >
       <!--
         마스코트. 인사말 옆에 서서 아래로 흘러내린다(시안 메인 1~5).
 

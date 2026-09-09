@@ -93,8 +93,16 @@ onMounted(async () => {
     <div class="h-statusbar bg-surface shrink-0" />
 
     <header
-      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center border-b"
+      class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
     >
+      <button
+        type="button"
+        class="text-ink -ml-1 p-1"
+        aria-label="뒤로"
+        @click="navigateTo('/home')"
+      >
+        <AppIcon name="chevron-left" class="size-icon" />
+      </button>
       <h1 class="text-headline2 text-ink">마이</h1>
     </header>
 
@@ -143,7 +151,5 @@ onMounted(async () => {
         <RowChevron label="설정" value="알림·약관" last @select="navigateTo('/my/settings')" />
       </div>
     </div>
-
-    <TabBar active="my" :plan-id="planId" />
   </PhoneFrame>
 </template>

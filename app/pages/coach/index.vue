@@ -54,12 +54,12 @@ const percent = computed(() => Math.round((doneCount.value / COACH_MODULES.lengt
 </script>
 
 <template>
-  <PhoneFrame>
+  <PhoneFrame fill>
     <div class="h-statusbar bg-surface shrink-0" />
     <BrandBar />
     <PageBar title="코치 교육" />
 
-    <div class="bg-canvas-soft flex flex-1 flex-col gap-3 px-4 pt-4 pb-6">
+    <div class="bg-canvas-soft flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-6">
       <div class="bg-primary-strong rounded-button flex flex-col gap-2.5 p-4">
         <p class="text-caption-tight text-on-brand-body font-medium">전세 코치 교육 모듈</p>
         <p class="text-metric text-on-brand">
