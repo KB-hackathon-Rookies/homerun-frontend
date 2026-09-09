@@ -114,7 +114,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="홈" base="홈" @back="navigateTo('/home')">
+  <StageShell brand base="홈">
     <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">정착 현황을 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -240,12 +240,5 @@ onMounted(async () => {
         </AppButton>
       </footer>
     </template>
-
-    <!--
-      정착 화면에서 메인으로 돌아갈 길이 헤더의 뒤로가기 화살표뿐이었다.
-      홈·마이와 같은 탭바를 놓아 어디서든 한 번에 옮겨 갈 수 있게 한다.
-      이 계획의 단계가 홈(4루)이라 `home` 을 현재 탭으로 둔다.
-    -->
-    <TabBar active="home" :plan-id="planId" />
   </StageShell>
 </template>
