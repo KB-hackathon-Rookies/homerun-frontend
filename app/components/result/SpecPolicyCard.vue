@@ -118,6 +118,6 @@ const interestText = computed(() => {
       </div>
     </template>
 
-    <p v-else class="text-label2 text-ink-hero-body">{{ card.notice }}</p>
+    <p v-else class="text-label2 text-ink-hero-body whitespace-pre-line">{{ card.notice }}</p>
   </AppCard>
 </template>

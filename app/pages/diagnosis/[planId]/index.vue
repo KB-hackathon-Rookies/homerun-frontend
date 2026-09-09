@@ -408,7 +408,6 @@ function back() {
         :question="q.title"
         :follow="!!q.follow"
         :hint="q.follow?.hint"
-        @info="coachOpen = true"
       >
         <PillGroup
           :model-value="answers[q.step] ?? null"

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
+import type { CoachSheet } from '~/components/coach/sheet';
 
 /**
  * 1-4 내 스펙.
  *
  * 앞 화면에서 통과한 카드를 금액으로 다시 본다. 여기서 나오는 한도는 상품
- * 기준 최대치라 은행이 더 낮게 안내할 수 있다 — 그 사실을 숫자 밑에 반드시
- * 남긴다. 실제 한도는 2루 상담 결과가 들어오면 덮어쓴다.
+ * 기준 최대치라 은행이 더 낮게 안내할 수 있다 — 그 사실은 카드 화면이 아니라
+ * 코치 TIME 안에 남긴다(시안 1루 5 모달에 별도 카드 없이 qa 로만 있다).
+ * 실제 한도는 2루 상담 결과가 들어오면 덮어쓴다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -16,10 +18,12 @@ const planId = Number(route.params.planId);
 const { pending, error, cards } = useJeonsePolicies(planId);
 
 /**
- * 코치 TIME(시안 1루 5 모달 · 내 스펙 계산 근거).
+ * 코치 TIME(시안 1루 5 모달 · 안심계약 3·3·3 법칙 + 내 스펙 계산 근거).
  *
- * 숫자만 보여주면 "왜 이 값이냐" 를 물을 데가 없다. 시안은 한도·금리·필요한 돈이
- * 어떤 규칙으로 나왔는지 모달에 편다.
+ * 코치 FAB 도 카드의 `계산 근거` 칩도 같은 코치 TIME 시트를 연다. 안심계약
+ * 3·3·3 법칙과 내 스펙 계산 근거, 두 이야기를 한 시트에 이어 붙이면 스크롤이
+ * 길어져 뒤쪽을 놓치기 쉽다 — 매물 등록 화면(propertyFilter/landlordConsent)과
+ * 같은 방식으로 두 시트로 나눠 1/2 페이지네이션으로 넘긴다.
  *
  * 시안 본문에는 예시 계정의 실제 금액이 박혀 있다. 그대로 옮기면 남의 숫자를 내
  * 근거인 것처럼 읽게 되므로, 금액이 아니라 규칙만 남긴다.
@@ -27,9 +31,35 @@ const { pending, error, cards } = useJeonsePolicies(planId);
 /** 진행 표시. 앞 셋은 문진에서 지나왔다. */
 const SUB_STEPS = ['기본 정보', '회사 정보', '추가 정보', '예상 진단'];
 
-const COACH = {
+/** 1/2 — 안심계약 3·3·3 법칙(코치 모듈 `safe-contract-333`). */
+const SAFE_CONTRACT: CoachSheet = {
+  title: '안심계약 3·3·3 법칙',
+  intro:
+    '스펙이 나왔지? 이제 이 조건에 맞는 집을 찾으러 가자. 그 전에 전세 계약 전체를 관통하는 뼈대부터 알려줄게. 국토교통부가 만든 안심계약 3·3·3 법칙이야. 계약 전, 계약 시, 계약 후 각각 3가지, 총 9가지만 챙기면 돼',
+  qa: [
+    {
+      q: '계약 전 3가지',
+      a: '주변 시세 조사 · 등기부로 권리관계 확인 · 반환보증 가입이 가능한 집인지 보증사에 문의',
+    },
+    {
+      q: '계약 시 3가지',
+      a: '공인중개사 정상 영업 확인 · 계약 상대와 임대인 일치 확인 · 주택임대차 표준계약서 사용',
+    },
+    {
+      q: '계약 후 3가지',
+      a: '즉시 임대차 신고 또는 확정일자 · 잔금 전 등기부 재확인 · 이사 당일 전입신고',
+    },
+    {
+      q: '매물 볼 때 집 종류도 봐',
+      a: '다가구보다 다세대를 찾아(다세대는 호실마다 등기가 따로 있어). 겉은 빌라인데 서류상 근린생활시설이면 대출·보증이 전부 안 나와. 오피스텔은 계약서에 주거용 표기, 신축은 시세가 없을 수 있어. 이 네 가지는 2루에서 자동으로 확인해줄게',
+    },
+  ],
+};
+
+/** 2/2 — 내 스펙 계산 근거. */
+const COACH: CoachSheet = {
   title: '내 스펙 계산 근거',
-  intro: '카드에 나온 숫자가 어디서 나왔는지 알려줄게. 한도, 금리, 필요한 돈 순서로 계산했어',
+  intro: '카드에 나온 숫자가 어디서 나왔는지 전부 보여줄게. 한도, 금리, 필요한 돈 순서로 계산했어',
   qa: [
     {
       q: '한도 계산',
@@ -44,6 +74,10 @@ const COACH = {
       a: '보증금에서 대출금을 뺀 게 필요한 돈이야. 여기에 중개보수·인지세·보증료·이사비 같은 부대비용을 더한 총 필요액과 내 돈을 견줘서 차액이 나와',
     },
     {
+      q: '코치 팁',
+      a: '스펙이 나왔지? 이제 이 조건에 맞는 집을 찾으러 가자. 바로 부동산으로 달려가기보다 온라인으로 어느 정도 파악한 후에 가는 게 좋아. 찾았으면 2루에서 그 집이 안전한지 확인해볼게',
+    },
+    {
       q: '여기 나온 한도는 상품 기준 최대치야',
       a: '실제로는 은행이 더 낮게 안내할 수 있어. 은행이 한도를 다 내주면 연체·사고 시 영업점이 책임지기 때문이야. 2루 은행 상담 결과가 입력되면 이 카드 값은 은행이 안내한 한도로 덮어써져',
     },
@@ -52,10 +86,9 @@ const COACH = {
       a: '버팀목은 보증금의 80% 고정이지만 은행 대출은 담보에 따라 달라. 담보는 은행이 정하니 2루 은행 상담에서 정확한 금액이 나와',
     },
   ],
-  /** 시안 `더 알아보기` 칩. 실제로 있는 모듈만 건다. */
-  related: [{ id: 'safe-contract-333', label: '안심계약 3·3·3 법칙' }],
 };
 
+const coachSheets: CoachSheet[] = [SAFE_CONTRACT, COACH];
 const coachOpen = ref(false);
 
 /**
@@ -102,7 +135,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH]" brand base="1루">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="coachSheets" brand base="1루">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3.5 px-4 pt-4 pb-6">
       <SubStep :steps="SUB_STEPS" :current="3" />
 
@@ -118,21 +151,6 @@ onMounted(() => {
         :card="card"
         @basis="coachOpen = true"
       />
-
-      <AppCard v-if="cards.length" class="text-caption2 text-ink-hero-body">
-        ⚠️ 여기 나온 한도는 상품 기준 최대치예요. 실제로는 은행이 더 낮게 안내할 수 있어요 — 은행이
-        한도를 다 내주면 연체·사고 시 영업점이 책임지기 때문이에요. 2루 은행 상담 결과가 입력되면 이
-        카드 값은 은행이 안내한 한도로 덮어써져요.
-      </AppCard>
-
-      <AppCard v-if="cards.length" class="flex flex-col gap-2.5">
-        <p class="text-label2 text-ink-muted font-bold">⚾ 코치 TIME</p>
-        <p class="text-caption2 text-ink-hero-body">
-          스펙이 나왔지? 이제 이 조건에 맞는 집을 찾으러 가자. 바로 부동산으로 달려가기보다
-          온라인으로 어느 정도 파악한 후에 가는 게 좋아. 찾았으면 2루에서 그 집이 안전한지
-          확인해볼게.
-        </p>
-      </AppCard>
     </div>
 
     <!-- 시안(1루 5)은 이전·2루로를 하단 CTA 줄에 나란히 둔다. -->
@@ -154,7 +172,13 @@ onMounted(() => {
 
     <!-- 1루 안착 축하(시안 1루 6). 흐름을 잠깐 멈추고 다음 목적지만 말한다. -->
     <DimOverlay v-if="celebrating" placement="center" @close="dismissCelebration">
-      <img src="/tiger/search.webp" alt="" width="150" height="122" class="w-celebrate-art h-auto" />
+      <img
+        src="/tiger/search.webp"
+        alt=""
+        width="150"
+        height="122"
+        class="w-celebrate-art h-auto"
+      />
 
       <p class="text-title3 text-primary-strong">1루 안착!</p>
       <h2 class="text-stage text-ink-card font-bold">받을 수 있는 대출, 다 찾았어</h2>
