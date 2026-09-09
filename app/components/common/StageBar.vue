@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Base } from '~/components/common/StepIndicator.vue';
+import { useUnreadNotifications } from '~/composables/useUnreadNotifications';
 
 /**
  * 진단 화면의 머리.
