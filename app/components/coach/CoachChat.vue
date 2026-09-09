@@ -113,10 +113,7 @@ function retry() {
             {{ turn.text }}
           </p>
 
-          <!--
-            근거. 이 기능의 핵심이라 접어 두지 않는다. 원문이 있으면 그리로
-            나갈 수 있게 하고, 없으면 출처 이름만 남긴다.
-          -->
+          <!-- 근거는 제목만 먼저 보여 주고, 필요할 때 원문 정보를 펼친다. -->
           <div v-if="turn.who === 'coach'" class="w-full">
             <div
               v-if="turn.sources?.length"
@@ -124,25 +121,34 @@ function retry() {
             >
               <p class="text-caption1 text-ink-hero">코치가 본 자료</p>
 
-              <div
+              <details
                 v-for="(source, order) in turn.sources"
                 :key="`${source.source}-${order}`"
-                class="flex flex-col gap-1"
+                class="border-line-soft border-b pb-2 last:border-b-0 last:pb-0"
               >
-                <p class="text-label2 text-ink-hero font-bold">{{ source.title }}</p>
-                <p class="text-caption2 text-ink-hero-body">{{ source.snippet }}</p>
-
-                <a
-                  v-if="source.sourceUrl"
-                  :href="source.sourceUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-caption2 text-primary-strong font-semibold"
+                <summary
+                  class="text-label2 text-ink-hero flex cursor-pointer list-none items-center justify-between gap-3 font-bold"
                 >
-                  {{ source.source }} 원문 보기 ↗
-                </a>
-                <p v-else class="text-micro text-ink-meta">{{ source.source }}</p>
-              </div>
+                  <span>{{ source.title }}</span>
+                  <span class="text-caption2 text-primary-strong shrink-0 font-semibold"
+                    >자세히 보기</span
+                  >
+                </summary>
+                <div class="mt-2 flex flex-col gap-1">
+                  <p class="text-caption2 text-ink-hero-body">{{ source.snippet }}</p>
+
+                  <a
+                    v-if="source.sourceUrl"
+                    :href="source.sourceUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-caption2 text-primary-strong font-semibold"
+                  >
+                    {{ source.source }} 원문 보기 ↗
+                  </a>
+                  <p v-else class="text-micro text-ink-meta">{{ source.source }}</p>
+                </div>
+              </details>
             </div>
 
             <!-- 근거가 안 붙은 답이 근거 있는 답처럼 보이면 안 된다. -->
