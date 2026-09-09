@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAddressApi, type AddressResult } from '~/api/address';
+import type { AddressResult } from '~/api/address';
 import { usePlanApi } from '~/api/plan';
 import { usePropertyApi } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
@@ -21,13 +21,11 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const keyword = ref('');
-const results = ref<AddressResult[]>([]);
 const chosen = ref<AddressResult | null>(null);
-const searching = ref(false);
+/** 주소 검색 화면(전체화면 시트)이 열려 있는가. */
+const addressSearching = ref(false);
 const saving = ref(false);
 const error = ref('');
-const notice = ref('');
 
 /**
  * 1루에서 정한 희망예산. 실제 매물 보증금과 다른 값이라 이걸 그대로 보증금으로 쓰지 않는다 —
@@ -117,21 +115,10 @@ onMounted(async () => {
   }
 });
 
-async function search() {
-  const text = keyword.value.trim();
-  if (text.length < 2 || searching.value) return;
-
-  searching.value = true;
-  error.value = '';
-  chosen.value = null;
-  try {
-    results.value = (await useAddressApi().search(text)).addresses;
-    notice.value = results.value.length ? '' : '찾는 주소가 없어요. 도로명으로 다시 검색해보세요.';
-  } catch (cause) {
-    error.value = messageFrom(cause, '주소를 검색하지 못했어요. 잠시 후 다시 시도해주세요.');
-  } finally {
-    searching.value = false;
-  }
+/** 검색 시트에서 고른 주소를 반영하고 시트를 닫는다. */
+function onAddressSelect(result: AddressResult) {
+  chosen.value = result;
+  addressSearching.value = false;
 }
 
 async function start() {
@@ -206,43 +193,24 @@ watch(coachOpen, (open) => {
         </button>
       </AppCard>
 
-      <form
-        class="bg-surface border-line rounded-field flex items-center gap-2 border px-3.5 py-3"
-        @submit.prevent="search"
-      >
-        <input
-          v-model="keyword"
-          type="search"
-          placeholder="도로명 주소를 입력하세요"
-          class="text-input text-ink-strong placeholder:text-ink-muted w-full bg-transparent outline-none"
-        />
-        <button
-          type="submit"
-          class="text-label2 text-primary-strong shrink-0 font-bold disabled:opacity-50"
-          :disabled="keyword.trim().length < 2 || searching"
-        >
-          {{ searching ? '검색 중' : '검색' }}
-        </button>
-      </form>
-
-      <p v-if="notice" class="text-label2 text-ink-muted">{{ notice }}</p>
-      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
-
       <button
-        v-for="result in results"
-        :key="result.roadAddress + result.mainLotNumber + result.subLotNumber"
         type="button"
-        class="rounded-field border p-4 text-left transition-colors"
-        :class="
-          chosen === result ? 'border-primary-strong bg-surface-info' : 'border-line bg-surface'
-        "
-        @click="chosen = result"
+        class="bg-surface border-line rounded-field flex items-center gap-2 border px-3.5 py-3 text-left"
+        @click="addressSearching = true"
       >
-        <p class="text-body2 text-ink-hero font-bold">{{ result.roadAddress }}</p>
-        <p class="text-label2 text-ink-hero-body mt-3">
-          {{ result.buildingName || result.jibunAddress }}
-        </p>
+        <span
+          class="text-input w-full truncate"
+          :class="chosen ? 'text-ink-strong' : 'text-ink-muted'"
+        >
+          {{ chosen ? chosen.roadAddress : '도로명 주소를 검색하세요' }}
+        </span>
+        <span class="text-label2 text-primary-strong shrink-0 font-bold">주소 검색</span>
       </button>
+
+      <p v-if="chosen" class="text-label2 text-ink-hero-body -mt-1 px-1">
+        {{ chosen.buildingName || chosen.jibunAddress }}
+      </p>
+      <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
       <AppCard v-if="chosen" class="flex flex-col gap-3">
         <p class="text-body3 text-ink-hero font-bold">이 매물의 실제 보증금 (만 원)</p>
@@ -279,6 +247,12 @@ watch(coachOpen, (open) => {
         <p v-if="consentNotice" class="text-caption2 text-ink-hero-body">{{ consentNotice }}</p>
       </AppCard>
     </div>
+
+    <AddressSearchSheet
+      v-if="addressSearching"
+      @select="onAddressSelect"
+      @close="addressSearching = false"
+    />
 
     <template #footer>
       <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
