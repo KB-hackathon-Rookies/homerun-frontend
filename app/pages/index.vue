@@ -59,8 +59,20 @@ onMounted(() => {
         </p>
       </div>
 
+      <!--
+        이미지 비율(780×800)을 컨테이너 비율(39/40)에 맞춰 두었다. 전에는 780×1686 을
+        실어 놓고 object-cover 로 세로 886px 을 잘라 버렸다 — 화면에 나오지도 않는 절반을
+        내려받은 셈이라 크기가 155KB 였다. 잘려 나가던 만큼을 잘라 78KB 가 됐고 보이는
+        그림은 같다. object-cover 는 비율이 어긋날 때를 위해 남겨 둔다.
+      -->
       <div class="relative mt-4 aspect-[39/40] w-full shrink-0">
-        <img src="/illust/intro.jpg" alt="" class="absolute inset-0 size-full object-cover" />
+        <img
+          src="/illust/intro.jpg"
+          alt=""
+          width="780"
+          height="800"
+          class="absolute inset-0 size-full object-cover"
+        />
       </div>
     </div>
 
