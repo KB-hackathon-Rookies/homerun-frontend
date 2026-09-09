@@ -15,17 +15,29 @@ import { z } from 'zod';
 const MIN_LENGTH = 8;
 const MAX_LENGTH = 64;
 
-const hasLetter = (value: string) => /\p{L}/u.test(value);
-const hasDigit = (value: string) => /\p{Nd}/u.test(value);
-/** 문자도 숫자도 공백도 아닌 글자 하나. 서버의 `isLetterOrDigit`·`isWhitespace` 판정과 같다. */
-const hasSpecial = (value: string) => /[^\p{L}\p{Nd}\s]/u.test(value);
-const hasWhitespace = (value: string) => /\s/u.test(value);
+/**
+ * 허용 문자를 **출력 가능한 ASCII(33~126, 공백 제외)** 로 못 박는다.
+ *
+ * 전에는 `\p{L}`·`\p{Nd}` 로 유니코드 문자·숫자를 다 받았는데, 서버 Java `Character`
+ * 판정과 미묘하게 달랐다 — U+00A0(비분리공백)은 프론트만 거절, 제어문자 U+001C 는
+ * 서버만 거절, `𐐀`(서로게이트)는 프론트만 통과. 그래서 양쪽을 ASCII 로 좁혀
+ * JS 정규식과 Java 문자코드 판정이 정확히 같은 집합을 보게 한다. 이 정책은 서버
+ * `StrongPasswordValidator` 와 짝이므로 한쪽을 바꾸면 다른 쪽도 같이 바꾼다.
+ */
+const ASCII_ONLY = /^[!-~]+$/; // 33~126. 공백(32)·제어문자·유니코드·이모지·서로게이트 제외
+const hasLetter = (value: string) => /[A-Za-z]/.test(value);
+const hasDigit = (value: string) => /[0-9]/.test(value);
+// ASCII_ONLY 를 함께 강제하므로, 영숫자가 아닌 글자는 곧 ASCII 특수문자다.
+const hasSpecial = (value: string) => /[^A-Za-z0-9]/.test(value);
 
 export const passwordSchema = z
   .string()
   .min(MIN_LENGTH, `비밀번호는 ${MIN_LENGTH}자 이상이어야 해요`)
   .max(MAX_LENGTH, `비밀번호는 ${MAX_LENGTH}자까지 쓸 수 있어요`)
-  .refine((value) => !hasWhitespace(value), '비밀번호에 공백은 쓸 수 없어요')
+  .refine(
+    (value) => ASCII_ONLY.test(value),
+    '영문·숫자·특수문자만 쓸 수 있어요 (공백·한글·이모지 불가)',
+  )
   .refine(
     (value) => hasLetter(value) && hasDigit(value) && hasSpecial(value),
     '영문·숫자·특수문자를 각각 하나 이상 넣어주세요',
