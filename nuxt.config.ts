@@ -32,6 +32,15 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  /*
+   * 정적 파일을 빌드할 때 미리 압축해 둔다(.gz/.br).
+   *
+   * 서버가 압축해 주지 않고 있었다. `pretendard.css` 를 로컬로 가져오면서 이게 드러났는데,
+   * jsdelivr 는 그 CSS 를 gzip 으로 13KB 에 주던 것을 우리 서버는 무압축 55KB 로 줬다.
+   * 로컬로 옮긴 것 자체는 왕복을 줄여 이득인데 압축이 빠져 되레 손해가 났다.
+   */
+  nitro: { compressPublicAssets: true },
+
   app: {
     head: {
       // 탭 제목 틀(titleTemplate)은 함수 형식이라 런타임 useHead 에서만 써서
