@@ -16,6 +16,11 @@ import { SECOND_BASE_STEPS } from '~/components/property/steps';
  * 판정을 `propertyId` 를 붙여 다시 받는다. 1루에서 본 것은 사람 조건만
  * 본 결과라, 집 조건(면적·용도·보증금 상한)이 걸리는 상품은 여기서 처음
  * 갈린다.
+ *
+ * 이전 버튼은 매물 카드 허브로 보낸다. `violation` 으로 되돌리면 그 화면 가드가
+ * VIOLATION 단계만 허용하는데 detail 은 REGISTRY 이후에만 열리므로, 되돌아가는
+ * 즉시 다시 detail 로 튕겨 나와 이전이 먹지 않는다. 허브(가드 없음)에서 목록 →
+ * 매물 삭제·재등록으로 이어진다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -64,8 +69,7 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.emptyJeonse]"
     brand
     base="2루"
-    :show-progress="false"
-    @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+    @back="navigateTo(`/property/${planId}/${propertyId}`)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
@@ -122,7 +126,7 @@ const coachOpen = ref(false);
 
     <template #footer>
       <StepFooter
-        @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+        @back="navigateTo(`/property/${planId}/${propertyId}`)"
         @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
       >
         등기부 확인
