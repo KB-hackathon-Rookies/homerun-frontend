@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   useOpenBankingApi,
+  type AccountBalanceBreakdown,
   type FinancialSummary,
   type OpenBankingAccount,
   type OpenBankingBalance,
@@ -85,12 +86,6 @@ const accountTypeName = (code: string) => ACCOUNT_TYPE_NAME[code] ?? '';
  * 잔액 응답의 상품명(`샘플 직장인 우대통장`)이 왔으면 그걸 쓰고, 아직 안 왔으면 별칭,
  * 그것도 없으면 계좌 종류로 떨어진다. 셋 다 없으면 줄을 그리지 않는다.
  */
-function productNameOf(account: OpenBankingAccount) {
-  const state = balances.value[account.fintechUseNumber];
-  if (state?.status === 'ok' && state.detail.productName?.trim()) return state.detail.productName;
-  return account.alias?.trim() || accountTypeName(account.accountType) || '';
-}
-
 /** 잔액은 만 원 미만을 버리지 않는다. 통장에 찍힌 값과 달라 보이면 안 된다. */
 const formatWon = (amount: number) => `${amount.toLocaleString('ko-KR')}원`;
 
@@ -101,37 +96,76 @@ const formatManwon = (amount: number) =>
 /** "2026-08" → "8월". */
 const monthLabel = (month: string) => `${Number(month.slice(5, 7))}월`;
 
-/** 아직 조회를 시작하지 않았으면 빈 문자열 — 자리만 비워 둔다. */
-function balanceLabelOf(fintechUseNumber: string) {
-  const state = balances.value[fintechUseNumber];
-  if (!state) return '';
-  if (state.status === 'loading') return '잔액 조회 중';
-  if (state.status === 'failed') return '잔액 확인 못 함';
-  return formatWon(state.detail.balanceAmount);
-}
-
-const balanceReady = (fintechUseNumber: string) =>
-  balances.value[fintechUseNumber]?.status === 'ok';
+/**
+ * 계좌번호(마스킹)로 찾는 서버 요약의 계좌별 잔액.
+ *
+ * 잔액의 1차 출처다. 서버가 financial-summary 를 계산하며 계좌마다 잔액을 이미 조회해 담아
+ * 주므로, 화면이 계좌별로 다시 조회(N+1)하다 실패해 "확인 못 함"이 뜨는 일을 없앤다.
+ */
+const summaryBalanceByMasked = computed(() => {
+  const map = new Map<string, AccountBalanceBreakdown>();
+  for (const item of summary.value?.accountBalances ?? []) {
+    map.set(item.accountNumberMasked, item);
+  }
+  return map;
+});
 
 /**
- * 출금 가능액이 잔액과 다를 때만 따로 말한다(예적금·묶인 금액). 같으면 군더더기라 숨긴다.
+ * 이 계좌의 확정 잔액. 서버 요약을 먼저 보고, 없으면 계좌별 조회 결과로 떨어진다.
+ * 둘 다 없으면 아직 못 받은 것이라 null.
  */
-function withdrawableNoteOf(fintechUseNumber: string) {
-  const state = balances.value[fintechUseNumber];
-  if (state?.status !== 'ok') return '';
-  const { balanceAmount, availableAmount } = state.detail;
-  if (availableAmount === balanceAmount) return '';
-  return `출금 가능 ${formatWon(availableAmount)}`;
+function resolvedBalanceOf(
+  account: OpenBankingAccount,
+): { balanceAmount: number; availableAmount: number; productName?: string } | null {
+  const fromSummary = summaryBalanceByMasked.value.get(account.accountNumberMasked);
+  if (fromSummary) return fromSummary;
+  const state = balances.value[account.fintechUseNumber];
+  return state?.status === 'ok' ? state.detail : null;
 }
 
-/** 잔액이 다 들어온 계좌들의 합. 하나라도 로딩·실패면 아직 합을 말하지 않는다. */
+/**
+ * 계좌 부제 — 상품명이 가장 구체적이다. 요약/잔액의 상품명을 먼저 쓰고, 없으면 별칭,
+ * 그것도 없으면 계좌 종류로 떨어진다.
+ */
+function productNameOf(account: OpenBankingAccount) {
+  const product = resolvedBalanceOf(account)?.productName?.trim();
+  if (product) return product;
+  return account.alias?.trim() || accountTypeName(account.accountType) || '';
+}
+
+/** 아직 잔액을 못 받았으면 상태 문구, 받았으면 금액. */
+function balanceLabelOf(account: OpenBankingAccount) {
+  const resolved = resolvedBalanceOf(account);
+  if (resolved) return formatWon(resolved.balanceAmount);
+  // 요약에도 없고 계좌별 조회도 실패/진행 중일 때만 상태를 말한다.
+  const state = balances.value[account.fintechUseNumber];
+  if (!state || state.status === 'loading') return '잔액 조회 중';
+  return '잔액 확인 못 함';
+}
+
+const balanceReady = (account: OpenBankingAccount) => resolvedBalanceOf(account) !== null;
+
+/** 출금 가능액이 잔액과 다를 때만 따로 말한다(예적금·묶인 금액). 같으면 군더더기라 숨긴다. */
+function withdrawableNoteOf(account: OpenBankingAccount) {
+  const resolved = resolvedBalanceOf(account);
+  if (!resolved || resolved.availableAmount === resolved.balanceAmount) return '';
+  return `출금 가능 ${formatWon(resolved.availableAmount)}`;
+}
+
+/**
+ * 총 잔액. 서버 요약의 합계를 먼저 쓰고(계좌별 조회 없이도 뜬다), 없으면 계좌별 잔액이
+ * 전부 확정됐을 때만 직접 합한다.
+ */
 const totalBalance = computed(() => {
+  if (summary.value && summary.value.totalAccountBalance !== null) {
+    return summary.value.totalAccountBalance;
+  }
   if (!accounts.value.length) return null;
   let sum = 0;
   for (const account of accounts.value) {
-    const state = balances.value[account.fintechUseNumber];
-    if (state?.status !== 'ok') return null;
-    sum += state.detail.balanceAmount;
+    const resolved = resolvedBalanceOf(account);
+    if (!resolved) return null;
+    sum += resolved.balanceAmount;
   }
   return sum;
 });
@@ -313,21 +347,14 @@ onMounted(load);
           <!-- 잔액은 늦게 온다. 오지 않아도 위의 계좌 정보는 그대로 서 있다. -->
           <div class="flex shrink-0 flex-col items-end gap-0.5">
             <span
-              v-if="balanceLabelOf(account.fintechUseNumber)"
+              v-if="balanceLabelOf(account)"
               class="text-caption1"
-              :class="
-                balanceReady(account.fintechUseNumber)
-                  ? 'text-ink-hero font-bold'
-                  : 'text-ink-subtle'
-              "
+              :class="balanceReady(account) ? 'text-ink-hero font-bold' : 'text-ink-subtle'"
             >
-              {{ balanceLabelOf(account.fintechUseNumber) }}
+              {{ balanceLabelOf(account) }}
             </span>
-            <span
-              v-if="withdrawableNoteOf(account.fintechUseNumber)"
-              class="text-micro text-ink-muted"
-            >
-              {{ withdrawableNoteOf(account.fintechUseNumber) }}
+            <span v-if="withdrawableNoteOf(account)" class="text-micro text-ink-muted">
+              {{ withdrawableNoteOf(account) }}
             </span>
           </div>
         </div>
