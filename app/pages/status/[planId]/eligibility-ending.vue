@@ -3,6 +3,9 @@ import { usePolicyApi, type JeonsePolicyVerdicts } from '~/api/policy';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '자격 종료 안내' });
+
 /**
  * ST-05 자격이 끝나기까지.
  *

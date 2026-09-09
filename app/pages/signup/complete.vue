@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 
+// 브라우저 탭 제목.
+useHead({ title: '가입 완료' });
+
 /**
  * AU-07 회원가입 완료.
  *

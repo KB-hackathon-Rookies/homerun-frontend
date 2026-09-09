@@ -15,7 +15,7 @@ import type { Base } from '~/components/common/StepIndicator.vue';
  * 머리가 두 가지다. 기본은 뒤로가기 + 제목(`StageBar`)이고, 시안 1루 화면들은
  * 제목 줄 없이 워드마크로 시작한다(`brand`). 뒤로가기는 그때 하단 `이전` 이 맡는다.
  */
-defineProps<{
+const props = defineProps<{
   /** `brand` 가 아닐 때 상단 바에 세우는 제목. */
   title?: string;
   base: Base;
@@ -28,6 +28,10 @@ defineProps<{
 }>();
 
 defineEmits<{ back: [] }>();
+
+// 상단 바 제목을 브라우저 탭 제목으로도 쓴다. 워드마크 화면(brand)은 제목이
+// 없어 config 의 기본값("홈런")이 남는다.
+useHead(() => ({ title: props.title }));
 
 const coachOpen = defineModel<boolean>('coachOpen', { default: false });
 </script>

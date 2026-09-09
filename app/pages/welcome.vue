@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// 브라우저 탭 제목.
+useHead({ title: '환영합니다' });
 /**
  * AU-02 웰컴 (시안 0-1 두 번째 화면).
  *

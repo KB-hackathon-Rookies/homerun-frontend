@@ -13,12 +13,15 @@ import { coachStageFor } from '~/utils/stage';
  * 걸 물으려면 본 화면으로 돌아갈 필요가 없어야 한다. 시트는 본 화면과 같은
  * 것을 그대로 물려받아 넘긴다.
  */
-defineProps<{ title: string; coachSheets?: CoachSheet[] }>();
+const props = defineProps<{ title: string; coachSheets?: CoachSheet[] }>();
 
 defineEmits<{ back: [] }>();
 
 const route = useRoute();
 const stage = computed(() => coachStageFor(route.path));
+
+// 헤더 제목을 브라우저 탭 제목으로도 쓴다.
+useHead(() => ({ title: props.title }));
 </script>
 
 <template>

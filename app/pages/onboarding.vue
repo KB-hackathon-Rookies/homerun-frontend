@@ -4,6 +4,9 @@ import type { MatchRow } from '~/components/onboarding/MatchCard.vue';
 import type { SettleRow } from '~/components/onboarding/SettleCard.vue';
 import type { Task } from '~/components/onboarding/TaskCard.vue';
 
+// 브라우저 탭 제목.
+useHead({ title: '시작하기' });
+
 /**
  * OB-01 ~ OB-04 온보딩.
  *

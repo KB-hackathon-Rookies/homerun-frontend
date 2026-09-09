@@ -43,7 +43,7 @@ const SCOPES: Scope[] = [
         <span class="text-numeric text-ink-hero">무엇을 보나요?</span>
         <div v-for="scope in SCOPES" :key="scope.label" class="flex items-start gap-2.5">
           <span
-            class="text-micro text-primary-strong bg-surface-info rounded-chip shrink-0 px-2 py-0.5"
+            class="text-micro text-primary-deep bg-surface-info rounded-chip shrink-0 px-2 py-0.5"
           >
             {{ scope.label }}
           </span>

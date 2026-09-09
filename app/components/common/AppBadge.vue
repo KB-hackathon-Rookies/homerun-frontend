@@ -22,7 +22,7 @@ const SOFT: Record<Tone, string> = {
   negative: 'bg-badge-danger text-danger',
   informative: 'bg-surface-brand text-primary-deep',
   /** 판정이 아니라 화면 상태를 말하는 자리. 마이·상태 화면이 쓴다. */
-  brand: 'bg-surface-info text-primary-strong',
+  brand: 'bg-surface-info text-primary-deep',
 };
 
 const SOLID: Record<Tone, string> = {

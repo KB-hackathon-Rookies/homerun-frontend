@@ -98,7 +98,7 @@ onMounted(async () => {
             :class="
               milestone.blocking
                 ? 'bg-primary-strong text-white'
-                : 'bg-surface-info text-primary-strong'
+                : 'bg-surface-info text-primary-deep'
             "
           >
             {{ schedule.balanceDate ? dday(milestone.dueDate, schedule.balanceDate) : '—' }}

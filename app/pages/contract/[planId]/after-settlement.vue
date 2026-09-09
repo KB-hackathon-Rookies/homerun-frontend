@@ -119,7 +119,7 @@ const coachOpen = ref(false);
     <!-- 3루 안착 축하(시안 3루 13, `687:5410`). 딤 위에 터치로 넘긴다. -->
     <DimOverlay v-if="celebrating" @close="dismissCelebration">
       <div class="flex flex-col items-center gap-2.5 text-center">
-        <img src="/tiger/done.png" alt="" class="mb-1 h-[122px] w-[150px] object-contain" />
+        <img src="/tiger/done.webp" alt="" class="mb-1 h-[122px] w-[150px] object-contain" />
         <p class="text-title2 text-primary-strong">3루 안착!</p>
         <p class="text-headline2 text-ink-hero">잔금까지 무사히 끝났어</p>
         <p class="text-caption2 text-ink-hero-body leading-5">
@@ -127,7 +127,7 @@ const coachOpen = ref(false);
           이제 홈에서 정착을 챙기자
         </p>
 
-        <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
+        <p class="bg-surface-info rounded-chip text-caption1 text-primary-deep mt-1 px-3 py-1.5">
           ⚾ 다음은 홈 · 정착
         </p>
       </div>

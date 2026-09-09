@@ -22,6 +22,13 @@ const planId = Number(route.params.planId);
 
 const dashboard = ref<Dashboard | null>(null);
 const decision = ref<PropertyDecision | null>(null);
+/**
+ * 확정 조건 조회가 **실패**했는가.
+ *
+ * 못 읽은 것과 없는 것은 다르다. 전에는 둘을 구분하지 않아서, 조회가 실패하면
+ * 확정 조건을 멀쩡히 넣어 둔 사람에게도 "확정한 대출 조건이 없어요" 가 떴다.
+ */
+const decisionFailed = ref(false);
 const settlement = ref<SettlementDashboard | null>(null);
 /**
  * 등록된 실행 대출. 4루 계산의 뿌리다 — 없으면 체크인·금리인하요구권·
@@ -90,7 +97,7 @@ onMounted(async () => {
   usePropertyApi()
     .decision(planId)
     .then((found) => (decision.value = found))
-    .catch(() => {});
+    .catch(() => (decisionFailed.value = true));
 
   // 등록 전이면 404 다. 다른 실패는 "없다" 가 아니라 "모른다" 라, 이때는
   // 등록 안내를 띄우지 않는다 -- 이미 넣은 사람에게 또 넣으라고 하면 안 된다.
@@ -141,9 +148,11 @@ onMounted(async () => {
             :note="
               loan
                 ? '등록한 실행 대출 기준'
-                : monthlyInterest === null
-                  ? '확정한 대출 조건이 없어요'
-                  : '확정 조건 기준 추정'
+                : monthlyInterest !== null
+                  ? '확정 조건 기준 추정'
+                  : decisionFailed
+                    ? '확정 조건을 불러오지 못했어요'
+                    : '확정한 대출 조건이 없어요'
             "
           />
         </div>

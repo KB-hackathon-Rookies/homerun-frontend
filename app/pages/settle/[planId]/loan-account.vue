@@ -9,6 +9,7 @@ import {
   type RepaymentType,
 } from '~/api/settlement';
 import type { PillOption } from '~/components/prep/PillGroup.vue';
+import { manwonFromWon, parseCount, parseManwon } from '~/utils/amount';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { HOME_STEPS } from '~/components/home/steps';
@@ -79,13 +80,19 @@ const prefilledFrom = ref<string[]>([]);
 
 const toDateInput = (value: string | null | undefined) => (value ? value.slice(0, 10) : '');
 
-/** 만 원 단위 입력을 원으로. 숫자가 아니면 저장을 막아야 하므로 여기선 판단만 한다. */
-const principalWon = computed(() => {
-  const digits = principalMan.value.replace(/[^\d]/g, '');
-  if (!digits) return null;
-  const man = Number(digits);
-  return Number.isFinite(man) ? man * 10_000 : null;
-});
+/**
+ * 검사한 뒤에 단위를 바꾼다.
+ *
+ * 전에는 숫자가 아닌 글자를 지워서 값을 만들었다. `1.5`(만 원)가 점을 잃고 15만 원이 된다 —
+ * 오류 한 줄 없이 10배 틀린 원금이 저장된다. 4루의 월 이자·주거비(BR-28)와 금리인하요구권이
+ * 전부 이 한 값을 읽어서, 여기서 틀리면 정착 화면이 통째로 틀린 숫자를 말한다.
+ *
+ * 서버는 바뀐 뒤의 멀쩡한 숫자만 받으므로 원래 입력이 틀렸다는 것을 알 방법이 없다.
+ */
+const parsedPrincipal = computed(() => parseManwon(principalMan.value));
+
+/** 서버가 받는 단위는 원이다(`LoanAccountPayload.principal`). 만 원 → 원 환산은 파서가 한다. */
+const principalWon = computed(() => parsedPrincipal.value.value);
 
 /** 금리는 소수점이 있다. 숫자로 못 읽으면 `null` 로 두고 저장을 막는다. */
 const rate = computed(() => {
@@ -95,12 +102,11 @@ const rate = computed(() => {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 });
 
-const extensions = computed(() => {
-  const digits = extensionCount.value.replace(/[^\d]/g, '');
-  if (!digits) return null;
-  const parsed = Number(digits);
-  return Number.isFinite(parsed) ? parsed : null;
-});
+/** 연장 횟수도 같다. `1.5` 에서 점을 지워 15회로 만들면 하지도 않은 연장이 생긴다. */
+const parsedExtensions = computed(() => parseCount(extensionCount.value));
+
+/** 선택 항목이다. 비어 있으면 `null` 을 보낸다 — "0회 확인함" 과 "안 적음" 은 다르다. */
+const extensions = computed(() => parsedExtensions.value.value);
 
 const ready = computed(
   () =>
@@ -108,7 +114,10 @@ const ready = computed(
     !!repaymentType.value &&
     !!executedAt.value &&
     principalWon.value !== null &&
-    rate.value !== null,
+    rate.value !== null &&
+    // 연장 횟수는 선택이라 비어 있어도 되지만, 못 읽는 값을 적어 둔 채로 저장하면
+    // 사용자가 적은 것이 조용히 사라진다. 오류가 남아 있는 동안은 막는다.
+    !parsedExtensions.value.error,
 );
 
 /** 저장 전에도 이자가 얼마쯤인지는 보여준다. 서버 공식(BR-28)과 같다. */
@@ -120,7 +129,9 @@ const previewInterest = computed(() => {
 function fillFrom(loan: LoanAccount) {
   product.value = loan.product;
   guarantee.value = loan.guarantee ?? NO_GUARANTEE;
-  principalMan.value = String(Math.round(loan.principal / 10_000));
+  // 만 원 미만을 버리지 않는다. 3,456,789원을 `345` 로 잘라 보여주면 사용자가 금리만
+  // 고치고 저장하는 순간 6,789원이 사라진다.
+  principalMan.value = manwonFromWon(loan.principal);
   ratePercent.value = String(loan.rate);
   repaymentType.value = loan.repaymentType;
   executedAt.value = toDateInput(loan.executedAt);
@@ -152,7 +163,7 @@ async function prefill() {
       from.push('보증 방식');
     }
     if (consultation.approvedLimit !== null) {
-      principalMan.value = String(Math.round(consultation.approvedLimit / 10_000));
+      principalMan.value = manwonFromWon(consultation.approvedLimit);
       from.push('원금(승인한도)');
     }
     if (consultation.quotedRate !== null) {
@@ -278,6 +289,7 @@ async function save() {
             label="대출 원금 (만 원)"
             type="tel"
             placeholder="예: 12000"
+            :error="parsedPrincipal.error ?? ''"
           >
             <template v-if="principalWon !== null" #hint>
               {{ formatKoreanMoney(principalWon) }}
@@ -327,6 +339,7 @@ async function save() {
             label="연장 횟수 (선택)"
             type="tel"
             placeholder="아직 연장한 적 없으면 비워두세요"
+            :error="parsedExtensions.error ?? ''"
           />
         </AppCard>
 

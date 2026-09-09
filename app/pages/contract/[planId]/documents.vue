@@ -495,7 +495,7 @@ const back = () => {
             <span class="text-label2 text-ink-hero flex-1 font-medium">{{ doc.name }}</span>
             <span
               v-if="doc.badge"
-              class="bg-surface-info rounded-chip text-micro text-primary-strong shrink-0 px-1.5 py-0.5 font-semibold"
+              class="bg-surface-info rounded-chip text-micro text-primary-deep shrink-0 px-1.5 py-0.5 font-semibold"
             >
               {{ doc.badge }}
             </span>
@@ -553,7 +553,7 @@ const back = () => {
           <h2 class="text-headline2 text-ink-hero flex-1">{{ openDoc.name }}</h2>
           <span
             v-if="openDoc.badge"
-            class="bg-surface-info rounded-chip text-micro text-primary-strong shrink-0 px-1.5 py-0.5 font-semibold"
+            class="bg-surface-info rounded-chip text-micro text-primary-deep shrink-0 px-1.5 py-0.5 font-semibold"
           >
             {{ openDoc.badge }}
           </span>

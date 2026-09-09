@@ -8,6 +8,9 @@ import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom } from '~/utils/error';
 import { STAGE_CHIP, displayStage } from '~/utils/stage';
 
+// 브라우저 탭 제목.
+useHead({ title: '마이 홈' });
+
 /**
  * MY-01 마이.
  *
@@ -104,7 +107,7 @@ onMounted(async () => {
           <span class="text-headline2 text-ink flex-1">{{ name }}</span>
           <span
             v-if="planId"
-            class="bg-surface-info rounded-pill text-caption1 text-primary-strong px-2 py-1"
+            class="bg-surface-info rounded-pill text-caption1 text-primary-deep px-2 py-1"
           >
             {{ chip }}
           </span>

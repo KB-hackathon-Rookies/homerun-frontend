@@ -18,9 +18,6 @@ definePageMeta({ middleware: 'auth' });
 
 const { isDone } = useCoachProgress();
 
-/** 슬러그를 백엔드 code(M0…)로 매핑하려면 전체 순서가 필요하다. */
-const orderedIds = COACH_MODULES.map((module) => module.id);
-
 /** 백엔드에 본문이 있는 code 집합. 목록을 못 불러오면 비어 있어 로컬 본문만으로 판단한다. */
 const serverContentCodes = ref<Set<string>>(new Set());
 
@@ -36,7 +33,7 @@ onMounted(async () => {
 /** 열 수 있는 모듈인가 — 번들에 본문이 있거나 백엔드에 콘텐츠가 있으면. */
 function hasContent(module: CoachModule) {
   if (module.body) return true;
-  const code = educationCode(module.id, orderedIds);
+  const code = educationCode(module.id, COACH_MODULES);
   return code !== null && serverContentCodes.value.has(code);
 }
 
