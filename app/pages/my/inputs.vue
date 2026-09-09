@@ -3,6 +3,7 @@ import { usePlanApi, type PlanInput } from '~/api/plan';
 import { useVerificationApi, type PendingCondition } from '~/api/verification';
 import { currentPlan } from '~/utils/currentPlan';
 import { messageFrom, statusFrom } from '~/utils/error';
+import { manwonFromWon, parseManwon } from '~/utils/amount';
 import { formatKoreanMoney } from '~/utils/money';
 
 /**
@@ -28,21 +29,17 @@ const saving = ref(false);
 const error = ref('');
 const saved = ref(false);
 
-const onlyDigits = (text: string) => Number(text.replace(/[^0-9]/g, '')) || 0;
-
 /**
- * 화면은 만 원 단위로 받고 백엔드는 원 단위로 저장한다. 1루 문진(`diagnosis/[planId]/finance.vue`)
- * 과 같은 규칙이라, 거기서 만 원을 배운 사용자가 여기서 300 을 넣어도 300원이 되지 않는다.
+ * 화면은 만 원 단위로 받고 백엔드는 원 단위로 저장한다. 1루 문진과 같은 파서를 쓴다 —
+ * 거기서 만 원을 배운 사용자가 여기서 300 을 넣어도 300원이 되지 않는다.
+ *
+ * 전에는 이 화면만 규칙이 달랐다. 숫자가 아닌 글자를 **지워서** 값을 만들고(`abc` → 0원,
+ * `-100` → 100만 원, `1.5` → 15만 원), 되돌릴 때는 `Math.floor` 로 만 원 미만을 **버렸다.**
+ * 3,456,789원이 `345` 로 보이고, 소득 한 칸만 고쳐 저장해도 순자산에서 6,789원이 조용히
+ * 사라졌다. 이 화면은 저장할 때 두 값을 함께 보내므로 건드리지 않은 칸도 같이 깎였다.
  */
-const toWon = (text: string) => onlyDigits(text) * 10_000;
-
-/** 저장된 원 단위 값을 편집용 만 원 단위로 되돌린다. 이걸 빼면 열 때마다 값이 만 배씩 커진다. */
-const toMan = (won: number | null | undefined) =>
-  won === null || won === undefined ? 0 : Math.floor(won / 10_000);
-
-/** 아직 답하지 않은 값은 0 이 아니라 빈 칸으로 둔다. */
-const toManText = (won: number | null | undefined) =>
-  won === null || won === undefined ? '' : String(toMan(won));
+const parsedIncome = computed(() => parseManwon(monthlyIncome.value));
+const parsedAssets = computed(() => parseManwon(netAssets.value));
 
 /** 부모와 시·군이 다른지만 저장한다. 주소를 받지 않으므로 "같은 세대" 는 추정이 아니라 그 값의 반대다. */
 const household = computed(() => {
@@ -63,23 +60,36 @@ const unconfirmed = computed(
     input.value?.incomeSource === 'OPEN_BANKING' && input.value?.financialDataConfirmed === false,
 );
 
-// 비교도 만 원 단위로 한다. 원 단위로 비교하면 만 원 미만이 잘린 값 때문에
-// 아무것도 고치지 않았는데 저장 버튼이 열린다.
+/*
+ * 원 단위 그대로 비교한다. 되돌릴 때 값을 버리지 않으므로, 아무것도 고치지 않았으면
+ * 파싱 결과가 저장값과 정확히 같다 — 만 원 단위로 뭉개서 비교할 이유가 없어졌다.
+ */
 const changed = computed(
   () =>
     !!input.value &&
-    (onlyDigits(monthlyIncome.value) !== toMan(input.value.monthlyIncome) ||
-      onlyDigits(netAssets.value) !== toMan(input.value.netAssets)),
+    (parsedIncome.value.value !== input.value.monthlyIncome ||
+      parsedAssets.value.value !== input.value.netAssets),
+);
+
+/** 형식이 틀린 값은 저장하지 않는다. 지워서 통과시키면 틀린 숫자가 판정까지 간다. */
+const canSave = computed(
+  () => changed.value && !parsedIncome.value.error && !parsedAssets.value.error,
 );
 
 async function save() {
-  if (!planId.value || !input.value || saving.value) return;
+  if (!planId.value || !input.value || saving.value || !canSave.value) return;
+
+  const nextIncome = parsedIncome.value.value;
+  const nextAssets = parsedAssets.value.value;
+  // 빈 칸은 "0원 확인함" 이 아니라 미입력이다. 여기서 0 으로 채우면 판정이 통째로 어긋난다.
+  if (nextIncome === null || nextAssets === null) {
+    error.value = '월 소득과 순자산을 모두 입력해주세요.';
+    return;
+  }
 
   saving.value = true;
   saved.value = false;
   error.value = '';
-  const nextIncome = toWon(monthlyIncome.value);
-  const nextAssets = toWon(netAssets.value);
   try {
     // `unknownFields` 를 보내지 않는다. 이 화면은 자기자금을 편집하지 않으므로 "모름" 이라고
     // 말할 자격이 없다. 항목을 생략하면 서버 `PlanInputStepService.value()` 가 "현재 값 유지"
@@ -122,8 +132,8 @@ onMounted(async () => {
   try {
     const found = await usePlanApi().input(planId.value);
     input.value = found;
-    monthlyIncome.value = toManText(found.monthlyIncome);
-    netAssets.value = toManText(found.netAssets);
+    monthlyIncome.value = manwonFromWon(found.monthlyIncome);
+    netAssets.value = manwonFromWon(found.netAssets);
   } catch (cause) {
     error.value = messageFrom(cause, '입력값을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {
@@ -157,12 +167,14 @@ onMounted(async () => {
         <SectionCard title="소득과 자산">
           <AppInput
             v-model="monthlyIncome"
+            :error="parsedIncome.error ?? ''"
             label="월 소득 (만 원)"
             type="tel"
             placeholder="숫자만 입력해주세요"
           />
           <AppInput
             v-model="netAssets"
+            :error="parsedAssets.error ?? ''"
             label="순자산 (만 원)"
             type="tel"
             placeholder="숫자만 입력해주세요"
@@ -196,7 +208,7 @@ onMounted(async () => {
     </div>
 
     <footer class="px-gutter-tight bg-surface flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton :disabled="!changed || saving" @click="save">
+      <AppButton :disabled="!canSave || saving" @click="save">
         {{ saving ? '저장 중…' : '영향 확인하고 저장' }}
       </AppButton>
     </footer>
