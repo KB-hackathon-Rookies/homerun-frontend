@@ -4,8 +4,9 @@ import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 1 · 임장.
  *
- * 집을 보러 가기 전에 여는 화면이다. 체크는 저장하지 않는다 — 현장에서
- * 스스로 짚어 보라고 두는 것이다.
+ * 집을 보러 가기 전에 여는 화면이다. 체크는 서버에 저장하지 않는다 — 현장에서
+ * 스스로 짚어 보라고 두는 것이다. 대신 화면을 나가기 전엔 일곱 개를 다 봐야
+ * 한다 — 체크 없이 다음으로 넘기면 안 본 항목이 있어도 그냥 지나간다.
  *
  * 중개사에게 전할 세 가지를 위에 두는 이유가 있다. **집을 보고 나서
  * 말하면 늦다** — 전세대출 협조가 안 되는 집이면 아무리 마음에 들어도
@@ -27,6 +28,9 @@ const CHECKS = [
 ];
 
 const checked = ref<Record<string, boolean>>({});
+
+/** 일곱 개를 다 봐야 다음으로 넘어간다. */
+const allChecked = computed(() => CHECKS.every((item) => checked.value[item]));
 
 /** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
 const coachOpen = ref(false);
@@ -65,8 +69,12 @@ const coachOpen = ref(false);
 
     <template #footer>
       <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/sign`)">
-          계약 단계로
+        <AppButton
+          variant="strong"
+          :disabled="!allChecked"
+          @click="navigateTo(`/contract/${planId}/sign`)"
+        >
+          다음
         </AppButton>
       </footer>
     </template>
