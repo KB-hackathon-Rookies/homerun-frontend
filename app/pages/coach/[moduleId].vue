@@ -83,10 +83,7 @@ async function finish() {
 
 onMounted(async () => {
   const id = String(route.params.moduleId);
-  const code = educationCode(
-    id,
-    COACH_MODULES.map((item) => item.id),
-  );
+  const code = educationCode(id, COACH_MODULES);
   if (!code) return;
   try {
     serverModule.value = await useEducationApi().detail(code);
