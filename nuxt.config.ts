@@ -25,7 +25,10 @@ export default defineNuxtConfig({
 
   // 폴더로 묶되 이름에는 접두사를 붙이지 않는다. common/AppButton.vue 가
   // <CommonAppButton /> 이 아니라 <AppButton /> 으로 쓰인다.
-  components: [{ path: '~/components', pathPrefix: false }],
+  // extensions 를 vue 로 좁힌다. components 아래 데이터용 .ts(coachSheets·steps 등)까지
+  // 컴포넌트로 스캔하면 파일명이 겹쳐(CoachSheets·Steps) 이름 충돌 경고가 난다. 이 .ts 들은
+  // 컴포넌트가 아니라 명시적으로 import 하는 모듈이라 컴포넌트 자동등록 대상에서 뺀다.
+  components: [{ path: '~/components', pathPrefix: false, extensions: ['vue'] }],
 
   css: ['~/assets/css/main.css'],
 
@@ -64,7 +67,8 @@ export default defineNuxtConfig({
         // 검색결과·공유 미리보기에 쓰는 한 줄 소개. 없으면 SEO 감사에서 빠진다.
         {
           name: 'description',
-          content: '전세·월세 계약을 1루부터 홈까지, 단계별 체크와 AI 코치로 함께 챙기는 주거 준비 도우미 홈런.',
+          content:
+            '전세·월세 계약을 1루부터 홈까지, 단계별 체크와 AI 코치로 함께 챙기는 주거 준비 도우미 홈런.',
         },
         /*
          * iOS 에서 주소창 없이 뜨게 한다. `black-translucent` 는 상태바를 화면
