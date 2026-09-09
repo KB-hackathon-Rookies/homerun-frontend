@@ -59,8 +59,10 @@ const summary = computed(() => {
 onMounted(async () => {
   const api = usePropertyApi();
   try {
+    // 저장된 판정을 읽는(GET) 대신 판정을 실행(POST)한다 — 등록 직후엔 저장된 게
+    // 없어 GET 만으로는 "판정 없음" 만 나온다. 미확인 조건은 '진행중'으로 온다.
     const [result, workflow] = await Promise.all([
-      api.policyVerdicts(planId, propertyId),
+      api.evaluatePolicyVerdicts(planId, propertyId),
       api.resume(planId, propertyId),
     ]);
     verdicts.value = result.results;

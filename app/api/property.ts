@@ -188,6 +188,20 @@ export function usePropertyApi() {
       return data.data;
     },
 
+    /**
+     * 매물 x 상품 판정을 실행하고 저장한다(POST).
+     *
+     * `policyVerdicts`(GET)는 저장된 것만 읽는다. 백엔드는 등기부 단계까지 끝나야
+     * 판정을 만들어서, 등록 직후 자동조회 판정 화면은 GET 만으로는 늘 "판정 없음" 이다.
+     * 이걸로 먼저 판정을 만든다 — 아직 못 확인한 조건은 '진행중'(NEED_INFO)으로 나온다.
+     */
+    async evaluatePolicyVerdicts(planId: number, propertyId: number) {
+      const { data } = await $api.post<ApiResponse<PropertyPolicyVerdicts>>(
+        `${properties(planId)}/${propertyId}/policy-verdicts`,
+      );
+      return data.data;
+    },
+
     /** 마지막으로 저장한 STEP 과 `revision` 을 돌려준다. */
     async resume(planId: number, propertyId: number) {
       const { data } = await $api.get<ApiResponse<PropertyWorkflow>>(
