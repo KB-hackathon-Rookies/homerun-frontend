@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import type { Term } from '~/components/common/TermsAgreement.vue';
 import { useTerms } from '~/composables/useTerms';
+import { useAuthStore } from '~/stores/auth';
+import { openBankingTerms } from '~/utils/openBankingTerms';
 
 /**
  * 오픈뱅킹 약관 동의.
  *
- * 동의를 받아야 인가 URL 을 요청할 수 있다. 동의 자체는 화면에서 끝나고,
- * 실제 금융결제원 동의는 다음 화면에서 인가 페이지를 열어 받는다.
+ * 동의를 받아야 연동을 시작할 수 있다.
+ *
+ * **이미 동의한 사람에게는 다시 묻지 않는다.** 서버가 이 동의를 기록하지 않아서, 화면을
+ * 나갔다 오면 연동을 마친 사람도 같은 약관을 처음부터 다시 밟아야 했다. 회원별로 남겨 둔
+ * 기록이 있으면 바로 다음 화면으로 보낸다(`openBankingTerms`).
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -20,6 +25,24 @@ const TERMS: Term[] = [
 const { agreed, canProceed } = useTerms(TERMS);
 
 const router = useRouter();
+const auth = useAuthStore();
+
+const NEXT = '/openbanking/progress';
+
+/*
+ * 이미 동의했으면 화면을 보여주지 않고 바로 넘긴다.
+ *
+ * `replace` 로 보내야 다음 화면에서 뒤로 가기를 눌렀을 때 이 화면으로 되돌아와 다시
+ * 튕겨 나가는 고리에 갇히지 않는다.
+ */
+onMounted(() => {
+  if (openBankingTerms.agreedBy(auth.user?.id)) navigateTo(NEXT, { replace: true });
+});
+
+function agreeAndContinue() {
+  openBankingTerms.remember(auth.user?.id);
+  navigateTo(NEXT);
+}
 </script>
 
 <template>
@@ -44,7 +67,7 @@ const router = useRouter();
           <AppButton variant="white" @click="router.back()">이전</AppButton>
         </div>
         <div class="flex-1">
-          <AppButton :disabled="!canProceed" @click="navigateTo('/openbanking/progress')">
+          <AppButton :disabled="!canProceed" @click="agreeAndContinue">
             동의하고 계속하기
           </AppButton>
         </div>
