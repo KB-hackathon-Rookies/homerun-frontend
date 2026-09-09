@@ -63,8 +63,11 @@ const parsedLimit = computed(() => parseManwon(limit.value));
  * 서버에는 안 들어간다. 그 값이 나중에 2루 완료를 막는다.
  */
 const rateText = computed(() => rate.value.trim());
+// 서버는 0 이상 금리만 받는다. 유한한 숫자인지만 보면 `-1` 이 통과해 그대로 전송된다.
 const rateInvalid = computed(
-  () => rateText.value !== '' && !Number.isFinite(Number(rateText.value)),
+  () =>
+    rateText.value !== '' &&
+    (!Number.isFinite(Number(rateText.value)) || Number(rateText.value) < 0),
 );
 const quotedRate = computed(() =>
   rateText.value === '' || rateInvalid.value ? null : Number(rateText.value),
