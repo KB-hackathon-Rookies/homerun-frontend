@@ -21,6 +21,8 @@ defineEmits<{ back: [] }>();
 
   <BrandBar bordered />
 
+  <BaseStrip :base="base" />
+
   <header
     class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
   >
@@ -30,6 +32,4 @@ defineEmits<{ back: [] }>();
 
     <h1 class="text-headline2 text-ink-hero min-w-0 flex-1 truncate">{{ title }}</h1>
   </header>
-
-  <BaseStrip :base="base" />
 </template>
