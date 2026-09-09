@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BANKS } from '~/components/property/consultation';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루-6a 방문한 은행 선택.
@@ -33,11 +34,12 @@ const start = () =>
 </script>
 
 <template>
-  <StageShell title="상담 결과 입력"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)">
+  <StageShell brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
+      <p class="text-caption1 text-ink-label font-medium">2루 · 은행 상담</p>
+      <h1 class="text-question text-ink-card">방문한 은행 선택</h1>
       <AppCard class="flex flex-col gap-2.5">
         <h2 class="text-body2 text-ink-hero font-bold">방문한 은행을 모두 선택해주세요</h2>
         <p class="text-caption2 text-ink-hero-body">선택한 은행 수만큼 상담 결과 카드가 생겨요</p>

@@ -19,7 +19,7 @@ const ACTIONS = [
 </script>
 
 <template>
-  <GuideFrame title="등기부 변동 대응 상세" @back="navigateTo(`/contract/${planId}/settlement`)">
+  <GuideFrame title="등기부 변동 대응" @back="navigateTo(`/contract/${planId}/settlement`)">
     <div class="bg-badge-warning rounded-field flex flex-col gap-1.5 p-3.5">
       <p class="text-label2 text-warning-strong font-semibold">
         뭔가 달라졌으면 절대 송금하지 마세요
@@ -62,7 +62,7 @@ const ACTIONS = [
 
     <template #cta>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/settlement`)">
-        화면으로 돌아가기
+        돌아가기
       </AppButton>
     </template>
   </GuideFrame>

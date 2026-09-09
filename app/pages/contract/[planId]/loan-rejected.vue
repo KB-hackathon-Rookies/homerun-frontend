@@ -44,7 +44,7 @@ const TONE_PILL = {
 </script>
 
 <template>
-  <GuideFrame title="대출 거절 대응 상세" @back="navigateTo(`/contract/${planId}/review`)">
+  <GuideFrame title="대출 거절 대응" @back="navigateTo(`/contract/${planId}/review`)">
     <h2 class="text-option text-ink-hero px-1 pt-2">먼저 사유를 문서로 받으세요</h2>
 
     <AppCard class="flex flex-col gap-1.5">
@@ -113,7 +113,7 @@ const TONE_PILL = {
 
     <template #cta>
       <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/review`)">
-        화면으로 돌아가기
+        돌아가기
       </AppButton>
     </template>
   </GuideFrame>

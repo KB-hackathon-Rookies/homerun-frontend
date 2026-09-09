@@ -12,6 +12,7 @@ import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { manwonFromWon, parseCount, parseManwon } from '~/utils/amount';
 import { messageFrom, statusFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
+import { HOME_STEPS } from '~/components/home/steps';
 
 /**
  * 홈 4-0 · 실행 대출 등록.
@@ -235,11 +236,13 @@ async function save() {
 </script>
 
 <template>
-  <StageShell title="실행 대출 등록" base="홈" @back="navigateTo(`/settle/${planId}`)">
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3.5 py-4">
-      <CoachTip>
-        실제로 실행된 대출을 넣어줘. 이걸 알아야 월 이자랑 주거비를 정확히 계산해줄 수 있어
-      </CoachTip>
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="4" />
+
+      <p class="text-caption1 text-ink-label font-medium">홈 · 사후 관리</p>
+
+      <h1 class="text-question text-ink-card">실행 대출 등록</h1>
 
       <p v-if="pending" class="text-label2 text-ink-muted">대출 정보를 불러오는 중이에요…</p>
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 /**
  * 3루 9 · 대출 신청 (D-10).
  *
@@ -22,17 +24,27 @@ const DOCS = [
 ];
 
 const checked = ref<Record<string, boolean>>({});
+
+/** 챙길 것을 다 확인해야 신청 완료로 넘어갈 수 있다. */
+const allChecked = computed(() => DOCS.every((doc) => checked.value[doc]));
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="D-10 대출 신청"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/resident-cert`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.loanApply]"
+    brand
+    base="3루"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        이제 은행에 가서 정식으로 신청. 은행은 두 번 가게 돼 — 사전상담 1번, 대출 신청 1번
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 대출 신청</p>
+
+      <h1 class="text-question text-ink-card">D-10 대출 신청</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">신청은 두 개</h2>
 
@@ -50,30 +62,26 @@ const checked = ref<Record<string, boolean>>({});
 
       <CheckItem v-for="doc in DOCS" :key="doc" v-model="checked[doc]">{{ doc }}</CheckItem>
 
-      <p class="bg-warning-strong rounded-chip text-micro p-3 font-bold text-white">
-        💡 질권설정 통지가 임대인에게 도달하지 않으면 대출이 진행 안 될 수 있어요. 미리 알려두세요
-      </p>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/documents`)">
-        서류 발급 방법 보기
-      </DetailLink>
-
       <DetailLink @open="navigateTo(`/contract/${planId}/loan-apply-detail`)">
         신청 두 갈래·서류·질권설정 상세보기
       </DetailLink>
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/resident-cert`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/resident-cert`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton
+          variant="strong"
+          :disabled="!allChecked"
+          @click="navigateTo(`/contract/${planId}/review`)"
+        >
+          다음
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/review`)">
-        신청 완료
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

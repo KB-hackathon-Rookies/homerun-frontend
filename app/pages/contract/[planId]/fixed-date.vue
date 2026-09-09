@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { FIXED_DATE_METHODS } from '~/components/contract/terms';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 3 · 확정일자.
@@ -12,13 +14,24 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="확정일자" base="3루" @back="navigateTo(`/contract/${planId}/sign`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.fixedDate]"
+    brand
+    base="3루"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>축하해! 계약 완료. 계약하고 바로 확정일자를 받아. 미루지 않는 게 좋아</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 계약</p>
+
+      <h1 class="text-question text-ink-card">확정일자</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">세 가지 방법 중 하나</h2>
 
@@ -28,22 +41,19 @@ const planId = Number(route.params.planId);
         <p class="text-micro text-primary-strong">· {{ method.cost }} · {{ method.speed }}</p>
       </AppCard>
 
-      <DetailLink @open="navigateTo(`/contract/${planId}/fixed-date-detail`)">
-        세 방법·효력 발생 시점 상세보기
-      </DetailLink>
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/sign`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/sign`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/schedule`)">
+          일정 만들기로
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/schedule`)">
-        일정 만들기로
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

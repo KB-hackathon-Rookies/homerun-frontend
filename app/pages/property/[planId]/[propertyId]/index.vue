@@ -3,6 +3,7 @@ import { usePropertyApi, type PropertyPolicyVerdict, type PropertyStep } from '~
 import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { propertyStepLabel, propertyStepRoute } from '~/utils/propertyStep';
+import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
  * 2루 매물 진단 — 자동조회 판정.
@@ -73,10 +74,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}`)">
+  <StageShell brand base="2루">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>매물 고르기 전에 미리 거를 수 있어. 여기 자동조회 판정부터 보고 시작하자</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
+      <h1 class="text-question text-ink-card">매물 등록</h1>
 
       <!--
         주소는 판정과 따로 온다. 판정을 못 받아도 어느 집 이야기인지는

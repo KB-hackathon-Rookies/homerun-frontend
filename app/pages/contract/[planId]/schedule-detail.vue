@@ -6,6 +6,7 @@ import {
   HOUSE_LABEL,
   PRODUCT_LABEL,
 } from '~/components/contract/labels';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 import { dday, formatDotDate, formatShortDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
@@ -69,7 +70,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <GuideFrame title="일정 만들기 상세" @back="navigateTo(`/contract/${planId}/schedule`)">
+  <GuideFrame
+    :coach-sheets="[COACH_TIME.schedulePlanning]"
+    title="일정 만들기 상세"
+    @back="navigateTo(`/contract/${planId}/schedule`)"
+  >
     <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
     <template v-else-if="schedule">

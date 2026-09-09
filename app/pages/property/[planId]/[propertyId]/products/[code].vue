@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { PRODUCTS } from '~/components/property/products';
 import { useJeonsePolicies } from '~/composables/useJeonsePolicies';
+import { PRODUCT_COACH } from '~/components/property/coachSheets';
 
 /**
- * 2루-4b 상품 상세.
+ * 2루 5 · 상품 상세 (하위).
  *
  * 상품 하나가 어떤 상품인지, 그리고 **이 매물에서 왜 안 됐는지**를 함께
  * 보여준다. 안 되는 이유를 목록 화면에 다 펼치면 읽히지 않아서 여기로 뺐다.
@@ -31,13 +32,21 @@ const reasons = computed(() => verdict.value?.rejectionReasons ?? []);
 const alternative = computed(
   () => reasons.value.find((reason) => reason.alternativePolicyCode)?.alternativePolicyName ?? null,
 );
+
+/** 시안이 코치 TIME 을 붙인 상품에서만 FAB 이 뜬다. 나머지는 빈 배열이라 안 뜬다. */
+const coachSheets = computed(() => {
+  const sheet = PRODUCT_COACH[code];
+  return sheet ? [sheet] : [];
+});
 </script>
 
 <template>
-  <StageShell :title="doc?.title ?? verdict?.policyName ?? '상품 상세'"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/detail`)">
-
+  <StageShell
+    :coach-sheets="coachSheets"
+    :title="doc?.title ?? verdict?.policyName ?? '상품 상세'"
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>
@@ -169,11 +178,11 @@ const alternative = computed(
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" @click="navigateTo(`/property/${planId}/${propertyId}/detail`)">
-        확인
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" @click="navigateTo(`/property/${planId}/${propertyId}/detail`)">
+          확인
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>

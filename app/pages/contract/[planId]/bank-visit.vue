@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useContractApi, type ContractEntry } from '~/api/contract';
 import { messageFrom } from '~/utils/error';
+import { THIRD_BASE_STEPS } from '~/components/contract/steps';
+import { COACH_TIME } from '~/components/contract/coachSheets';
 
 /**
  * 3루 6 · 은행 방문 예약 (D-21).
@@ -31,6 +33,9 @@ const bank = computed(() => {
   return found.branchName ? `${found.bankName} ${found.branchName}` : found.bankName;
 });
 
+/** 체크리스트 다 확인해야 방문 예약 완료로 넘어갈 수 있게 한다. */
+const allChecked = computed(() => CHECKS.every((item) => checked.value[item]));
+
 onMounted(async () => {
   try {
     entry.value = await useContractApi().prefill(planId);
@@ -38,15 +43,24 @@ onMounted(async () => {
     error.value = messageFrom(cause, '계약 정보를 불러오지 못했어요.');
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell title="D-21 은행 예약"
-   base="3루"
-   @back="navigateTo(`/contract/${planId}/company-docs`)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.bankReservation]"
+    brand
+    base="3루"
+  >
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="THIRD_BASE_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>2루 사전상담에서 확정된 은행으로 가면 돼. 사전상담 받았던 그 지점이 좋아</CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">3루 · 대출 신청</p>
+
+      <h1 class="text-question text-ink-card">D-21 은행 예약</h1>
 
       <p v-if="error" class="text-label2 text-danger">{{ error }}</p>
 
@@ -60,10 +74,6 @@ onMounted(async () => {
 
       <CheckItem v-for="item in CHECKS" :key="item" v-model="checked[item]">{{ item }}</CheckItem>
 
-      <p class="bg-warning-strong rounded-chip text-micro p-3 font-bold text-white">
-        ⚠️ 신청 후에는 은행을 바꿀 수 없으니 지금 확정하세요
-      </p>
-
       <h2 class="text-body3 text-ink-hero font-bold">기금e든든 비대면 신청이라면</h2>
 
       <div class="bg-surface-info rounded-field flex flex-col gap-1.5 p-3.5">
@@ -74,23 +84,23 @@ onMounted(async () => {
           • 잔금일 30일 전 신청 권장 (D-21 시점에 신청하면 딱 맞음)
         </p>
       </div>
-
-      <DetailLink @open="navigateTo(`/contract/${planId}/docs`)">
-        다음 단계 · D-14 서류 일괄 발급
-      </DetailLink>
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
-      <div class="w-28 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
-          이전
+      <footer class="px-gutter-tight flex shrink-0 gap-2 pt-2.5 pb-cta-pad">
+        <div class="w-28 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/contract/${planId}/company-docs`)">
+            이전
+          </AppButton>
+        </div>
+        <AppButton
+          variant="strong"
+          :disabled="!allChecked"
+          @click="navigateTo(`/contract/${planId}/docs`)"
+        >
+          다음
         </AppButton>
-      </div>
-      <AppButton variant="strong" @click="navigateTo(`/contract/${planId}/docs`)">
-        방문 예약 완료
-      </AppButton>
-    </footer>
-</template>
+      </footer>
+    </template>
   </StageShell>
 </template>

@@ -35,5 +35,10 @@ const emit = defineEmits<{ close: [] }>();
     <div v-else class="bg-surface rounded-t-screen max-w-screen px-gutter pt-6 pb-cta-pad w-full">
       <slot />
     </div>
+
+    <!-- 카드 밖, 딤 위에 얹히는 안내(예: "화면을 터치하면 계속돼"). -->
+    <div v-if="$slots.hint" class="pointer-events-none absolute inset-x-0 bottom-24 text-center">
+      <slot name="hint" />
+    </div>
   </div>
 </template>

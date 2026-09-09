@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { HOME_STEPS } from '~/components/home/steps';
 import {
   GOV24_URL,
   MOVING_SUPPORT_CONDITIONS,
@@ -20,12 +21,13 @@ const planId = Number(route.params.planId);
 </script>
 
 <template>
-  <StageShell title="중개보수·이사비 지원" base="홈" @back="navigateTo(`/settle/${planId}`)">
+  <StageShell brand base="홈">
+    <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
+      <SubStep :steps="HOME_STEPS" :current="3" />
 
-    <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
-      <CoachTip>
-        청년 부동산 중개보수·이사비 지원사업이야. 지자체별로 운영해서 해당 기간에 안내해드릴게
-      </CoachTip>
+      <p class="text-caption1 text-ink-label font-medium">홈 · 정착 관리</p>
+
+      <h1 class="text-question text-ink-card">중개보수·이사비 지원</h1>
 
       <div class="bg-primary-strong rounded-button flex flex-col gap-1.5 p-4.5">
         <p class="text-caption-tight text-on-brand font-normal">예상 지원액 (서울시 청년 기준)</p>
@@ -61,19 +63,19 @@ const planId = Number(route.params.planId);
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
-      <!-- 필수 요소 4번(마지막). 앞 단계는 사후자산심사다. -->
-      <div class="w-29 shrink-0">
-        <AppButton variant="white" @click="navigateTo(`/settle/${planId}/asset-review`)">
-          이전
-        </AppButton>
-      </div>
-      <div class="flex-1">
-        <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
-          지자체 확인
-        </AppButton>
-      </div>
-    </footer>
-</template>
+      <footer class="px-gutter-tight bg-surface flex shrink-0 gap-2.5 pt-2.5 pb-cta-pad">
+        <!-- 필수 요소 4번(마지막). 앞 단계는 사후자산심사다. -->
+        <div class="w-29 shrink-0">
+          <AppButton variant="white" @click="navigateTo(`/settle/${planId}/asset-review`)">
+            이전
+          </AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" @click="navigateTo(GOV24_URL, { external: true })">
+            지자체 확인
+          </AppButton>
+        </div>
+      </footer>
+    </template>
   </StageShell>
 </template>
