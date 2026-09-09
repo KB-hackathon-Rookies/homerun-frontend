@@ -140,6 +140,7 @@ const coachOpen = ref(false);
 
 <template>
   <StageShell
+    v-model:coach-open="coachOpen"
     :coach-sheets="[COACH_TIME.rejected]"
     title="상담 결과 입력"
     base="2루"
