@@ -2,6 +2,9 @@
 import { useAuthApi } from '~/api/auth';
 import { useAuthStore } from '~/stores/auth';
 
+// 브라우저 탭 제목.
+useHead({ title: '로그인 처리 중' });
+
 /**
  * 소셜 로그인 착지 화면.
  *

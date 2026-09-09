@@ -29,7 +29,7 @@ const notified = ref(false);
 <template>
   <!-- 루트를 하나로 묶고 세로 정렬도 여기서 잡는다. 부르는 쪽 레이아웃에 기대지 않는다. -->
   <div class="flex w-full flex-col items-center gap-2.5">
-    <img src="/tiger/trouble.png" alt="" width="130" height="122" class="w-notice-art h-auto" />
+    <img src="/tiger/trouble.webp" alt="" width="130" height="122" class="w-notice-art h-auto" />
 
     <h2 class="text-heading text-ink-card text-center">{{ title }}</h2>
     <p class="text-note-body text-ink-card-body text-center">{{ body }}</p>

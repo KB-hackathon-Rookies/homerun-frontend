@@ -127,7 +127,7 @@ const coachOpen = ref(false);
           이제 홈에서 정착을 챙기자
         </p>
 
-        <p class="bg-surface-info rounded-chip text-caption1 text-primary-strong mt-1 px-3 py-1.5">
+        <p class="bg-surface-info rounded-chip text-caption1 text-primary-deep mt-1 px-3 py-1.5">
           ⚾ 다음은 홈 · 정착
         </p>
       </div>

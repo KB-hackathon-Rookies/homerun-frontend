@@ -3,6 +3,9 @@ import { useOpenBankingApi, type OpenBankingAccount } from '~/api/openbanking';
 import { useAuthStore } from '~/stores/auth';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '오픈뱅킹 연결 완료' });
+
 /**
  * 오픈뱅킹 연동 완료.
  *

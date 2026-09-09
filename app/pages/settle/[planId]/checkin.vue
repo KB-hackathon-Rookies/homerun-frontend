@@ -38,6 +38,8 @@ const pending = ref(true);
 const error = ref('');
 /** 대출이 아직 등록되지 않았는가(404). 에러가 아니라 다음에 할 일이다. */
 const needsLoan = ref(false);
+/** 확정 조건 조회가 실패했는가. 못 읽은 것을 "안 넣었다" 로 말하지 않기 위해 따로 센다. */
+const decisionFailed = ref(false);
 
 const checked = ref<Record<string, boolean>>({});
 
@@ -78,7 +80,7 @@ onMounted(() => {
       principal.value = found.consultation?.approvedLimit ?? null;
       rate.value = found.consultation?.quotedRate ?? null;
     })
-    .catch(() => {});
+    .catch(() => (decisionFailed.value = true));
 
   useSettlementApi()
     .cashFlow(planId)
@@ -164,6 +166,9 @@ onMounted(() => {
           </template>
           <template v-else-if="needsLoan">
             등록된 실행 대출이 없어요. 위에서 대출을 먼저 등록해주세요.
+          </template>
+          <template v-else-if="decisionFailed">
+            확정한 대출 조건을 불러오지 못했어요. 값이 없는 게 아니라 지금 읽지 못한 거예요.
           </template>
           <template v-else>
             확정한 대출 조건과 월 소득·관리비가 모두 있어야 셀 수 있어요. 아직 하나가 비어 있어요.

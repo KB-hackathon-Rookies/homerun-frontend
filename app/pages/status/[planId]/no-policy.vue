@@ -4,6 +4,9 @@ import { usePlanApi } from '~/api/plan';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '해당 정책 없음' });
+
 /**
  * ST-02 적용 가능한 정책이 없습니다.
  *
@@ -115,7 +118,7 @@ onMounted(async () => {
           </p>
         </SectionCard>
 
-        <p class="bg-surface-info rounded-cta text-label2 text-primary-strong px-3 py-2.5">
+        <p class="bg-surface-info rounded-cta text-label2 text-primary-deep px-3 py-2.5">
           현재 규칙 버전 {{ ruleVersion ?? '확인 중' }} 기준이에요. 지침이 개정되면 자동으로 다시
           판정합니다.
         </p>

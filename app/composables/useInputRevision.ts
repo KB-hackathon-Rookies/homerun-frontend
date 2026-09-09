@@ -52,7 +52,7 @@ export function useInputRevision(planId: number) {
    * 다른 곳에서 정말로 고치고 있는 것이라, 조용히 덮어쓰기보다 실패를 알리는 게 맞다.
    * revision 충돌이 아닌 409 는 재시도하지 않고 화면이 문구를 띄우도록 그대로 던진다.
    */
-  async function saveStep(step: DiagnosisStep | 'REVIEW', patch: DiagnosisStepPatch) {
+  async function saveStep(step: DiagnosisStep, patch: DiagnosisStepPatch) {
     const put = usePlanApi().saveStep;
 
     try {

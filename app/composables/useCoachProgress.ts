@@ -1,4 +1,4 @@
-import { educationCode, useEducationApi } from '~/api/education';
+import { educationCode, educationModuleId, useEducationApi } from '~/api/education';
 import { COACH_MODULES } from '~/components/coach/modules';
 
 /**
@@ -24,17 +24,19 @@ function read(): Set<string> {
 
 export function useCoachProgress() {
   const done = ref<Set<string>>(new Set());
-  const ids = COACH_MODULES.map((module) => module.id);
 
   onMounted(async () => {
     done.value = read();
     try {
       const modules = await useEducationApi().list();
+      // 서버 code 를 모듈에 적힌 code 로 되짚는다. 예전처럼 'M12' 의 12 를 목록 인덱스로
+      // 쓰면, 짝이 없는 모듈이 끼어 있는 순간부터 완료 표시가 통째로 밀린다.
+      // 프론트에 짝이 없는 code(M12 '도움받을 곳')는 null 이라 여기서 걸러진다.
       done.value = new Set(
         modules
           .filter((module) => module.status === 'DONE')
-          .map((module) => ids[Number(module.code.slice(1))])
-          .filter((id): id is string => !!id),
+          .map((module) => educationModuleId(module.code, COACH_MODULES))
+          .filter((id): id is string => id !== null),
       );
     } catch {
       // 오프라인이면 이 기기에 남아 있던 완료 표시를 유지한다.
@@ -46,7 +48,7 @@ export function useCoachProgress() {
   }
 
   async function markDone(moduleId: string) {
-    const code = educationCode(moduleId, ids);
+    const code = educationCode(moduleId, COACH_MODULES);
     if (code) await useEducationApi().markRead(code);
     const next = new Set(done.value);
     next.add(moduleId);

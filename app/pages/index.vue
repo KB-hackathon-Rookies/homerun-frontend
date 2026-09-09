@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 
+// 브라우저 탭 제목.
+useHead({ title: '홈런' });
+
 /**
  * AU-01 스플래시.
  *

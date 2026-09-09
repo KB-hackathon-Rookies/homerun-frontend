@@ -4,6 +4,9 @@ import { usePolicyApi, type PolicyVerdictDetail } from '~/api/policy';
 import { formatDotDate } from '~/utils/date';
 import { messageFrom } from '~/utils/error';
 
+// 브라우저 탭 제목.
+useHead({ title: '규정 변경 안내' });
+
 /**
  * ST-04 판정을 다시 계산해야 합니다.
  *

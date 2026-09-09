@@ -12,7 +12,7 @@ defineEmits<{ open: [] }>();
   <div class="flex justify-center py-1">
     <button
       type="button"
-      class="bg-surface-info border-focus-line rounded-chip text-body3 text-primary-strong border px-3.5 py-2.5 font-semibold"
+      class="bg-surface-info border-focus-line rounded-chip text-body3 text-primary-deep border px-3.5 py-2.5 font-semibold"
       @click="$emit('open')"
     >
       <slot /> →
