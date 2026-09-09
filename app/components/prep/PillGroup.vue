@@ -27,20 +27,23 @@ const model = defineModel<string | null>({ default: null });
 
 const block = computed(() => variant === 'block');
 
-/** 모양(칠하는 방향)은 chip 과 같고 치수만 작다. */
+/**
+ * 모양(칠하는 방향)은 chip 과 같지만, 1루 문진에서도 엄지로 누르기 충분한
+ * 44px 높이는 보장한다. 문항 안에 선택지가 많아 가로 폭은 과하게 늘리지 않는다.
+ */
 const SHAPE = {
   chip: 'rounded-pill h-pill px-5',
-  small: 'rounded-pill px-3 py-1.5',
+  small: 'rounded-pill h-11 px-3.5',
 } as const;
 
 const ON = {
   chip: 'bg-primary-strong text-numeric text-white',
-  small: 'bg-primary text-caption-tight font-bold text-white',
+  small: 'bg-primary text-label2 font-bold text-white',
 } as const;
 
 const OFF = {
   chip: 'bg-surface border-line text-numeric text-ink-hero border font-medium',
-  small: 'bg-surface border-line-list text-caption-tight text-ink-card border font-medium',
+  small: 'bg-surface border-line-list text-label2 text-ink-card border font-semibold',
 } as const;
 
 const size = computed(() => (variant === 'small' ? 'small' : 'chip'));
