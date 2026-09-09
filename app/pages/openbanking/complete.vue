@@ -94,6 +94,13 @@ function productNameOf(account: OpenBankingAccount) {
 /** 잔액은 만 원 미만을 버리지 않는다. 통장에 찍힌 값과 달라 보이면 안 된다. */
 const formatWon = (amount: number) => `${amount.toLocaleString('ko-KR')}원`;
 
+/** 월별 내역 칩은 좁아서 만원 단위로 줄인다(합계·평균 헤드라인은 원 단위 그대로). */
+const formatManwon = (amount: number) =>
+  `${Math.round(amount / 10000).toLocaleString('ko-KR')}만원`;
+
+/** "2026-08" → "8월". */
+const monthLabel = (month: string) => `${Number(month.slice(5, 7))}월`;
+
 /** 아직 조회를 시작하지 않았으면 빈 문자열 — 자리만 비워 둔다. */
 function balanceLabelOf(fintechUseNumber: string) {
   const state = balances.value[fintechUseNumber];
@@ -229,6 +236,17 @@ onMounted(load);
             }}
           </span>
         </div>
+        <!-- 월별 소득 내역 — 평균이 어느 달을 몇 번 잡아 나온 값인지 풀어 보여준다. -->
+        <div v-if="summary.monthlyNetIncomes.length" class="flex flex-wrap gap-1.5">
+          <span
+            v-for="income in summary.monthlyNetIncomes"
+            :key="income.month"
+            class="text-micro text-ink-hero-body bg-surface rounded-full px-2 py-0.5"
+          >
+            {{ monthLabel(income.month) }} {{ formatManwon(income.amount) }}
+          </span>
+        </div>
+
         <p v-if="summary.incomplete" class="text-micro text-ink-muted">
           일부 계좌 정보를 아직 못 가져와 값이 바뀔 수 있어요
         </p>

@@ -22,11 +22,29 @@ export interface OpenBankingConnection {
 }
 
 /** 화면에서 실제로 쓰는 값만 추렸다. 응답에는 이보다 많은 필드가 있다. */
+/** 총 금융자산을 이루는 계좌 한 건. 합계를 계좌별로 풀어 보여줄 때 쓴다. */
+export interface AccountBalanceBreakdown {
+  bankName: string;
+  accountNumberMasked: string;
+  productName: string;
+  accountType: string;
+  balanceAmount: number;
+  availableAmount: number;
+}
+
+/** 월 평균 소득을 이루는 한 달치 급여. `month` 는 `YYYY-MM`. */
+export interface MonthlyIncome {
+  month: string;
+  amount: number;
+}
+
 export interface FinancialSummary {
   connectedAccountCount: number;
   totalAccountBalance: number | null;
+  accountBalances: AccountBalanceBreakdown[];
   averageMonthlyNetIncome: number | null;
   salaryDetectedMonths: number;
+  monthlyNetIncomes: MonthlyIncome[];
   incomplete: boolean;
 }
 
