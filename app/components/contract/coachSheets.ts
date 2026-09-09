@@ -4,13 +4,9 @@
  * 시안 3루 페이지의 코치 모달 12종. 시트 형태는 1·2루와 같이
  * `~/components/coach/sheet` 를 쓴다. 여기에는 3루가 무슨 말을 하는지만 둔다.
  *
- * ⚠️ 실제 문구는 시안 노드(3루 1~12 코치 TIME 모달)에서 뽑아 채워야 한다.
- * 지금은 title 만 시안 그대로 두고 `intro`·`qa` 는 자리표시자다 — 없는 말을
- * 지어내면 잘못된 안내가 사용자에게 나간다.
+ * 문구는 시안 노드(3루 1~12 코치 TIME 모달, `687:xxxx`)에서 그대로 뽑아 채웠다.
  */
 import type { CoachSheet } from '~/components/coach/sheet';
-
-const TODO = '📝 시안 문구는 3루 코치 TIME 노드에서 pull 해서 채워야 한다.';
 
 export const COACH_TIME = {
   /** 3루 1 · 임장 (`687:4154`) */

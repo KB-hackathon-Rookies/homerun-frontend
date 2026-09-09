@@ -127,10 +127,6 @@ const allChecked = computed(
   () => pending.value || myChecks.value.every((item) => checked.value[item.text]),
 );
 
-/** 주민센터에 갈 일이 남았는가. 없으면 오늘 발로 뛸 곳이 하나도 없다. */
-const needsVisit = computed(() =>
-  errands.value.some((errand) => errand.site === '주민센터' && errand.mine.length > 0),
-);
 
 /** 회사 서류(D-30)를 안내할 사람인가. */
 const companyDocs = computed(
