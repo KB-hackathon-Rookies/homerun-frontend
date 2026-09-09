@@ -242,6 +242,14 @@ const coachOpen = ref(false);
         </p>
         <p v-if="result.action" class="text-caption2 text-ink-hero-body">{{ result.action }}</p>
         <button
+          v-if="isNeedInfo && !result.signingRegistryIssuedAt"
+          type="button"
+          class="bg-surface rounded-chip text-label2 text-primary-strong mt-1 self-start px-3.5 py-2.5 font-semibold"
+          @click="navigateTo(`/contract/${planId}/registry?from=settlement`)"
+        >
+          계약 당시 등기부 기록하기 →
+        </button>
+        <button
           v-if="isBlock"
           type="button"
           class="bg-surface rounded-chip text-label2 text-primary-strong mt-1 self-start px-3.5 py-2.5 font-semibold"
