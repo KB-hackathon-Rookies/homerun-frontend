@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {
 import { HOME_STEPS } from '~/components/home/steps';
+import {
   GOV24_URL,
   MOVING_SUPPORT_CONDITIONS,
   MOVING_SUPPORT_ROUTES,
