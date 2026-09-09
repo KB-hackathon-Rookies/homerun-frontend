@@ -147,13 +147,24 @@ const cardDescription = computed(() => {
 
 const push = usePush();
 
+/**
+ * 3루에서 지금 해야 할 일.
+ *
+ * 대시보드가 주는 목록은 아직 할 일(TODO·DOING·재계산)만 담고 마감이 급한 순서다.
+ * 3루 관문의 것만 골라야 한다 — 앞 단계에 안 끝낸 일이 남아 있으면 그게 먼저 오는데,
+ * 3루 화면을 고르는 데 쓸 값은 아니다.
+ */
+const thirdTask = computed(() =>
+  dashboard.value?.prioritizedTasks.find((task) => task.stepCode === 'THIRD_EXECUTION'),
+);
+
 function resume() {
   const found = dashboard.value;
   if (!found || !planId.value) return;
   // 계획이 다음 단계로 넘어갔는데 마지막 방문 단계가 그 이전이면(예: 1루 완료 → 2루),
   // 완료된 단계로 되돌리지 않고 현재 단계로 이어간다.
   const target = laterStage(found.resume?.stage ?? found.currentStage, found.currentStage);
-  navigateTo(resumePath(target, planId.value));
+  navigateTo(resumePath(target, planId.value, thirdTask.value?.taskCode));
 }
 
 onMounted(async () => {
