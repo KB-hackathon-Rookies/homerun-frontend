@@ -16,17 +16,21 @@ const { bordered = false } = defineProps<{
 
 <template>
   <header
-    class="h-topbar-tall px-gutter bg-surface flex shrink-0 items-center gap-3.5"
+    class="h-topbar-tall px-gutter bg-surface flex shrink-0 items-center gap-1"
     :class="bordered ? 'border-line border-b' : ''"
   >
-    <span class="text-hero text-primary-strong italic">HomeRun</span>
+    <!-- 워드마크 자체가 홈이다. 별도 홈 아이콘을 두지 않는다. -->
+    <button type="button" class="-ml-1 p-1" aria-label="홈으로 이동" @click="navigateTo('/home')">
+      <span class="text-hero text-primary-strong italic">HomeRun</span>
+    </button>
     <span class="flex-1" />
 
-    <button type="button" class="p-0.5" aria-label="내 정보" @click="navigateTo('/my')">
-      <AppIcon name="user" class="text-ink-hero size-6" />
+    <!-- 오른쪽엔 알림·마이 둘만. 클릭 영역 40px(p-2 + 24px 아이콘). -->
+    <button type="button" class="p-2" aria-label="알림" @click="navigateTo('/notifications')">
+      <AppIcon name="bell" class="text-ink-hero size-6" />
     </button>
-    <button type="button" class="p-0.5" aria-label="홈" @click="navigateTo('/home')">
-      <AppIcon name="home" class="text-ink-hero size-6" />
+    <button type="button" class="-mr-2 p-2" aria-label="마이페이지" @click="navigateTo('/my')">
+      <AppIcon name="user" class="text-ink-hero size-6" />
     </button>
   </header>
 </template>

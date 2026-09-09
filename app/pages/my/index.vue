@@ -143,7 +143,5 @@ onMounted(async () => {
         <RowChevron label="설정" value="알림·약관" last @select="navigateTo('/my/settings')" />
       </div>
     </div>
-
-    <TabBar active="my" :plan-id="planId" />
   </PhoneFrame>
 </template>
