@@ -25,3 +25,14 @@ export function messageFrom(cause: unknown, fallback: string) {
 export function statusFrom(cause: unknown): number | null {
   return axios.isAxiosError(cause) ? (cause.response?.status ?? null) : null;
 }
+
+/**
+ * 실패의 서버 오류 코드(`ApiErrorBody.code`).
+ *
+ * 같은 상태 코드가 서로 다른 일을 뜻할 때 쓴다. 403 은 대개 남의 리소스지만
+ * 필수 약관 미동의(`TERMS_005`)도 403 으로 온다 — 상태만 보고 "남의 것" 으로
+ * 처리하면 내 것을 남의 것으로 지우게 된다.
+ */
+export function codeFrom(cause: unknown): string | null {
+  return axios.isAxiosError<ApiErrorBody>(cause) ? (cause.response?.data?.code ?? null) : null;
+}

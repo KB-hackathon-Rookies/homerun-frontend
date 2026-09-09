@@ -71,6 +71,7 @@ const coachOpen = ref(false);
       <AppCard class="flex flex-col gap-3">
         <div class="flex items-center gap-1.5">
           <p class="text-body3 text-ink-strong font-bold">등기부등본에서 확인해야 하는 것</p>
+          <InfoDot @click="coachOpen = true" />
         </div>
         <p v-for="part in PARTS" :key="part" class="text-label2 text-ink-card-body">{{ part }}</p>
       </AppCard>
