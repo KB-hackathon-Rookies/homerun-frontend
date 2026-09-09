@@ -112,12 +112,11 @@ async function compare() {
   saving.value = true;
   error.value = '';
   try {
-    result.value = await useContractApi().recordRegistry(
-      planId,
-      'SETTLEMENT_DAY',
-      today(),
-      facts.value,
-    );
+    const api = useContractApi();
+    // 계약이 없으면 registry-snapshots 가 404 다. 보통 계약 당시 등기부(registry)에서 계약이
+    // 생기지만, 거기를 안 거치고 잔금일로 바로 온 경우를 대비해 여기서도 보장한다(멱등).
+    await api.prefill(planId);
+    result.value = await api.recordRegistry(planId, 'SETTLEMENT_DAY', today(), facts.value);
   } catch (cause) {
     error.value = messageFrom(cause, '대조하지 못했어요. 잠시 후 다시 시도해주세요.');
   } finally {

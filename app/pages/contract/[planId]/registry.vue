@@ -40,7 +40,13 @@ async function save() {
   saving.value = true;
   error.value = '';
   try {
-    await useContractApi().recordRegistry(
+    const api = useContractApi();
+    // 계약이 아직 없으면 registry-snapshots 가 404(PRP_001) 다. 계약 당시 등기부를 붙일
+    // 대상이 있어야 하므로, 계약을 만드는(있으면 그대로 두는 멱등) prefill 을 먼저 부른다.
+    // sign 까지 왔어도 계약 레코드는 prefill 로만 생기는데, sign·registry 는 prefill 을
+    // 안 거쳐 여기서 처음 계약이 필요해진다.
+    await api.prefill(planId);
+    await api.recordRegistry(
       planId,
       'CONTRACT_SIGNING',
       new Date().toISOString().slice(0, 10),
