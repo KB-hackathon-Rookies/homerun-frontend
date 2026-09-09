@@ -72,6 +72,15 @@ const unavailable = computed(() => results.value.filter((result) => result.verdi
  */
 const canConsult = computed(() => acceptsConsultation(property.value?.trafficLight ?? null));
 
+/**
+ * 상담을 못 받는 이유가 "대출 불가(RED)"인가 "등기부 확인 필요(YELLOW)"인가.
+ *
+ * 둘을 같은 문구로 묶으면 안 된다 — YELLOW 는 등기부를 마저 채우면 풀리지만, RED 는
+ * 소유자 불일치·신탁·임차권등기·압류·경매·위반건축물·근생 중 하나가 확인된 상태라
+ * "채우면 된다"가 거짓이 된다(채워도 풀리지 않는다).
+ */
+const blocked = computed(() => property.value?.trafficLight === 'RED');
+
 /** 매물을 아직 못 읽었으면 막을지 열지도 정할 수 없다. 그동안은 눌리지 않게 둔다. */
 const propertyPending = computed(() => property.value === null && !propertyError.value);
 
@@ -170,19 +179,39 @@ const coachOpen = ref(false);
         들어가기 전에 막고 어디를 채워야 하는지 알려준다.
       -->
       <AppCard v-else-if="!propertyPending && !canConsult" class="flex flex-col gap-3">
-        <h2 class="text-body3 text-ink-hero font-bold">아직 은행 상담을 기록할 수 없어요</h2>
-        <p class="text-label2 text-ink-hero-body">
-          등기부 체크리스트에 <strong>"모르겠어요"</strong> 가 남아 있어 신호등이
-          {{ property?.trafficLightLabel ?? '확인 필요' }} 예요. 임차권등기 · 압류 · 경매 여부를
-          확인해 채우면 상담 결과를 남길 수 있어요
-        </p>
-        <button
-          type="button"
-          class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
-          @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-        >
-          등기부 체크리스트로 가기
-        </button>
+        <!-- 대출 불가(RED): 채워서 풀리는 상태가 아니다. 근거를 보여주고 다른 매물로 이끈다. -->
+        <template v-if="blocked">
+          <h2 class="text-body3 text-ink-hero font-bold">이 매물로는 은행 상담을 남길 수 없어요</h2>
+          <p class="text-label2 text-ink-hero-body">
+            신호등이 <strong>대출 불가</strong>예요. 소유자 불일치 · 신탁등기 · 임차권등기 · 압류 ·
+            경매 또는 위반건축물 · 근린생활시설 중 하나가 확인됐어요. 등기부를 더 채운다고 풀리는
+            상태가 아니라, 판정 근거를 확인하고 다른 매물을 보는 편이 나아요
+          </p>
+          <button
+            type="button"
+            class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
+            @click="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+          >
+            판정 근거 보기
+          </button>
+        </template>
+
+        <!-- 등기부 확인 필요(YELLOW): 아직 확인 안 된 항목을 채우면 풀린다. -->
+        <template v-else>
+          <h2 class="text-body3 text-ink-hero font-bold">아직 은행 상담을 기록할 수 없어요</h2>
+          <p class="text-label2 text-ink-hero-body">
+            등기부 체크리스트에 아직 확인 안 된 항목이 있어 신호등이
+            {{ property?.trafficLightLabel ?? '확인 필요' }} 예요. 등기부 확인을 마치면 상담 결과를
+            남길 수 있어요
+          </p>
+          <button
+            type="button"
+            class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
+            @click="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+          >
+            등기부 체크리스트로 가기
+          </button>
+        </template>
       </AppCard>
 
       <p v-if="pending" class="text-label2 text-ink-muted">판정 결과를 불러오는 중이에요…</p>
