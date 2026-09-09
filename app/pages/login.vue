@@ -95,8 +95,14 @@ function social(provider: 'kakao' | 'google') {
       </div>
 
       <div class="flex flex-col gap-2.5">
-        <AppButton variant="kakao" @click="social('kakao')">카카오로 계속하기</AppButton>
-        <AppButton variant="white" @click="social('google')">Google로 계속하기</AppButton>
+        <AppButton variant="kakao" @click="social('kakao')">
+          <img src="/social/kakao.png" alt="" class="size-5" />
+          카카오로 계속하기
+        </AppButton>
+        <AppButton variant="white" @click="social('google')">
+          <img src="/social/google.png" alt="" class="size-5" />
+          Google로 계속하기
+        </AppButton>
       </div>
     </form>
 

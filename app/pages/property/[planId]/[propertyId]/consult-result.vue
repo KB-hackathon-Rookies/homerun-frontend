@@ -199,7 +199,7 @@ const coachOpen = ref(false);
             :error="limitNotHeard ? '' : (parsedLimit.error ?? '')"
             inputmode="numeric"
             placeholder="14,400"
-            class="border-line rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-12 flex-1 border px-3.5 outline-none disabled:opacity-50"
+            class="border-line rounded-chip text-body3 text-ink-hero placeholder:text-ink-muted h-12 min-w-0 flex-1 border px-3.5 outline-none disabled:opacity-50"
             :disabled="limitNotHeard"
           />
           <button
