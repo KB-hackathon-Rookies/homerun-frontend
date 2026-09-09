@@ -27,6 +27,15 @@ const error = ref('');
 const pending = ref(false);
 
 const emailError = computed(() => messageOf(emailSchema, email.value));
+
+/**
+ * 서버로 보내고 저장·비교에 쓰는 정규화 이메일.
+ *
+ * 스키마가 앞뒤 공백을 떼므로(`.trim()`), 통과 여부만 보지 말고 그 **결과값**(result.data)을
+ * 써야 한다. 원본 `email.value` 를 그대로 보내면 `" a@b.com "` 이 화면 검증은 통과해도
+ * 공백이 섞인 채 요청이 나가고, 인증 비교(trim)와도 기준이 어긋난다. 유효하지 않으면 ''.
+ */
+const normalizedEmail = computed(() => emailSchema.safeParse(email.value).data ?? '');
 const passwordError = computed(() => messageOf(passwordSchema, password.value));
 
 /**
@@ -77,7 +86,7 @@ async function send() {
   pending.value = true;
   error.value = '';
   try {
-    await sendVerification(email.value);
+    await sendVerification(normalizedEmail.value);
     sent.value = true;
   } catch (cause) {
     error.value = messageFrom(cause, '인증번호를 보내지 못했어요.');
@@ -90,8 +99,8 @@ async function confirm() {
   pending.value = true;
   error.value = '';
   try {
-    const { verificationToken } = await confirmVerification(email.value, code.value);
-    signup.email = email.value;
+    const { verificationToken } = await confirmVerification(normalizedEmail.value, code.value);
+    signup.email = normalizedEmail.value;
     signup.verificationToken = verificationToken;
   } catch (cause) {
     error.value = messageFrom(cause, '인증번호가 맞지 않아요.');

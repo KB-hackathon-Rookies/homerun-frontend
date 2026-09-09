@@ -116,10 +116,6 @@ const coachOpen = ref(false);
             <span class="text-label2 text-ink-hero flex-1 font-bold">{{ result.policyName }}</span>
             <AppIcon name="chevron-right" class="text-ink-muted size-4 shrink-0" />
           </button>
-
-          <p v-if="!unavailable.length" class="text-micro text-ink-hero-body">
-            떨어진 상품이 없어요.
-          </p>
         </section>
       </template>
     </div>
@@ -129,7 +125,7 @@ const coachOpen = ref(false);
         @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
         @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
       >
-        등기부등본 확인하러 가기
+        등기부 확인
       </StepFooter>
     </template>
   </StageShell>

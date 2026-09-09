@@ -71,17 +71,12 @@ const coachOpen = ref(false);
 
       <!--
         시안(`687:14055`)의 확인 줄. 체크 동그라미 없이 글자만 있고, 14px 한 줄이다.
-
-        ⓘ 는 이 줄에 붙인다. `확인했다` 를 읽는 순간이 "그래서 뭘 보라는 거지" 가
-        떠오르는 때라, 거기서 `건축물대장 보는 법` 을 편다.
+        문항별 ⓘ 는 걷어냈다 — 오른쪽 아래 FAB 이 같은 코치 내용을 연다.
       -->
       <AppCard>
-        <div class="flex items-center gap-1.5">
-          <p class="text-body3 text-ink-strong font-medium">
-            표제부 상단의 위반건축물 표시를 확인했다
-          </p>
-          <InfoDot @click="coachOpen = true" />
-        </div>
+        <p class="text-body3 text-ink-strong font-medium">
+          표제부 상단의 위반건축물 표시를 확인했다
+        </p>
       </AppCard>
 
       <div class="flex gap-2">

@@ -2,6 +2,7 @@
 import { usePropertyApi } from '~/api/property';
 import type { PillOption } from '~/components/prep/PillGroup.vue';
 import { useProperty } from '~/composables/useProperty';
+import { parseArea } from '~/utils/amount';
 import { HOUSE_TYPE_LABEL } from '~/utils/labels';
 import { usePropertyStepGuard } from '~/utils/propertyStepGuard';
 
@@ -46,11 +47,15 @@ watchEffect(() => {
   }
 });
 
-const areaValue = computed(() => Number(area.value.replace(/[^0-9.]/g, '')) || 0);
-const canSave = computed(() => !!houseType.value && areaValue.value > 0 && !saving.value);
+// 형식을 먼저 검사하고 통과한 값만 쓴다. `-84`·`84abc`·`8e1` 은 여기서 걸러진다.
+const parsedArea = computed(() => parseArea(area.value));
+const canSave = computed(
+  () => !!houseType.value && parsedArea.value.value !== null && !saving.value,
+);
 
 async function next() {
-  if (!canSave.value) return;
+  const areaValue = parsedArea.value.value;
+  if (!canSave.value || areaValue === null) return;
 
   saving.value = true;
   error.value = '';
@@ -61,7 +66,7 @@ async function next() {
       propertyId,
       revision.value,
       houseType.value!,
-      areaValue.value,
+      areaValue,
     );
     await navigateTo(`/property/${planId}/${propertyId}/violation`);
   } catch (cause) {
@@ -95,6 +100,9 @@ async function next() {
         inputmode="decimal"
         placeholder="㎡ (예: 44.2)"
       />
+      <p v-if="area.trim() && parsedArea.error" class="text-label2 text-danger">
+        {{ parsedArea.error }}
+      </p>
 
       <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
