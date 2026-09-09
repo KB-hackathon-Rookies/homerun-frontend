@@ -152,8 +152,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="4" />
 
-      <p class="text-caption1 text-ink-label font-medium">3루 · 잔금일</p>
-
       <h1 class="text-question text-ink-card">D-day 잔금일</h1>
       <div class="bg-surface border-danger rounded-field flex flex-col gap-1 border p-3.5">
         <p class="text-label2 text-danger font-bold">

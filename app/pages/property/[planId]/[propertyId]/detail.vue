@@ -64,12 +64,12 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.emptyJeonse]"
     brand
     base="2루"
+    :show-progress="false"
     @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 등기부 확인</p>
       <h1 class="text-question text-ink-card">매물 상세</h1>
 
       <AppCard v-if="property" class="flex flex-col gap-1.5">

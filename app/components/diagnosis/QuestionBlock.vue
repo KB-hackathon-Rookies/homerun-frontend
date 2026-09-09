@@ -2,9 +2,9 @@
 /**
  * 문진 문항 한 칸(시안 1루 1~3 의 `Card`).
  *
- * 한 화면에 문항이 여럿이라 문항마다 제 카드를 갖는다. 제목 줄 오른쪽의 ⓘ 를
- * 누르면 그 문항을 왜 묻는지 코치가 답한다 — 예전처럼 화면 위 배너 하나로 몰면
- * 어느 문항 얘기인지 알 수 없다.
+ * 한 화면에 문항이 여럿이다. 문항마다 ⓘ 를 따로 달아 코치 시트를 열던 자리였는데,
+ * 오른쪽 아래 FAB 가 같은 화면의 코치 TIME 을 이미 열어 준다 — 문항마다 하나씩
+ * 붙이면 같은 문을 여섯 번 그리는 셈이라 걷어냈다.
  *
  * 앞 답에 따라 이어지는 문항은 `follow` 로 둔다. 파란 바탕과 `↳` 한 줄로 "앞의
  * 답 때문에 나타났다"는 것을 보인다. 안 그러면 없던 질문이 갑자기 생긴 것처럼 보인다.
@@ -16,8 +16,6 @@ defineProps<{
   /** `follow` 일 때 맨 윗줄에 붙는 `↳` 안내. */
   hint?: string;
 }>();
-
-defineEmits<{ info: [] }>();
 </script>
 
 <template>
@@ -27,11 +25,7 @@ defineEmits<{ info: [] }>();
   >
     <p v-if="hint" class="text-chip text-primary-strong font-medium">↳ {{ hint }}</p>
 
-    <div class="flex w-full items-center gap-1.5">
-      <h2 class="text-numeric text-ink-card flex-1">{{ question }}</h2>
-
-      <InfoDot @click="$emit('info')" />
-    </div>
+    <h2 class="text-numeric text-ink-card">{{ question }}</h2>
 
     <slot />
   </section>

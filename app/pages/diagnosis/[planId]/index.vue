@@ -137,13 +137,11 @@ const QUESTIONS: Question[] = [
 const GROUPS = [
   {
     label: '기본 정보',
-    overline: '1루 · 기본 정보',
     title: '기본 정보를 알려주세요',
     steps: ['HOUSEHOLDER', 'HOMELESS', 'MARITAL_STATUS'] as DiagnosisStep[],
   },
   {
     label: '회사 정보',
-    overline: '1루 · 회사 정보',
     title: '회사 정보를 알려주세요',
     steps: ['EMPLOYMENT_TYPE', 'COMPANY_SIZE', 'EMPLOYMENT_PERIOD'] as DiagnosisStep[],
   },
@@ -397,7 +395,6 @@ function back() {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-2.5 px-4 pt-4 pb-6">
       <SubStep :steps="SUB_STEPS" :current="group" />
 
-      <p class="text-caption1 text-ink-label font-medium">{{ current.overline }}</p>
       <h1 class="text-question text-ink-card">{{ current.title }}</h1>
 
       <MemberFactCard v-if="group === 0 && memberFacts.length" :facts="memberFacts" />
@@ -408,7 +405,6 @@ function back() {
         :question="q.title"
         :follow="!!q.follow"
         :hint="q.follow?.hint"
-        @info="coachOpen = true"
       >
         <PillGroup
           :model-value="answers[q.step] ?? null"

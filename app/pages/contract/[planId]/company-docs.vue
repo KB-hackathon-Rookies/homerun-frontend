@@ -72,8 +72,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="2" />
 
-      <p class="text-caption1 text-ink-label font-medium">3루 · 서류</p>
-
       <h1 class="text-question text-ink-card">D-30 회사 서류</h1>
       <p v-if="pending" class="text-label2 text-ink-muted">불러오는 중이에요…</p>
       <p v-else-if="error" class="text-label2 text-danger">{{ error }}</p>

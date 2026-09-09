@@ -66,7 +66,7 @@ async function search() {
         <h2 class="text-headline2 text-ink">주소 검색</h2>
       </header>
 
-      <div class="px-gutter flex flex-1 flex-col gap-4 overflow-y-auto py-4">
+      <div class="bg-canvas-soft px-gutter flex flex-1 flex-col gap-4 overflow-y-auto py-4">
         <div
           class="bg-surface border-line rounded-field flex items-center gap-2 border px-3.5 py-3"
         >
