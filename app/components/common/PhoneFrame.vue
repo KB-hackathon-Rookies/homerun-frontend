@@ -28,6 +28,7 @@ const {
   coachStage = undefined,
   coachSheets = [],
   fill = false,
+  coachAboveFooter = false,
 } = defineProps<{
   /** 경로로 알 수 없는 화면이 직접 넘기는 단계. */
   coachStage?: PlanStage;
@@ -39,6 +40,8 @@ const {
    * 아직 내부 스크롤 영역이 없는 화면이 잘리지 않도록.
    */
   fill?: boolean;
+  /** 고정 푸터가 있는 흐름 화면에서 코치 FAB을 CTA 위로 올린다. */
+  coachAboveFooter?: boolean;
 }>();
 
 /** 화면 안의 다른 버튼(코치 팁 등)도 같은 시트를 열 수 있게 밖으로 뺀다. */
@@ -55,6 +58,12 @@ const stage = computed(() => coachStage ?? coachStageFor(route.path));
   >
     <slot />
 
-    <CoachDock v-if="stage" v-model:open="coachOpen" :stage="stage" :sheets="coachSheets" />
+    <CoachDock
+      v-if="stage"
+      v-model:open="coachOpen"
+      :stage="stage"
+      :sheets="coachSheets"
+      :above-footer="coachAboveFooter"
+    />
   </div>
 </template>

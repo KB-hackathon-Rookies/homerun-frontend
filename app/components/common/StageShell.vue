@@ -34,14 +34,16 @@ defineEmits<{ back: [] }>();
 useHead(() => ({ title: props.title }));
 
 const coachOpen = defineModel<boolean>('coachOpen', { default: false });
+const slots = useSlots();
 </script>
 
 <template>
   <PhoneFrame
+    v-model:coach-open="coachOpen"
     fill
     :coach-stage="coachStage"
     :coach-sheets="coachSheets"
-    v-model:coach-open="coachOpen"
+    :coach-above-footer="Boolean(slots.footer)"
   >
     <template v-if="brand">
       <div class="h-statusbar bg-surface shrink-0" />

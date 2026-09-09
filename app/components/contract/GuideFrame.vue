@@ -57,6 +57,6 @@ useHead(() => ({ title: props.title }));
       <slot name="cta" />
     </footer>
 
-    <CoachDock v-if="stage" :stage="stage" :sheets="coachSheets ?? []" />
+    <CoachDock v-if="stage" :stage="stage" :sheets="coachSheets ?? []" above-footer />
   </div>
 </template>

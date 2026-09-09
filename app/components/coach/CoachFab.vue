@@ -24,6 +24,11 @@
  * 시안이 원 안에 넣는 호랑이가 AI 코치 백호다(`Tiger/기본`, 44). 버튼에 `aria-label`
  * 이 있으므로 이미지는 장식으로 둔다 — 둘 다 읽히면 스크린리더가 같은 말을 두 번 한다.
  */
+defineProps<{
+  /** 이전·다음과 안내문이 있는 고정 푸터를 넘겨 띄운다. */
+  aboveFooter?: boolean;
+}>();
+
 defineEmits<{ open: [] }>();
 </script>
 
@@ -33,7 +38,8 @@ defineEmits<{ open: [] }>();
       <button
         type="button"
         aria-label="코치에게 물어보기"
-        class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight bottom-fab-lift pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
+        class="bg-surface border-primary-strong shadow-fab rounded-pill size-fab-coach right-gutter-tight pointer-events-auto absolute flex items-center justify-center border-2 transition-colors outline-none active:bg-surface-hover focus-visible:ring-2 focus-visible:ring-focus"
+        :class="aboveFooter ? 'bottom-fab-footer-lift' : 'bottom-fab-lift'"
         @click="$emit('open')"
       >
         <img src="/tiger/face-default.webp" alt="" class="size-11 rounded-full object-cover" />

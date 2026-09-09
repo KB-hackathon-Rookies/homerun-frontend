@@ -15,7 +15,16 @@ import type { CoachSheet } from '~/components/coach/sheet';
  * 위쪽 코치 팁을 눌러도 같은 시트가 열려야 하는데, 시트가 둘로 갈리면 문구를
  * 고칠 자리가 둘이 된다.
  */
-const { stage, sheets = [] } = defineProps<{ stage: PlanStage; sheets?: CoachSheet[] }>();
+const {
+  stage,
+  sheets = [],
+  aboveFooter = false,
+} = defineProps<{
+  stage: PlanStage;
+  sheets?: CoachSheet[];
+  /** 고정 CTA와 겹치지 않도록 FAB을 푸터 위로 올린다. */
+  aboveFooter?: boolean;
+}>();
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -28,7 +37,7 @@ watch(open, (opened) => {
 </script>
 
 <template>
-  <CoachFab @open="open = true" />
+  <CoachFab :above-footer="aboveFooter" @open="open = true" />
 
   <CoachTimeSheet
     v-if="open && view === 'sheet'"
