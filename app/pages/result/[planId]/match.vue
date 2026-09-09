@@ -69,9 +69,7 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-5 px-4 pt-4 pb-6">
       <SubStep :steps="SUB_STEPS" :current="3" />
 
-      <p class="text-caption1 text-ink-label font-medium">1루 · 예상 진단</p>
-
-      <h1 class="text-section text-ink-card font-bold">
+      <h1 class="text-question text-ink-card">
         {{
           allPoliciesFailed
             ? '지금 되는 정책은 없지만, 은행 상담으로 이어갈 수 있어요'

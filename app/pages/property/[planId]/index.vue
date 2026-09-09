@@ -133,8 +133,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 매물 등록</p>
-
       <div class="flex w-full items-center gap-2">
         <h1 class="text-question text-ink-card flex-1">매물 목록</h1>
         <span class="text-label2 text-ink-label">{{ properties.length }}/{{ MAX_PROPERTIES }}</span>

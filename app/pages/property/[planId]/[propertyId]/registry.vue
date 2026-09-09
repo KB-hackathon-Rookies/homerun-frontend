@@ -54,7 +54,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 등기부 확인</p>
       <h1 class="text-question text-ink-card">등기부등본은 직접 확인해야 해요</h1>
 
       <AppCard class="flex flex-col gap-3">

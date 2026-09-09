@@ -103,7 +103,7 @@ onMounted(async () => {
       >
         <AppIcon name="chevron-left" class="size-icon" />
       </button>
-      <h1 class="text-headline2 text-ink">마이</h1>
+      <h1 class="text-question text-ink">마이</h1>
     </header>
 
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 pt-4 pb-6">

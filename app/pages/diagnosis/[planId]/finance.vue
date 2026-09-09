@@ -324,7 +324,6 @@ function back() {
     <div class="bg-canvas-soft flex min-h-full flex-col gap-2.5 px-4 pt-4 pb-6">
       <SubStep :steps="SUB_STEPS" :current="2" />
 
-      <p class="text-caption1 text-ink-label font-medium">1루 · 추가 정보</p>
       <h1 class="text-question text-ink-card">자산과 희망 조건을 알려주세요</h1>
 
       <QuestionBlock v-if="hasSummary" question="오픈뱅킹으로 조회한 정보예요. 맞나요?">

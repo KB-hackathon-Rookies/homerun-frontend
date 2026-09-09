@@ -130,7 +130,7 @@ async function submit() {
       403 을 받고 이 화면으로 되돌아온다. 나가는 길은 아래 '동의하고 계속하기' 하나다.
     -->
     <header class="h-topbar px-gutter flex shrink-0 items-center">
-      <h1 class="text-headline2 text-ink">필수 약관 동의</h1>
+      <h1 class="text-question text-ink">필수 약관 동의</h1>
     </header>
 
     <div class="px-gutter flex flex-1 flex-col gap-2 py-6">

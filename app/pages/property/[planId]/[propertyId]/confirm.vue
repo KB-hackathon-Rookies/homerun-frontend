@@ -200,7 +200,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="4" />
 
-      <p class="text-caption1 text-ink-label font-medium">2루 · 최종 확정</p>
       <h1 class="text-question text-ink-card">부동산에 들고 갈 매물</h1>
 
       <div v-if="settled" class="bg-surface-info rounded-field flex flex-col gap-1 p-4">

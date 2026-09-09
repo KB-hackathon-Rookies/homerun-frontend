@@ -42,8 +42,6 @@ const coachOpen = ref(false);
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="THIRD_BASE_STEPS" :current="0" />
 
-      <p class="text-caption1 text-ink-label font-medium">3루 · 계약</p>
-
       <h1 class="text-question text-ink-card">부동산 방문</h1>
 
       <h2 class="text-body3 text-ink-hero font-bold">공인중개사에게 전달할 것</h2>
