@@ -83,16 +83,19 @@ function retry() {
       <!-- 머리. 말을 거는 쪽이 코치라 얼굴을 세운다. -->
       <div class="flex items-center gap-2.5">
         <img src="/tiger/face-default.webp" alt="" class="size-8 shrink-0" />
-        <div class="flex flex-1 flex-col gap-0.5">
+        <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <p class="text-caption1 text-primary-strong">코치에게 직접 물어보기</p>
-          <p class="text-caption2 text-ink-hero-body">
+          <p class="text-caption2 text-ink-hero-body text-pretty break-keep">
             코치 답변은 안내예요. 판정이 아니라서 최종 확인은 은행·기관에서 해야 해요
           </p>
         </div>
       </div>
 
       <div ref="list" class="flex flex-1 flex-col gap-3 overflow-y-auto">
-        <p v-if="!turns.length" class="text-caption2 text-ink-muted py-6 text-center">
+        <p
+          v-if="!turns.length"
+          class="text-caption2 text-ink-muted text-pretty break-keep py-6 text-center"
+        >
           궁금한 걸 그대로 물어봐. 코치가 가진 자료에서 찾아 근거와 함께 알려줄게
         </p>
 
@@ -103,7 +106,7 @@ function retry() {
           :class="turn.who === 'me' ? 'items-end' : 'items-start'"
         >
           <p
-            class="rounded-field text-label2 max-w-[85%] px-3.5 py-3"
+            class="rounded-field text-label2 text-pretty max-w-[85%] break-keep px-3.5 py-3"
             :class="
               turn.who === 'me'
                 ? 'bg-primary-strong text-on-brand'
@@ -129,13 +132,15 @@ function retry() {
                 <summary
                   class="text-label2 text-ink-hero flex cursor-pointer list-none items-center justify-between gap-3 font-bold"
                 >
-                  <span>{{ source.title }}</span>
+                  <span class="min-w-0 text-balance break-keep">{{ source.title }}</span>
                   <span class="text-caption2 text-primary-strong shrink-0 font-semibold"
                     >자세히 보기</span
                   >
                 </summary>
                 <div class="mt-2 flex flex-col gap-1">
-                  <p class="text-caption2 text-ink-hero-body">{{ source.snippet }}</p>
+                  <p class="text-caption2 text-ink-hero-body text-pretty break-keep">
+                    {{ source.snippet }}
+                  </p>
 
                   <a
                     v-if="source.sourceUrl"
@@ -152,7 +157,7 @@ function retry() {
             </div>
 
             <!-- 근거가 안 붙은 답이 근거 있는 답처럼 보이면 안 된다. -->
-            <p v-else class="text-caption2 text-ink-muted">
+            <p v-else class="text-caption2 text-ink-muted text-pretty break-keep">
               이 답에는 근거 자료가 붙지 않았어요. 그대로 믿지 말고 은행·기관에 한 번 더 확인해
               주세요
             </p>
@@ -162,7 +167,7 @@ function retry() {
         <p v-if="pending" class="text-caption2 text-ink-muted">코치가 자료를 찾는 중이에요…</p>
 
         <div v-if="error" class="flex flex-col items-start gap-1.5">
-          <p class="text-label2 text-danger">{{ error }}</p>
+          <p class="text-label2 text-danger text-pretty break-keep">{{ error }}</p>
           <button type="button" class="text-caption2 text-primary-strong font-bold" @click="retry">
             다시 시도하기
           </button>

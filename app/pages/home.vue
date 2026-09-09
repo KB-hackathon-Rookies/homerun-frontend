@@ -40,27 +40,47 @@ const onDeadline = computed(() => stage.value === 'THIRD');
 /**
  * 인사말. 상태마다 다른 말을 한다(시안 메인 1~5).
  *
- * `[제목 뒷부분, 부제]` 다. 제목 앞은 언제나 "{이름}님, " 이라 따로 두지 않는다.
- *
- * **줄바꿈을 글에 박지 않는다.** 시안도 상자 폭(190px)에 맡겨 접는다 — 다섯
- * 화면의 인사말 상자가 전부 190×54 로 같다. 자리를 고정해 두면 이름이 길어질 때
- * 그 줄이 폭을 넘겨 세 줄로 흐르고, 아래 카드까지 밀린다.
- *
- * 한 덩어리가 중간에서 잘려 어색하면 그 구절만 줄바꿈 없는 공백(U+00A0)으로
- * 붙인다. 자리를 고정하지 않으면서 단어만 안 쪼개진다.
+ * 메인 제목은 상태를 한눈에 읽는 자리라 모든 단계에서 두 줄의 리듬을 유지한다.
+ * 브라우저의 자동 줄바꿈에 맡기면 화면 폭과 이름 길이에 따라 한 줄 또는 어색한
+ * 세 줄이 되므로, 문구를 의미 단위의 두 조각으로 관리한다.
  */
-const GREETING: Record<PlanStage | 'NONE', [string, string]> = {
-  NONE: ['첫 독립을 시작해볼까요?', '독립 상황을 알려주면 코치가 순서를 잡아줄게요.'],
-  BENCH: ['첫 독립을 시작해볼까요?', '독립 상황을 알려주면 코치가 순서를 잡아줄게요.'],
-  FIRST: ['오늘도 첫 독립을 응원해요!', '1루 진단을 이어가 볼까요?'],
-  SECOND: ['지금은 매물 검증 중이에요!', '현재 진행 상황을 확인해보세요.'],
-  THIRD: ['잔금일까지 같이 챙겨봐요!', '3루 D-day 일정을 확인해보세요.'],
-  HOME: ['정착 완료! 사후 관리 함께해요', '지금 챙길 사후 관리 항목을 확인해보세요.'],
+const GREETING: Record<PlanStage | 'NONE', { first: string; second: string; subtitle: string }> = {
+  NONE: {
+    first: '첫 독립을',
+    second: '시작해볼까요?',
+    subtitle: '독립 상황을 알려주면 코치가 순서를 잡아줄게요.',
+  },
+  BENCH: {
+    first: '첫 독립을',
+    second: '시작해볼까요?',
+    subtitle: '독립 상황을 알려주면 코치가 순서를 잡아줄게요.',
+  },
+  FIRST: {
+    first: '오늘도',
+    second: '첫 독립을 응원해요!',
+    subtitle: '1루 진단을 이어가 볼까요?',
+  },
+  SECOND: {
+    first: '지금은',
+    second: '매물 검증 중이에요!',
+    subtitle: '현재 진행 상황을 확인해보세요.',
+  },
+  THIRD: {
+    first: '잔금일까지',
+    second: '같이 챙겨봐요!',
+    subtitle: '3루 D-day 일정을 확인해보세요.',
+  },
+  HOME: {
+    first: '정착 완료!',
+    second: '사후 관리 함께해요',
+    subtitle: '지금 챙길 사후 관리 항목을 확인해보세요.',
+  },
 };
 
 const greetingKey = computed<PlanStage | 'NONE'>(() => (notStarted.value ? 'NONE' : stage.value));
-const greeting = computed(() => `${name.value}님, ${GREETING[greetingKey.value][0]}`);
-const subtitle = computed(() => GREETING[greetingKey.value][1]);
+const greeting = computed(() => GREETING[greetingKey.value]);
+const greetingFirst = computed(() => `${name.value}님, ${greeting.value.first}`);
+const subtitle = computed(() => greeting.value.subtitle);
 
 const CARD_TITLE: Record<string, string> = {
   FIRST: '1루 · 대출 진단 중',
@@ -276,10 +296,17 @@ async function recoverPlan() {
         class="pointer-events-none absolute top-10.5 right-3.5 -z-10 w-46 select-none"
       />
 
-      <!-- 글이 마스코트에 닿지 않게 오른쪽을 비운다. -->
-      <div class="flex flex-col gap-1.5 pr-40 pb-19">
-        <h1 class="text-hero text-ink-hero">{{ greeting }}</h1>
-        <p class="text-caption-tight text-ink-hero-body">{{ subtitle }}</p>
+      <!--
+        인사말은 이름·현재 상태를 한 번에 읽는 화면의 제목이다. 마스코트 폭만큼
+        오른쪽을 비우면 390px에서도 세 줄로 잘려 읽기 흐름이 끊긴다. 그림은 뒤에
+        두고, 텍스트는 본문 폭을 모두 쓰게 해 의미 단위로 두 줄 안에 놓는다.
+      -->
+      <div class="flex flex-col gap-1.5 pb-19">
+        <h1 class="text-hero text-ink-hero break-keep">
+          <span class="block">{{ greetingFirst }}</span>
+          <span class="block">{{ greeting.second }}</span>
+        </h1>
+        <p class="text-caption-tight text-ink-hero-body text-balance break-keep">{{ subtitle }}</p>
       </div>
 
       <p v-if="pending && !notStarted" class="text-label2 text-ink-muted">

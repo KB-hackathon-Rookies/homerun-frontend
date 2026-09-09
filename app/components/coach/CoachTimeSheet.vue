@@ -43,7 +43,7 @@ function next() {
     <div v-if="current" class="flex max-h-[70vh] flex-col gap-3.5 overflow-y-auto">
       <section :key="current.title" class="flex flex-col gap-3.5">
         <!-- 시안 head. 말을 거는 쪽이 코치라 얼굴을 세운다. -->
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-start gap-2.5">
           <!-- 시안 `Tiger/안내 중` — 손가락을 세워 설명하는 포즈다. 이미 있는 에셋을 쓴다. -->
           <img
             src="/tiger/face-coach.webp"
@@ -59,12 +59,14 @@ function next() {
                 {{ page + 1 }} / {{ sheets.length }}
               </span>
             </div>
-            <h2 class="text-label2 text-ink-card-body">{{ current.title }}</h2>
+            <h2 class="text-label2 text-ink-card-body text-balance break-keep">
+              {{ current.title }}
+            </h2>
           </div>
 
           <button
             type="button"
-            class="shrink-0"
+            class="mt-1 shrink-0"
             aria-label="코치에게 직접 물어보기"
             @click="$emit('chat')"
           >
@@ -72,14 +74,16 @@ function next() {
           </button>
         </div>
 
-        <p class="bg-surface-muted rounded-field text-note-body text-ink-card px-3 py-2.5">
+        <p
+          class="bg-surface-muted rounded-field text-note-body text-ink-card text-pretty break-keep px-3 py-2.5"
+        >
           {{ current.intro }}
         </p>
 
         <!-- 시안의 qa 는 상자 없이 글줄로만 선다. 상자에 넣으면 훑는 흐름이 끊긴다. -->
         <div v-for="item in current.qa" :key="item.q" class="flex flex-col gap-0.5">
-          <p class="text-label2 text-ink-card font-bold">{{ item.q }}</p>
-          <p class="text-caption2 text-ink-card-body">{{ item.a }}</p>
+          <p class="text-label2 text-ink-card text-pretty break-keep font-bold">{{ item.q }}</p>
+          <p class="text-caption2 text-ink-card-body text-pretty break-keep">{{ item.a }}</p>
         </div>
 
         <!-- 더 알아보기. 모듈이 실제로 있는 것만 칩으로 낸다. -->

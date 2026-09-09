@@ -145,7 +145,9 @@ onMounted(async () => {
               />
               <div class="flex flex-1 flex-col gap-1">
                 <p class="text-caption-tight text-primary-strong font-bold">코치 TIME</p>
-                <p class="text-label2 text-ink-card font-normal">{{ block.text }}</p>
+                <p class="text-label2 text-ink-card text-pretty break-keep font-normal">
+                  {{ block.text }}
+                </p>
               </div>
             </div>
 

@@ -153,7 +153,8 @@ const rendered = computed(() => renderMarkdown(props.content));
   color: var(--color-ink-hero-body);
   font-size: var(--text-caption2);
   line-height: 1.65;
-  overflow-wrap: anywhere;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .markdown-content :deep(h1),
@@ -162,6 +163,13 @@ const rendered = computed(() => renderMarkdown(props.content));
   color: var(--color-ink-hero);
   font-weight: 700;
   line-height: 1.4;
+  text-wrap: balance;
+}
+
+.markdown-content :deep(p),
+.markdown-content :deep(li),
+.markdown-content :deep(blockquote) {
+  text-wrap: pretty;
 }
 
 .markdown-content :deep(h1) {

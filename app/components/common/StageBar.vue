@@ -32,12 +32,14 @@ defineEmits<{ back: [] }>();
   <BaseStrip v-if="showProgress" :base="base" />
 
   <header
-    class="h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b"
+    class="min-h-topbar px-gutter-tight border-line bg-surface flex shrink-0 items-center gap-2.5 border-b py-2"
   >
     <button type="button" class="text-ink -ml-1 p-1" aria-label="뒤로" @click="$emit('back')">
       <AppIcon name="chevron-left" class="size-icon" />
     </button>
 
-    <h1 class="text-question text-ink-hero min-w-0 flex-1 truncate">{{ title }}</h1>
+    <h1 class="text-question text-ink-hero min-w-0 flex-1 text-balance break-keep">
+      {{ title }}
+    </h1>
   </header>
 </template>
