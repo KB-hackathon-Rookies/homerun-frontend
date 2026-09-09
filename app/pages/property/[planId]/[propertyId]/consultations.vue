@@ -148,7 +148,6 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.bankConsult]"
     brand
     base="2루"
-    :show-progress="false"
     @back="navigateTo(backPath)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">

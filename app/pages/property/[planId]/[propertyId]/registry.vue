@@ -49,7 +49,6 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.registryReading]"
     brand
     base="2루"
-    :show-progress="false"
     @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">

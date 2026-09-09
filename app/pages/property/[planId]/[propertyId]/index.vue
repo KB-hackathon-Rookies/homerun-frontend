@@ -76,7 +76,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <StageShell brand base="2루" :show-progress="false" @back="navigateTo(`/property/${planId}`)">
+  <StageShell brand base="2루" @back="navigateTo(`/property/${planId}`)">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
