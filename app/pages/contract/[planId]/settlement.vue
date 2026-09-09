@@ -29,28 +29,33 @@ const TIMELINE = [
   { when: '오후', what: '주민센터에서 전입신고 (18시까지)' },
 ];
 
-// 시안(11. 잔금일) 그대로: 소유자·채권최고액·근저당 건수·압류·가압류
-// 네 줄짜리 체크리스트다. 다른 화면 체크리스트와 같이 저장하지 않고,
+// 잔금일에는 계약 때 기록한 일곱 사실을 모두 다시 대조한다. 다른 화면 체크리스트와 같이 저장하지 않고,
 // 다 체크해야 다음(대조 요청)이 열린다.
 const checkedOwner = ref(false);
 const checkedSeniorDebt = ref(false);
 const checkedMortgageCount = ref(false);
 const checkedSeizure = ref(false);
+const checkedLeasehold = ref(false);
+const checkedAuction = ref(false);
+const checkedTrust = ref(false);
 
 const answered = computed(
   () =>
     checkedOwner.value &&
     checkedSeniorDebt.value &&
     checkedMortgageCount.value &&
-    checkedSeizure.value,
+    checkedSeizure.value &&
+    checkedLeasehold.value &&
+    checkedAuction.value &&
+    checkedTrust.value,
 );
 
 const facts = computed<RegistryFacts>(() => ({
   ownerMatchesContractParty: checkedOwner.value ? true : null,
   seizureOrDispositionRestricted: checkedSeizure.value ? false : null,
-  leaseholdRegistered: null,
-  auctionInProgress: null,
-  trustRegistered: null,
+  leaseholdRegistered: checkedLeasehold.value ? false : null,
+  auctionInProgress: checkedAuction.value ? false : null,
+  trustRegistered: checkedTrust.value ? false : null,
   seniorDebt: checkedSeniorDebt.value ? 0 : null,
   mortgageCount: checkedMortgageCount.value ? 0 : null,
 }));
@@ -73,9 +78,20 @@ const datesReady = computed(() => !!balancePaidAt.value && !!moveInReportAt.valu
  * 안 그러면 "같아요" 로 통과한 뒤 답을 고쳐도 통과가 남아 잔금을 보낼 수 있다.
  * 이 화면에서 그건 그냥 두면 안 되는 상태다.
  */
-watch([checkedOwner, checkedSeniorDebt, checkedMortgageCount, checkedSeizure], () => {
-  result.value = null;
-});
+watch(
+  [
+    checkedOwner,
+    checkedSeniorDebt,
+    checkedMortgageCount,
+    checkedSeizure,
+    checkedLeasehold,
+    checkedAuction,
+    checkedTrust,
+  ],
+  () => {
+    result.value = null;
+  },
+);
 
 const isSafe = computed(() => result.value?.status === 'SAFE');
 const isBlock = computed(() => result.value?.status === 'BLOCK');
@@ -194,6 +210,24 @@ const coachOpen = ref(false);
           <span class="flex items-center justify-between gap-2">
             <span>압류·가압류</span>
             <span class="text-micro text-warning-strong font-normal">새로 생겼으면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedLeasehold" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>임차권등기</span>
+            <span class="text-micro text-warning-strong font-normal">새로 생겼으면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedAuction" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>경매 진행</span>
+            <span class="text-micro text-warning-strong font-normal">진행 중이면 중단</span>
+          </span>
+        </CheckItem>
+        <CheckItem v-model="checkedTrust" tone="filled">
+          <span class="flex items-center justify-between gap-2">
+            <span>신탁등기</span>
+            <span class="text-micro text-warning-strong font-normal">있으면 중단</span>
           </span>
         </CheckItem>
       </AppCard>
