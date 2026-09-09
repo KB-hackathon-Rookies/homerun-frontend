@@ -47,12 +47,26 @@ export default defineNuxtConfig({
 
       link: [
         /*
-         * 폰트는 외부(jsdelivr=Pretendard, google=Work Sans 워드마크)에서 받는다.
-         * 미리 연결해 두면 CSS·폰트 요청 때 TLS 왕복을 아껴 첫 렌더가 빨라진다.
+         * Pretendard woff2 를 jsdelivr 에서 받는다. 자간 정의는 `fonts.css` 로 가져왔지만
+         * 폰트 파일은 CDN 에 두므로, 미리 연결해 두면 TLS 왕복을 아낀다.
+         *
+         * Google Fonts 연결은 뺐다. Work Sans 를 걷어내면서 쓰는 곳이 없어졌는데,
+         * 남겨 두면 아무도 안 쓰는 곳에 연결부터 맺는다.
          */
         { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: '' },
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        /*
+         * 자간 정의를 첫 페인트 밖으로 뺀다.
+         *
+         * `media="print"` 로 걸면 브라우저가 받되 화면용으로 치지 않아 렌더를 막지 않고,
+         * 다 받으면 `onload` 가 화면용으로 되돌린다. 폰트는 `font-display: swap` 이라
+         * 그 전까지 시스템 폰트로 먼저 그려지고 나중에 바뀐다.
+         */
+        {
+          rel: 'stylesheet',
+          href: '/pretendard.css',
+          media: 'print',
+          onload: "this.onload=null;this.media='all'",
+        },
         /*
          * 매니페스트 링크를 직접 건다. SPA 로 뽑을 때는 모듈이 이 링크를 넣어
          * 주지 않아서, 없으면 브라우저가 설치 가능한 앱으로 보지 않는다.
@@ -61,6 +75,9 @@ export default defineNuxtConfig({
         // iOS 는 매니페스트의 아이콘을 보지 않는다. 이 링크로만 홈 화면 아이콘을 정한다.
         { rel: 'apple-touch-icon', href: '/pwa/apple-touch-icon.png', sizes: '180x180' },
       ],
+
+      // JS 가 꺼져 있으면 onload 가 돌지 않는다. 그때는 그냥 차단으로 싣는다.
+      noscript: [{ innerHTML: '<link rel="stylesheet" href="/pretendard.css">' }],
 
       meta: [
         { name: 'theme-color', content: '#3366ff' },

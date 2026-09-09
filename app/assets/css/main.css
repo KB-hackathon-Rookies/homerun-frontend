@@ -1,15 +1,13 @@
-@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@700&display=swap');
 @import 'tailwindcss';
 
 /*
  * 폰트
  *
- * 한글 본문·제목은 Pretendard 로 통일한다. 피그마에는 Inter · Work Sans · Noto Sans KR
- * 이 섞여 있는데, Inter 와 Work Sans 는 한글 글리프가 없어 실제로는 폴백으로 떨어진다.
- * 디자인 화면에서만 그렇게 보였던 것이라 코드로 옮기지 않는다.
+ * 전부 Pretendard 다. 피그마에는 Inter · Work Sans · Noto Sans KR 이 섞여 있는데,
+ * Inter 와 Work Sans 는 한글 글리프가 없어 실제로는 폴백으로 떨어진다. 디자인 화면에서만
+ * 그렇게 보였던 것이라 코드로 옮기지 않는다.
  *
- * Work Sans 는 로고("홈런" 워드마크)에만 남긴다.
+ * 자간 정의는 `public/pretendard.css` 에 있고 nuxt.config 가 비차단으로 싣는다.
  */
 @theme {
   /* ---------------------------------------------------------------
@@ -17,7 +15,14 @@
    * --------------------------------------------------------------- */
   --font-sans:
     'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-logo: 'Work Sans', var(--font-sans);
+  /*
+   * 워드마크는 "홈런" 이다. 한글이라 라틴 폰트로는 그려지지 않는다.
+   *
+   * 전에는 Work Sans 를 Google Fonts 에서 받아 여기 걸었는데, Work Sans 의
+   * unicode-range 는 latin·latin-ext·vietnamese 뿐이라 한글은 언제나 Pretendard 로
+   * 폴백됐다. 화면에 아무 영향도 없이 렌더 차단 901ms 만 쓰고 있었다.
+   */
+  --font-logo: var(--font-sans);
 
   /* ---------------------------------------------------------------
    * 색 · 브랜드
