@@ -21,6 +21,8 @@ const props = defineProps<{
   base: Base;
   /** 제목 줄 대신 워드마크 + 야구 단계 띠로 시작한다. */
   brand?: boolean;
+  /** 상세 안내처럼 여정 진행띠가 필요 없는 화면인가. */
+  showProgress?: boolean;
   /** 경로로 알 수 없는 화면이 코치 FAB 에 넘기는 단계. */
   coachStage?: PlanStage;
   /** 화면이 준비해 둔 코치 TIME 문구. */
@@ -48,9 +50,15 @@ const slots = useSlots();
     <template v-if="brand">
       <div class="h-statusbar bg-surface shrink-0" />
       <BrandBar />
-      <BaseStrip :base="base" />
+      <BaseStrip v-if="props.showProgress !== false" :base="base" />
     </template>
-    <StageBar v-else :title="title ?? ''" :base="base" @back="$emit('back')" />
+    <StageBar
+      v-else
+      :title="title ?? ''"
+      :base="base"
+      :show-progress="props.showProgress"
+      @back="$emit('back')"
+    />
 
     <!-- 가운데만 스크롤한다. flex 자식이 넘칠 수 있게 min-h-0 이 필요하다. 스크롤바는 숨긴다. -->
     <main class="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
