@@ -126,10 +126,13 @@ onMounted(async () => {
     listError.value = messageFrom(cause, '상담 기록을 불러오지 못했어요.');
   }
 });
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.bankConsult]" brand base="2루">
+  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.bankConsult]" brand base="2루">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 

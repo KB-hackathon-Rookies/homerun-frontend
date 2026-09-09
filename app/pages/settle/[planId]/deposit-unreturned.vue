@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { HELP_DESKS, UNRETURNED_STEPS } from '~/components/settle/lifecycle';
 import { HOME_STEPS } from '~/components/home/steps';
+import { COACH_TIME } from '~/components/home/coachSheets';
 
 /**
  * 대응 · 보증금 미반환.
@@ -15,10 +16,18 @@ definePageMeta({ middleware: 'auth' });
 
 const route = useRoute();
 const planId = Number(route.params.planId);
+
+/** ⓘ 와 오른쪽 아래 FAB 이 같은 시트를 연다. */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="홈">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.troubleResponse]"
+    brand
+    base="홈"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="HOME_STEPS" :current="4" />
 

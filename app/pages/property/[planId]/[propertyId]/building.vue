@@ -73,10 +73,7 @@ async function next() {
 </script>
 
 <template>
-  <StageShell title="매물 등록"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}`)">
-
+  <StageShell title="매물 등록" base="2루" @back="navigateTo(`/property/${planId}/${propertyId}`)">
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <h2 class="text-headline1 text-ink-hero">이 매물의 주택유형과 전용면적을 확인해주세요</h2>
 
@@ -103,11 +100,11 @@ async function next() {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!canSave || pending" @click="next">
-        {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" :disabled="!canSave || pending" @click="next">
+          {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>
