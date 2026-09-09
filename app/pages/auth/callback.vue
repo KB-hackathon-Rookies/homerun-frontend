@@ -46,7 +46,9 @@ onMounted(async () => {
   }
 
   if (status === 'signup') {
-    await navigateTo('/signup/identity', { replace: true });
+    // 소셜도 약관 동의를 먼저 별도 화면에서 받는다. terms 가 세션에 동의를 남기고
+    // 본인 확인(identity)으로 넘긴다 — identity 는 더 이상 약관을 떠안지 않는다.
+    await navigateTo('/signup/terms', { replace: true });
     return;
   }
   /*

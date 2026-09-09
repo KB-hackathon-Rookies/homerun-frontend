@@ -2,10 +2,7 @@
 import type { AddressResult } from '~/api/address';
 import { useAuthApi } from '~/api/auth';
 import { useRegionApi, type RegionOption } from '~/api/region';
-import type { Term } from '~/components/common/TermsAgreement.vue';
 import { useCountdown } from '~/composables/useCountdown';
-import { useRequiredTerms } from '~/composables/useRequiredTerms';
-import { useTerms } from '~/composables/useTerms';
 import { useAuthStore } from '~/stores/auth';
 import { useSignupStore } from '~/stores/signup';
 import { messageFrom } from '~/utils/error';
@@ -29,9 +26,9 @@ useHead({ title: '본인 인증' });
  * 세션이 이미 만들어져 있어서, 제공자가 주지 않는 값만 채워 `POST /auth/social/signup` 으로
  * 가입을 끝낸다. 화면에서 받는 값은 둘이 같고 보내는 곳만 다르다.
  *
- * 소셜은 약관 화면을 거치지 않고 여기로 곧장 온다. 그래서 필수 동의를 이 화면에서 함께 받는다 —
- * 백엔드에 `RequiredTermsAgreementFilter` 가 있어 동의 기록이 없으면 가입 직후 모든 요청이 403
- * 이 된다. 동의는 가입 요청 직전에 서버로 남긴다.
+ * 약관 동의는 이 화면이 아니라 앞의 약관 화면(`signup/terms`)에서 받는다. 이메일·소셜 모두
+ * terms 를 거쳐 여기로 온다 — 소셜은 콜백이 terms 로 보내고, terms 가 세션에 동의를 남긴 뒤
+ * (`RequiredTermsAgreementFilter` 403 방지) 넘긴다. 이 화면은 신원·거주지만 받아 가입을 끝낸다.
  */
 const signup = useSignupStore();
 const auth = useAuthStore();
@@ -41,20 +38,6 @@ const { jeonseOptions } = useRegionApi();
 
 /** 소셜로 들어왔는가. 콜백에서 세션이 이미 걸려 있으면 소셜이다. */
 const isSocial = computed(() => auth.isAuthenticated);
-
-/** 소셜만 여기서 동의를 받는다. 이메일은 앞의 약관 화면에서 이미 받았다. */
-const TERMS: Term[] = [
-  { id: 'service', label: '[필수] 서비스 이용약관', required: true },
-  { id: 'privacy', label: '[필수] 개인정보 수집·이용 동의', required: true },
-  { id: 'identity', label: '[필수] 고유식별정보 처리 동의', required: true },
-  { id: 'marketing', label: '[선택] 마케팅 정보 수신 동의', required: false },
-];
-const { agreed, canProceed: termsAgreed } = useTerms(TERMS);
-
-/** 선택 약관을 사용자가 실제로 체크했는가. 코드가 대신 정하지 않는다. */
-const optionalAgreed = computed(() =>
-  TERMS.filter((term) => !term.required).every((term) => agreed.value[term.id]),
-);
 
 /** 법정동 코드 시도 앞자리 → 정책 권역 코드. 나머지는 전부 그 외 지역이다. */
 const SIDO_TO_REGION: Record<string, string> = {
@@ -144,7 +127,6 @@ const canSubmit = computed(
     phoneDigits.value.length >= 9 &&
     signup.isPhoneVerified &&
     !!region.value &&
-    (!isSocial.value || termsAgreed.value) &&
     !pending.value,
 );
 
@@ -221,12 +203,7 @@ async function submit() {
     .join(' ');
   try {
     if (isSocial.value) {
-      // 동의를 먼저 남긴다. 가입만 되고 동의가 없으면 다음 화면부터 전부 403 이다.
-      // 사용자가 화면에서 직접 고른 값을 그대로 넘긴다.
-      await useRequiredTerms().ensure({
-        requiredAgreed: termsAgreed.value,
-        optionalAgreed: optionalAgreed.value,
-      });
+      // 약관 동의는 앞의 terms 화면에서 이미 서버에 남겼다(소셜도 그리로 온다).
       auth.user = await socialSignup({
         name: name.value,
         birthDate: birthDateIso.value,
@@ -344,14 +321,6 @@ async function submit() {
           placeholder="동·호수 등 상세주소"
           :disabled="!chosen"
         />
-
-        <div v-if="isSocial" class="flex flex-col gap-2 pt-2">
-          <span class="text-label2 text-ink-body">약관 동의</span>
-          <TermsAgreement v-model="agreed" :terms="TERMS" />
-          <p class="text-caption1 text-ink-subtle">
-            선택항목에 동의하지 않아도 서비스 이용이 가능합니다.
-          </p>
-        </div>
       </div>
 
       <BirthDateSheet
