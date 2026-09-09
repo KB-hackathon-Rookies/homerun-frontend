@@ -30,6 +30,17 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const fromPropertyList = computed(() => route.query.from === 'property-list');
+const backPath = computed(() =>
+  fromPropertyList.value
+    ? `/property/${planId}`
+    : `/property/${planId}/${propertyId}/registry-check`,
+);
+const consultGuidePath = computed(() =>
+  fromPropertyList.value
+    ? `/property/${planId}/${propertyId}/consult-guide?from=property-list`
+    : `/property/${planId}/${propertyId}/consult-guide`,
+);
 
 const { property, title, spec, error: propertyError } = useProperty(planId, propertyId);
 const { pending, error, cards, results } = useJeonsePolicies(planId, propertyId);
@@ -106,7 +117,7 @@ const cta = computed(() => {
   }
   return {
     label: consultations.value.length ? '+ 상담 카드 추가' : '+ 첫 상담 카드 추가하기',
-    to: `/property/${planId}/${propertyId}/consult-guide`,
+    to: consultGuidePath.value,
   };
 });
 
@@ -132,7 +143,7 @@ onMounted(async () => {
     :coach-sheets="[COACH_TIME.bankConsult]"
     title="은행 상담"
     base="2루"
-    @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+    @back="navigateTo(backPath)"
   >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <AppCard v-if="property" class="flex flex-col gap-2">
@@ -252,7 +263,7 @@ onMounted(async () => {
             v-if="consultations.length < MAX_CARDS && canConsult"
             type="button"
             class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
-            @click="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
+            @click="navigateTo(consultGuidePath)"
           >
             + 상담 카드 추가
           </button>
@@ -285,7 +296,7 @@ onMounted(async () => {
     <template #footer>
       <StepFooter
         :disabled="propertyPending"
-        @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+        @back="navigateTo(backPath)"
         @next="navigateTo(cta.to)"
       >
         <template #notice>

@@ -15,6 +15,14 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const consultationsPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consultations`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
+const consultBanksPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consult-banks`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
 
 /**
  * 창구에서 물어볼 아홉 가지. 시안 `2루 9 · 은행 사전상담 안내` 그대로다.
@@ -43,7 +51,7 @@ const checked = ref<Record<string, boolean>>({});
     :coach-sheets="[COACH_TIME.guaranteeAgency]"
     title="은행 사전상담"
     base="2루"
-    @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+    @back="navigateTo(consultationsPath)"
   >
     <div class="px-gutter-tight flex flex-1 flex-col gap-3 py-4">
       <CoachTip>은행 가기 전 사전상담이야. 보증기관이 보증서를 내줘야 대출이 실행돼</CoachTip>
@@ -83,10 +91,7 @@ const checked = ref<Record<string, boolean>>({});
     </div>
 
     <template #footer>
-      <StepFooter
-        @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
-        @next="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-      >
+      <StepFooter @back="navigateTo(consultationsPath)" @next="navigateTo(consultBanksPath)">
         상담 결과 입력하기
       </StepFooter>
     </template>

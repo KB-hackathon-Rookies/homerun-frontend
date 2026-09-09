@@ -46,10 +46,14 @@ const full = computed(() => properties.value.length >= MAX_PROPERTIES);
  * 이 상태는 상담 목록으로 바로 보낸다. 상담 화면도 같은 신호등을 재검사한다.
  */
 function openProperty(property: PropertyCandidate) {
-  const destination = acceptsConsultation(property.trafficLight)
+  const path = acceptsConsultation(property.trafficLight)
     ? `/property/${planId}/${property.propertyId}/consultations`
     : `/property/${planId}/${property.propertyId}`;
-  return navigateTo(destination);
+
+  // 목록에서 상담 화면을 바로 열었으면, 상담 흐름을 마친 뒤 "이전"은
+  // 등기부가 아니라 이 목록으로 돌아와야 한다. 워크플로의 기본 이전 단계와
+  // 실제 진입 지점을 구분하려고 출발지만 주소에 남긴다.
+  return navigateTo({ path, query: { from: 'property-list' } });
 }
 
 /**

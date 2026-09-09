@@ -28,6 +28,14 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const consultBanksPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consult-banks`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
+const consultationsPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consultations`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
 
 const banks = computed(() =>
   String(route.query.banks ?? '')
@@ -116,11 +124,18 @@ async function save() {
     });
 
     if (isLast.value) {
-      await navigateTo(`/property/${planId}/${propertyId}/consultations`);
+      await navigateTo(consultationsPath.value);
       return;
     }
     // 다음 은행. 적은 값은 지우고 새로 받는다 — 은행마다 답이 다르다.
-    await navigateTo({ path: route.path, query: { banks: route.query.banks, at: at.value + 1 } });
+    await navigateTo({
+      path: route.path,
+      query: {
+        banks: route.query.banks,
+        at: at.value + 1,
+        ...(route.query.from === 'property-list' ? { from: 'property-list' } : {}),
+      },
+    });
     result.value = null;
     product.value = null;
     collateral.value = null;
@@ -136,10 +151,12 @@ async function save() {
 </script>
 
 <template>
-  <StageShell :coach-sheets="[COACH_TIME.rejected]" title="상담 결과 입력"
-   base="2루"
-   @back="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)">
-
+  <StageShell
+    :coach-sheets="[COACH_TIME.rejected]"
+    title="상담 결과 입력"
+    base="2루"
+    @back="navigateTo(consultBanksPath)"
+  >
     <div class="px-gutter-tight flex flex-1 flex-col gap-4 py-4">
       <CoachTip>상담 결과를 남겨줘. 거절돼도 다른 은행·상품으로 다시 도전할 수 있어</CoachTip>
 
@@ -227,11 +244,11 @@ async function save() {
     </div>
 
     <template #footer>
-<footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
-      <AppButton variant="strong" :disabled="!canSave || saving" @click="save">
-        {{ saving ? '저장 중…' : isLast ? '저장하고 끝내기' : '저장하고 다음 은행' }}
-      </AppButton>
-    </footer>
-</template>
+      <footer class="px-gutter-tight flex shrink-0 pt-2.5 pb-cta-pad">
+        <AppButton variant="strong" :disabled="!canSave || saving" @click="save">
+          {{ saving ? '저장 중…' : isLast ? '저장하고 끝내기' : '저장하고 다음 은행' }}
+        </AppButton>
+      </footer>
+    </template>
   </StageShell>
 </template>
