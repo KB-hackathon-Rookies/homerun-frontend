@@ -72,7 +72,7 @@ onMounted(async () => {
           />
         </SectionCard>
 
-        <p class="bg-surface-info rounded-cta text-label2 text-primary-strong px-3 py-2.5">
+        <p class="bg-surface-info rounded-cta text-label2 text-primary-deep px-3 py-2.5">
           채운 값은 그대로 보관되어 있어요. {{ missing.length }}건만 채우면 이어서 진단합니다.
         </p>
       </template>

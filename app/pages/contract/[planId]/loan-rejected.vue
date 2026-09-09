@@ -38,7 +38,7 @@ const TONE_TEXT = {
 
 const TONE_PILL = {
   ok: 'bg-badge-success text-success',
-  info: 'bg-surface-info text-primary-strong',
+  info: 'bg-surface-info text-primary-deep',
   warn: 'bg-badge-warning text-warning-strong',
 } as const;
 </script>

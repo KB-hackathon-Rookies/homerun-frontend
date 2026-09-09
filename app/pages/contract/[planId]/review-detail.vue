@@ -53,7 +53,7 @@ const checked = ref<Record<string, boolean>>({});
       </p>
       <button
         type="button"
-        class="bg-surface-info border-focus-line rounded-chip text-label2 text-primary-strong self-start border px-3.5 py-2.5 font-semibold"
+        class="bg-surface-info border-focus-line rounded-chip text-label2 text-primary-deep self-start border px-3.5 py-2.5 font-semibold"
         @click="navigateTo(`/contract/${planId}/loan-rejected`)"
       >
         대출 거절 대응 상세로 이동 →

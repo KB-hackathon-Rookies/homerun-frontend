@@ -196,7 +196,7 @@ onMounted(async () => {
               </span>
               <span
                 v-if="errand.index"
-                class="bg-surface-info rounded-chip text-micro text-primary-strong px-1.5 py-0.5 font-semibold"
+                class="bg-surface-info rounded-chip text-micro text-primary-deep px-1.5 py-0.5 font-semibold"
               >
                 {{ errand.minutes }}
               </span>

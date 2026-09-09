@@ -364,7 +364,7 @@ async function recoverPlan() {
 
         <AppCard v-for="issue in ISSUES" :key="issue.title" class="flex flex-col gap-1.5">
           <span
-            class="bg-surface-info rounded-chip-sm text-chip text-primary-strong self-start px-2 py-1"
+            class="bg-surface-info rounded-chip-sm text-chip text-primary-deep self-start px-2 py-1"
           >
             {{ issue.tag }}
           </span>

@@ -107,7 +107,7 @@ onMounted(async () => {
           <span class="text-headline2 text-ink flex-1">{{ name }}</span>
           <span
             v-if="planId"
-            class="bg-surface-info rounded-pill text-caption1 text-primary-strong px-2 py-1"
+            class="bg-surface-info rounded-pill text-caption1 text-primary-deep px-2 py-1"
           >
             {{ chip }}
           </span>

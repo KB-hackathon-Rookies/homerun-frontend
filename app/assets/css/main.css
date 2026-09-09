@@ -59,7 +59,7 @@
   --color-ink-subtle: rgb(55 56 60 / 0.28); /* 비활성, 캡션 */
   --color-ink-placeholder: #9d9d9d;
   --color-ink-disabled: #8e8e93;
-  --color-ink-meta: #999ead; /* 더보기, 카드 아래 출처 */
+  --color-ink-meta: #6e7487; /* 더보기, 카드 아래 출처 — 흰 바탕 대비 4.5:1 충족 */
 
   /* 완료 화면 전용 계열 */
   --color-ink-hero: #1c212b;
