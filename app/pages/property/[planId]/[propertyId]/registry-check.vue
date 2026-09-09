@@ -97,7 +97,16 @@ const priceSource = computed<OfficialPriceSource>(() => {
 const answered = computed(() => QUESTIONS.every((question) => answers.value[question.key]));
 
 async function save() {
-  if (!answered.value || saving.value) return;
+  // 버튼뿐 아니라 함수에서도 검증을 다시 본다. 금액에 오류가 있으면(형식 틀림) value 는
+  // null 이라 그대로 두면 "모름" 으로 저장돼 확인된 사실처럼 기록된다.
+  if (
+    !answered.value ||
+    parsedSeniorDebt.value.error !== null ||
+    parsedOfficialPrice.value.error !== null ||
+    saving.value
+  ) {
+    return;
+  }
 
   const price = parsedOfficialPrice.value.value;
   const patch: RegistryStepPatch = {
@@ -131,7 +140,12 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.registryChecklist]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.registryChecklist]"
+    brand
+    base="2루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
