@@ -276,10 +276,14 @@ async function recoverPlan() {
         class="pointer-events-none absolute top-10.5 right-3.5 -z-10 w-46 select-none"
       />
 
-      <!-- 글이 마스코트에 닿지 않게 오른쪽을 비운다. -->
-      <div class="flex flex-col gap-1.5 pr-40 pb-19">
-        <h1 class="text-hero text-ink-hero">{{ greeting }}</h1>
-        <p class="text-caption-tight text-ink-hero-body">{{ subtitle }}</p>
+      <!--
+        인사말은 이름·현재 상태를 한 번에 읽는 화면의 제목이다. 마스코트 폭만큼
+        오른쪽을 비우면 390px에서도 세 줄로 잘려 읽기 흐름이 끊긴다. 그림은 뒤에
+        두고, 텍스트는 본문 폭을 모두 쓰게 해 의미 단위로 두 줄 안에 놓는다.
+      -->
+      <div class="flex flex-col gap-1.5 pb-19">
+        <h1 class="text-heading text-ink-hero text-balance break-keep">{{ greeting }}</h1>
+        <p class="text-caption-tight text-ink-hero-body text-balance break-keep">{{ subtitle }}</p>
       </div>
 
       <p v-if="pending && !notStarted" class="text-label2 text-ink-muted">
