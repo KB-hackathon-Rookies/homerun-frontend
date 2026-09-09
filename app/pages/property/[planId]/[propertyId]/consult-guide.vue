@@ -16,6 +16,14 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const consultationsPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consultations`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
+const consultBanksPath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consult-banks`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
 
 /**
  * 창구에서 물어볼 아홉 가지. 시안 `2루 9 · 은행 사전상담 안내` 그대로다.
@@ -43,7 +51,13 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.guaranteeAgency]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.guaranteeAgency]"
+    brand
+    base="2루"
+    @back="navigateTo(consultationsPath)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
@@ -76,11 +90,10 @@ const coachOpen = ref(false);
       </div>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-    >
-      상담 결과 입력하기
-    </StepFooter>
+    <template #footer>
+      <StepFooter @back="navigateTo(consultationsPath)" @next="navigateTo(consultBanksPath)">
+        상담 결과 입력하기
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

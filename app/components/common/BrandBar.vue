@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useUnreadNotifications } from '~/composables/useUnreadNotifications';
+
 /**
  * 워드마크와 알림·마이가 있는 상단 바.
  *

@@ -53,6 +53,7 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.buildingLedger]"
     brand
     base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}`)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
@@ -106,12 +107,14 @@ const coachOpen = ref(false);
       <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
-    <StepFooter
-      :disabled="violation === null || pending || saving"
-      @back="navigateTo(`/property/${planId}/${propertyId}`)"
-      @next="next"
-    >
-      {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="violation === null || pending || saving"
+        @back="navigateTo(`/property/${planId}/${propertyId}`)"
+        @next="next"
+      >
+        {{ saving ? '저장 중…' : '확인 완료, 다음 단계로' }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

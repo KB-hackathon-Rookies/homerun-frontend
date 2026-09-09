@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useConsultationApi, type Consultation } from '~/api/consultation';
 import { usePlanApi } from '~/api/plan';
-import { usePropertyApi } from '~/api/property';
+import { usePropertyApi, type PropertyCandidate } from '~/api/property';
 import { useSecondBaseApi } from '~/api/secondBase';
 import {
   collateralLabel,
@@ -9,7 +9,6 @@ import {
   missingFinalTerms,
   productLabel,
 } from '~/components/property/consultation';
-import { useProperty } from '~/composables/useProperty';
 import { messageFrom } from '~/utils/error';
 import { formatKoreanMoney } from '~/utils/money';
 import { COACH_TIME } from '~/components/property/coachSheets';
@@ -22,8 +21,7 @@ import { SECOND_BASE_STEPS } from '~/components/property/steps';
  * 예상 한도와 다를 수 있고, 다르면 이쪽이 맞다 — 실제로 심사할 곳이 은행이다.
  *
  * "가능" 을 들었더라도 상품·담보·승인한도·금리를 다 듣고 온 상담이라야 2루를
- * 닫을 수 있다. 그런 상담이 여럿이면 먼저 들은 것을 쓴다. 은행을 고르는 화면은
- * 아직 없다.
+ * 닫을 수 있다. 완료된 상담 후보를 모두 모아, 사용자가 계약할 조합 하나를 고른다.
  */
 definePageMeta({ middleware: 'auth' });
 
@@ -31,9 +29,10 @@ const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
 
-const { property, title } = useProperty(planId, propertyId);
-
 const consultations = ref<Consultation[]>([]);
+type FinalCandidate = { property: PropertyCandidate; consultation: Consultation };
+const finalCandidates = ref<FinalCandidate[]>([]);
+const selectedConsultationId = ref<number | null>(null);
 const pending = ref(true);
 const error = ref('');
 const saving = ref(false);
@@ -41,14 +40,15 @@ const saving = ref(false);
 const saveError = ref('');
 
 /**
- * 2루를 닫을 수 있는 첫 상담.
- *
- * "가능" 만 보고 고르면 안 된다 — 서버는 상품·담보·승인한도·금리가 다 있는
- * 상담만 최종 조건으로 받는다. A은행(가능·한도 못 들음)을 먼저, B은행(가능·완전)을
- * 나중에 적은 경우가 실제로 나오는데, 먼저 들은 것만 집으면 살릴 수 있는 상황이
- * 막다른 길이 된다.
+ * 2루를 닫을 수 있는 사용자가 고른 상담 후보.
  */
-const settled = computed(() => consultations.value.find(isFinalTerms) ?? null);
+const selectedCandidate = computed(
+  () =>
+    finalCandidates.value.find(
+      (candidate) => candidate.consultation.consultationId === selectedConsultationId.value,
+    ) ?? null,
+);
+const settled = computed(() => selectedCandidate.value?.consultation ?? null);
 
 /** "가능" 은 들었는데 조건이 덜 찬 상담들. 무엇이 비었는지 이걸로 짚어준다. */
 const incomplete = computed(() =>
@@ -62,11 +62,12 @@ const blockedNotes = computed(() =>
 );
 
 const rows = computed(() => {
-  const item = settled.value;
-  if (!item) return [];
+  const candidate = selectedCandidate.value;
+  if (!candidate) return [];
+  const { consultation: item, property } = candidate;
 
   return [
-    { label: '매물', value: property.value?.roadAddress ?? '—' },
+    { label: '매물', value: property.roadAddress },
     { label: '상품', value: productLabel(item.loanProduct) },
     {
       label: '은행',
@@ -104,15 +105,16 @@ const arrived = ref(false);
  * 넘어간 뒤에 막히면 어디서 잘못됐는지 알 수 없다.
  */
 async function proceed() {
-  if (!settled.value || saving.value) return;
+  const candidate = selectedCandidate.value;
+  if (!candidate || saving.value) return;
 
   saving.value = true;
   saveError.value = '';
   try {
     const decision = await usePropertyApi().decide(
       planId,
-      propertyId,
-      settled.value.consultationId,
+      candidate.property.propertyId,
+      candidate.consultation.consultationId,
     );
 
     /*
@@ -134,8 +136,38 @@ async function proceed() {
 }
 
 onMounted(async () => {
+  const consultationApi = useConsultationApi();
   try {
-    consultations.value = await useConsultationApi().list(planId, propertyId);
+    const [currentConsultations, properties] = await Promise.all([
+      consultationApi.list(planId, propertyId),
+      usePropertyApi().candidates(planId),
+    ]);
+    consultations.value = currentConsultations;
+
+    const groups = await Promise.all(
+      properties.map(async (property) => {
+        try {
+          return {
+            property,
+            consultations: await consultationApi.list(planId, property.propertyId),
+          };
+        } catch {
+          // 다른 매물의 상담 기록을 못 읽어도 현재 매물의 확정은 막지 않는다.
+          return { property, consultations: [] as Consultation[] };
+        }
+      }),
+    );
+    finalCandidates.value = groups.flatMap(({ property, consultations }) =>
+      consultations.filter(isFinalTerms).map((consultation) => ({ property, consultation })),
+    );
+
+    const currentPropertyCandidate = finalCandidates.value.find(
+      (candidate) => candidate.property.propertyId === propertyId,
+    );
+    selectedConsultationId.value =
+      currentPropertyCandidate?.consultation.consultationId ??
+      finalCandidates.value[0]?.consultation.consultationId ??
+      null;
   } catch (cause) {
     error.value = messageFrom(cause, '상담 기록을 불러오지 못했어요.');
   } finally {
@@ -148,7 +180,13 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.depositOrder]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.depositOrder]"
+    brand
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="4" />
 
@@ -197,7 +235,56 @@ const coachOpen = ref(false);
       </p>
 
       <AppCard v-else class="flex flex-col gap-3 p-5">
-        <h2 class="text-body3 text-ink-hero font-bold">확정된 조건</h2>
+        <div v-if="finalCandidates.length > 1" class="flex flex-col gap-2.5">
+          <div>
+            <h2 class="text-body3 text-ink-hero font-bold">상담 완료 후보</h2>
+            <p class="text-caption2 text-ink-muted mt-1">
+              계약할 매물과 은행 조건 하나를 골라주세요
+            </p>
+          </div>
+
+          <button
+            v-for="candidate in finalCandidates"
+            :key="candidate.consultation.consultationId"
+            type="button"
+            class="border-line rounded-field flex flex-col gap-1 border p-3 text-left"
+            :class="
+              candidate.consultation.consultationId === selectedConsultationId
+                ? 'border-primary-strong bg-surface-info'
+                : 'bg-surface'
+            "
+            :aria-pressed="candidate.consultation.consultationId === selectedConsultationId"
+            @click="selectedConsultationId = candidate.consultation.consultationId"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-label2 text-ink-hero flex-1 font-bold">
+                {{ candidate.property.roadAddress }}
+              </span>
+              <AppBadge
+                :tone="
+                  candidate.consultation.consultationId === selectedConsultationId
+                    ? 'informative'
+                    : 'positive'
+                "
+              >
+                {{
+                  candidate.consultation.consultationId === selectedConsultationId
+                    ? '선택됨'
+                    : '선택'
+                }}
+              </AppBadge>
+            </div>
+            <p class="text-caption2 text-ink-hero-body">
+              {{ candidate.consultation.bankName }} ·
+              {{ productLabel(candidate.consultation.loanProduct) }} · 연
+              {{ candidate.consultation.quotedRate }}%
+            </p>
+          </button>
+        </div>
+
+        <div v-if="finalCandidates.length > 1" class="bg-line h-px" />
+
+        <h2 class="text-body3 text-ink-hero font-bold">확정할 조건</h2>
 
         <div v-for="row in rows" :key="row.label" class="flex items-center py-1">
           <span class="text-label2 text-ink-hero-body w-24 shrink-0">{{ row.label }}</span>
@@ -213,30 +300,30 @@ const coachOpen = ref(false);
       <p class="bg-surface-brand rounded-chip text-caption2 text-ink-hero-body p-3">
         서류를 다 낸 후에도 조건이 달라질 수 있어요. 계약서 특약을 꼭 확인하세요
       </p>
-
-      <p class="text-caption2 text-ink-muted">{{ title }}</p>
     </div>
 
-    <StepFooter
-      :disabled="pending || saving || !settled"
-      @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
-      @next="proceed"
-    >
-      <template #notice>
-        <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
+    <template #footer>
+      <StepFooter
+        :disabled="pending || saving || !settled"
+        @back="navigateTo(`/property/${planId}/${propertyId}/consultations`)"
+        @next="proceed"
+      >
+        <template #notice>
+          <p v-if="saveError" class="text-label2 text-danger">{{ saveError }}</p>
 
-        <!-- 막혔으면 되돌아갈 곳을 준다. 비활성 버튼만 두면 여기서 끝나 버린다. -->
-        <AppButton
-          v-if="!pending && !error && !settled"
-          variant="white"
-          @click="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
-        >
-          상담 결과 다시 입력하기
-        </AppButton>
-      </template>
+          <!-- 막혔으면 되돌아갈 곳을 준다. 비활성 버튼만 두면 여기서 끝나 버린다. -->
+          <AppButton
+            v-if="!pending && !error && !settled"
+            variant="white"
+            @click="navigateTo(`/property/${planId}/${propertyId}/consult-banks`)"
+          >
+            상담 결과 다시 입력하기
+          </AppButton>
+        </template>
 
-      부동산 가기
-    </StepFooter>
+        부동산 가기
+      </StepFooter>
+    </template>
 
     <!--
       2루 안착. 시안(`687:16198`)에는 버튼이 없고 "화면을 터치하면 계속돼" 다 —

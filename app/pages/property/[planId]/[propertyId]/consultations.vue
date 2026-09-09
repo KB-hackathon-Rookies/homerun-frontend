@@ -31,6 +31,17 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const fromPropertyList = computed(() => route.query.from === 'property-list');
+const backPath = computed(() =>
+  fromPropertyList.value
+    ? `/property/${planId}`
+    : `/property/${planId}/${propertyId}/registry-check`,
+);
+const consultGuidePath = computed(() =>
+  fromPropertyList.value
+    ? `/property/${planId}/${propertyId}/consult-guide?from=property-list`
+    : `/property/${planId}/${propertyId}/consult-guide`,
+);
 
 const { property, title, spec, error: propertyError } = useProperty(planId, propertyId);
 const { pending, error, cards, results } = useJeonsePolicies(planId, propertyId);
@@ -107,7 +118,7 @@ const cta = computed(() => {
   }
   return {
     label: consultations.value.length ? '+ 상담 카드 추가' : '+ 첫 상담 카드 추가하기',
-    to: `/property/${planId}/${propertyId}/consult-guide`,
+    to: consultGuidePath.value,
   };
 });
 
@@ -132,7 +143,13 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.bankConsult]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.bankConsult]"
+    brand
+    base="2루"
+    @back="navigateTo(backPath)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
@@ -255,7 +272,7 @@ const coachOpen = ref(false);
             v-if="consultations.length < MAX_CARDS && canConsult"
             type="button"
             class="border-line rounded-chip text-label2 text-ink-hero-body h-11 border font-semibold"
-            @click="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
+            @click="navigateTo(consultGuidePath)"
           >
             + 상담 카드 추가
           </button>
@@ -283,29 +300,27 @@ const coachOpen = ref(false);
           {{ note }}
         </p>
       </div>
-
-      <!--
-        나갈 길.
-        하단 `이전` 은 등기부 체크리스트로 되돌아갈 뿐이라, 이 매물로는 상담이
-        안 되겠다 싶은 사람이 다른 매물을 보러 갈 경로가 화면에 없었다. 상담이
-        막히는 건 흔한 일이고, 그때 할 일은 이 화면을 붙들고 있는 게 아니라
-        다른 매물을 보는 것이다.
-      -->
-      <button
-        type="button"
-        class="border-line rounded-chip text-label2 text-ink-hero-body h-11 shrink-0 border font-semibold"
-        @click="navigateTo(`/property/${planId}`)"
-      >
-        매물 목록으로 · 다른 매물 보기
-      </button>
     </div>
 
-    <StepFooter
-      :disabled="propertyPending"
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-      @next="navigateTo(cta.to)"
-    >
-      {{ cta.label }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="propertyPending"
+        @back="navigateTo(backPath)"
+        @next="navigateTo(cta.to)"
+      >
+        <template #notice>
+          <!-- 이 매물 상담을 접고 다른 후보를 볼 수 있는 길도 하단에 고정한다. -->
+          <button
+            type="button"
+            class="border-line rounded-chip text-label2 text-ink-hero-body h-11 w-full border font-semibold"
+            @click="navigateTo(`/property/${planId}`)"
+          >
+            매물 목록으로 · 다른 매물 보기
+          </button>
+        </template>
+
+        {{ cta.label }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

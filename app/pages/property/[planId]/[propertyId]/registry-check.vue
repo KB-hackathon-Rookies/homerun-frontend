@@ -131,7 +131,13 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.registryChecklist]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.registryChecklist]"
+    brand
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
@@ -176,14 +182,16 @@ const coachOpen = ref(false);
       <StepNotice :message="error" :conflict="conflict" @retry="sync" />
     </div>
 
-    <StepFooter
-      :disabled="
-        !answered || !!parsedSeniorDebt.error || !!parsedOfficialPrice.error || pending || saving
-      "
-      @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
-      @next="save"
-    >
-      {{ saving ? '저장 중…' : '확인 완료' }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        :disabled="
+          !answered || !!parsedSeniorDebt.error || !!parsedOfficialPrice.error || pending || saving
+        "
+        @back="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+        @next="save"
+      >
+        {{ saving ? '저장 중…' : '확인 완료' }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

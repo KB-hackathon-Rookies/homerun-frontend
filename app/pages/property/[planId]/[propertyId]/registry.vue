@@ -49,6 +49,7 @@ const coachOpen = ref(false);
     :coach-sheets="[COACH_TIME.registryReading]"
     brand
     base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
   >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-4 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
@@ -77,11 +78,13 @@ const coachOpen = ref(false);
       </AppCard>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
-    >
-      발급 완료, 체크리스트로
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        @back="navigateTo(`/property/${planId}/${propertyId}/detail`)"
+        @next="navigateTo(`/property/${planId}/${propertyId}/registry-check`)"
+      >
+        발급 완료, 체크리스트로
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

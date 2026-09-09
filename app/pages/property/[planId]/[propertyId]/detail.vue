@@ -59,7 +59,13 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.emptyJeonse]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.emptyJeonse]"
+    brand
+    base="2루"
+    @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="1" />
 
@@ -118,11 +124,13 @@ const coachOpen = ref(false);
       </template>
     </div>
 
-    <StepFooter
-      @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
-      @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
-    >
-      등기부등본 확인하러 가기
-    </StepFooter>
+    <template #footer>
+      <StepFooter
+        @back="navigateTo(`/property/${planId}/${propertyId}/violation`)"
+        @next="navigateTo(`/property/${planId}/${propertyId}/registry`)"
+      >
+        등기부등본 확인하러 가기
+      </StepFooter>
+    </template>
   </StageShell>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePropertyApi, type PropertyPolicyVerdict } from '~/api/property';
 import { KB_LAND_URL } from '~/components/property/links';
+import { acceptsConsultation } from '~/components/property/trafficLight';
 import { messageFrom } from '~/utils/error';
 import { COACH_TIME } from '~/components/property/coachSheets';
 import { SECOND_BASE_STEPS } from '~/components/property/steps';
@@ -39,6 +40,14 @@ const labelOf = (index: number) => `${ALPHABET[index] ?? index + 1}매물`;
 const MAX_PROPERTIES = 5;
 
 const full = computed(() => properties.value.length >= MAX_PROPERTIES);
+
+/** 목록에서 상담을 마친 뒤에도 다시 목록으로 돌아올 수 있게 출발지를 남긴다. */
+function openProperty(property: (typeof properties.value)[number]) {
+  const path = acceptsConsultation(property.trafficLight)
+    ? `/property/${planId}/${property.propertyId}/consultations`
+    : `/property/${planId}/${property.propertyId}`;
+  return navigateTo({ path, query: { from: 'property-list' } });
+}
 
 /**
  * 상담까지 끝난 매물. 신호등 BLUE 가 "상담 완료" 다.
@@ -179,11 +188,7 @@ const coachOpen = ref(false);
         :key="property.propertyId"
         class="flex flex-col gap-1"
       >
-        <button
-          type="button"
-          class="text-left"
-          @click="navigateTo(`/property/${planId}/${property.propertyId}`)"
-        >
+        <button type="button" class="text-left" @click="openProperty(property)">
           <PropertyCard
             :property="property"
             :label="labelOf(index)"

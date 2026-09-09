@@ -24,7 +24,7 @@ defineProps<{
         <p class="text-label2 text-ink-muted truncate">{{ property.roadAddress }}</p>
       </div>
       <AppBadge :tone="trafficTone(property.trafficLight)" fill="solid">
-        {{ property.trafficLightLabel ?? '확인 중' }}
+        <span aria-hidden="true">●</span>&nbsp;{{ property.trafficLightLabel ?? '확인 중' }}
       </AppBadge>
     </div>
 

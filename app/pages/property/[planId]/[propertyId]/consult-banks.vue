@@ -17,6 +17,10 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 const propertyId = Number(route.params.propertyId);
+const consultGuidePath = computed(() => ({
+  path: `/property/${planId}/${propertyId}/consult-guide`,
+  query: route.query.from === 'property-list' ? { from: 'property-list' } : {},
+}));
 
 const chosen = ref<string[]>([]);
 
@@ -29,12 +33,16 @@ const toggle = (bank: string) => {
 const start = () =>
   navigateTo({
     path: `/property/${planId}/${propertyId}/consult-result`,
-    query: { banks: chosen.value.join(','), at: 0 },
+    query: {
+      banks: chosen.value.join(','),
+      at: 0,
+      ...(route.query.from === 'property-list' ? { from: 'property-list' } : {}),
+    },
   });
 </script>
 
 <template>
-  <StageShell brand base="2루">
+  <StageShell brand base="2루" @back="navigateTo(consultGuidePath)">
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 
@@ -68,12 +76,10 @@ const start = () =>
       </p>
     </div>
 
-    <StepFooter
-      :disabled="!chosen.length"
-      @back="navigateTo(`/property/${planId}/${propertyId}/consult-guide`)"
-      @next="start"
-    >
-      {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
-    </StepFooter>
+    <template #footer>
+      <StepFooter :disabled="!chosen.length" @back="navigateTo(consultGuidePath)" @next="start">
+        {{ chosen.length ? `선택한 ${chosen.length}곳으로 계속` : '은행을 선택해주세요' }}
+      </StepFooter>
+    </template>
   </StageShell>
 </template>
