@@ -145,7 +145,7 @@ const alternative = computed(
 
         <p
           v-if="doc.tip"
-          class="bg-surface-info rounded-chip text-micro text-primary-strong p-3 font-bold"
+          class="bg-surface-info rounded-chip text-micro text-primary-deep p-3 font-bold"
         >
           {{ doc.tip }}
         </p>

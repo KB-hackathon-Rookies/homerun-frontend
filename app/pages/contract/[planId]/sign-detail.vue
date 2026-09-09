@@ -57,7 +57,7 @@ const checked = ref<Record<string, boolean>>({});
 const TAG_CLASS = {
   plain: 'bg-line text-ink-hero',
   warn: 'bg-badge-warning text-warning-strong',
-  info: 'bg-surface-info text-primary-strong',
+  info: 'bg-surface-info text-primary-deep',
 } as const;
 </script>
 

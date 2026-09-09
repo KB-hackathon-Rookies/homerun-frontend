@@ -39,7 +39,7 @@ const COMPARE = [
       >
         <span
           class="rounded-chip text-micro shrink-0 px-2 py-0.5 font-semibold"
-          :class="row.key ? 'bg-primary-strong text-white' : 'bg-surface-info text-primary-strong'"
+          :class="row.key ? 'bg-primary-strong text-white' : 'bg-surface-info text-primary-deep'"
         >
           {{ row.when }}
         </span>
@@ -95,7 +95,7 @@ const COMPARE = [
       </p>
       <button
         type="button"
-        class="bg-surface-info border-focus-line rounded-chip text-label2 text-primary-strong self-start border px-3.5 py-2.5 font-semibold"
+        class="bg-surface-info border-focus-line rounded-chip text-label2 text-primary-deep self-start border px-3.5 py-2.5 font-semibold"
         @click="navigateTo(`/contract/${planId}/registry-changed`)"
       >
         등기부 변동 대응 상세로 이동 →

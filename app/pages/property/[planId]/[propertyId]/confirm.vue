@@ -247,7 +247,7 @@ onMounted(async () => {
         <p class="text-label2 text-ink-hero-body">
           매물 진단부터 은행 사전상담까지 끝났어. 부동산에서 집을 정하면 3루가 시작돼
         </p>
-        <p class="bg-surface-info rounded-pill text-caption2 text-primary-strong px-3.5 py-2">
+        <p class="bg-surface-info rounded-pill text-caption2 text-primary-deep px-3.5 py-2">
           ⚾ 다음은 3루 · 실행
         </p>
       </div>

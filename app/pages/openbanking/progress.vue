@@ -199,7 +199,7 @@ async function poll(startedAt: number) {
             :class="
               {
                 done: 'bg-primary-strong text-white',
-                current: 'bg-surface-info text-primary-strong',
+                current: 'bg-surface-info text-primary-deep',
                 waiting: 'bg-canvas text-ink-muted',
               }[stateOf(index)]
             "

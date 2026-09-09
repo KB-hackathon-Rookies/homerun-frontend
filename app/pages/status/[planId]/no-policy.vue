@@ -118,7 +118,7 @@ onMounted(async () => {
           </p>
         </SectionCard>
 
-        <p class="bg-surface-info rounded-cta text-label2 text-primary-strong px-3 py-2.5">
+        <p class="bg-surface-info rounded-cta text-label2 text-primary-deep px-3 py-2.5">
           현재 규칙 버전 {{ ruleVersion ?? '확인 중' }} 기준이에요. 지침이 개정되면 자동으로 다시
           판정합니다.
         </p>
