@@ -88,10 +88,44 @@ export function laterStage(a: PlanStage, b: PlanStage): PlanStage {
 }
 
 /**
+ * 3루 할 일 하나를 실제로 하는 화면.
+ *
+ * 3루는 화면이 열세 개다(각 파일 첫 주석의 `3루 N`). 그런데 이어하기는 단계만 보고
+ * **전부 `schedule`(3루 4 · 일정 만들기)로 보냈다.** 아직 임장(1)도 계약(2)도 안 한
+ * 사람이 일정 화면부터 만나고, 잔금일(11)을 앞둔 사람도 같은 곳으로 갔다.
+ *
+ * 서버가 `locationCode` 를 주긴 하는데 3루에서는 아무도 채우지 않는다 — `enterStage` 로
+ * 심어 두는 코드는 `DIAGNOSIS_RESULT` 와 `SECOND_BASE_RESULT` 둘뿐이다. 대신 대시보드가
+ * 이미 **할 일**을 우선순위대로 주므로 그것을 목적지로 쓴다.
+ *
+ * 매핑 근거는 화면이 스스로 밝힌 번호와 할 일 이름이다.
+ * 계약서 확인·특약 확인·계약금 지급은 셋 다 계약 화면(3루 2) 안에서 하고,
+ * 전입신고는 잔금일 화면(3루 11)에 있다 — 잔금·전입신고·확정일자를 같은 날 하기 때문이다.
+ */
+const THIRD_TASK_PATHS: Record<string, (planId: number) => string> = {
+  PROPERTY_VISIT: (id) => `/contract/${id}/visit`, // 3루 1 · 임장
+  SELECT_FINAL_PROPERTY: (id) => `/property/${id}`, // 전용 화면이 없다. 매물 목록에서 고른다
+  CONTRACT_CHECK: (id) => `/contract/${id}/sign`, // 3루 2 · 계약
+  SPECIAL_CLAUSE_CHECK: (id) => `/contract/${id}/sign`, // 특약 확인이 계약 화면 안에 있다
+  DEPOSIT_PAYMENT: (id) => `/contract/${id}/sign`, // 계약금 지급도 계약 화면
+  FIXED_DATE: (id) => `/contract/${id}/fixed-date`, // 3루 3 · 확정일자
+  APPLY_LOAN: (id) => `/contract/${id}/loan-apply`, // 3루 9 · 대출 신청
+  BALANCE_PAYMENT: (id) => `/contract/${id}/settlement`, // 3루 11 · 잔금일
+  MOVE_IN_REPORT: (id) => `/contract/${id}/settlement`, // 전입신고도 잔금일 화면
+};
+
+function thirdBasePath(planId: number, taskCode: string | null | undefined) {
+  const path = taskCode ? THIRD_TASK_PATHS[taskCode] : undefined;
+  // 할 일을 모르면 일정 화면으로 둔다. 3루 전체 흐름을 한눈에 보여주는 화면이라,
+  // 자리를 못 짚었을 때 특정 단계로 밀어 넣는 것보다 낫다.
+  return path ? path(planId) : `/contract/${planId}/schedule`;
+}
+
+/**
  * 이어서 진행할 화면.
  *
- * 백엔드는 단계 말고 `locationCode` 도 주는데, 그 코드와 라우트를 짝지어 둔 표가
- * 아직 없다. 단계까지만 보고 그 단계의 첫 화면으로 보낸다.
+ * 3루는 지금 할 일(`taskCode`)까지 보고 그 일을 하는 화면으로 보낸다. 나머지 단계는
+ * 화면이 하나씩이라 단계만 보면 된다.
  *
  * BENCH 도 1루로 보낸다. 여기까지 왔다는 건 계획이 이미 있다는 뜻인데(`planId` 가 있다),
  * 준비 문진(`/prep`)은 제출할 때마다 계획을 새로 만든다. `BENCH_ONBOARDING` 완료가 한 번
@@ -99,7 +133,7 @@ export function laterStage(a: PlanStage, b: PlanStage): PlanStage {
  * `displayStage` 로 BENCH 를 1루로 그리니 목적지가 같아야 말이 맞는다. 진단 화면은 서버가
  * 주는 `resumeStep` 으로 자리를 잡으므로 BENCH 계획도 처음부터 이어서 진행된다.
  */
-export function resumePath(stage: PlanStage, planId: number) {
+export function resumePath(stage: PlanStage, planId: number, taskCode?: string | null) {
   switch (stage) {
     case 'BENCH':
     case 'FIRST':
@@ -107,7 +141,7 @@ export function resumePath(stage: PlanStage, planId: number) {
     case 'SECOND':
       return `/property/${planId}`;
     case 'THIRD':
-      return `/contract/${planId}/schedule`;
+      return thirdBasePath(planId, taskCode);
     case 'HOME':
       return `/settle/${planId}`;
   }
