@@ -1,7 +1,7 @@
 import type { PropertyStep } from '~/api/property';
 
 /**
- * 매물 워크플로의 단계와 화면을 잇는 표.
+ * 워크플로의 단계와 화면을 잇는 표.
  *
  * 각 STEP 저장은 그 단계일 때만 받아준다 — 백엔드가 현재 단계를 `verifyWorkflow` 로
  * 강제하고, 어긋나면 409(`PROPERTY_WORKFLOW_STEP_INVALID`)로 막는다. 그런데 단계는
@@ -33,14 +33,14 @@ const ALLOWED: Record<PropertyStepScreen, readonly PropertyStep[]> = {
 };
 
 /**
- * 지금 단계에서 사람이 할 일이 있는 화면.
+ * 허브의 다음 버튼이 향할 화면.
  *
- * STEP 4(REGISTRY)는 화면이 둘인데 **발급 안내(`registry`)** 로 보낸다. 체크리스트로
- * 바로 떨어뜨리면 등기부를 아직 떼지도 않은 사람에게 등기부를 보고 답하라고 묻는
- * 꼴이다. 발급 안내는 저장이 없어 잘못 들어와도 잃는 게 없고, 한 번 눌러 체크리스트로
- * 간다.
+ * REGISTRY 는 매물 상세(`detail`)로 보낸다. 위반건축물까지 확인한 매물의 판정을
+ * 먼저 보여주고, 등기부 확인은 매물 상세 화면 자체의 다음 버튼이 잇는다
+ * (`detail.vue` → `registry` → `registry-check`). 여기서 등기부 발급 안내로 바로
+ * 보내면 판정을 못 본 채 등기부부터 떼러 가게 된다.
  *
- * COMPLETE 는 매물 상세로 보낸다. 진단이 끝난 매물에 남은 일은 결과를 보는 것이고,
+ * COMPLETE 도 매물 상세로 보낸다. 진단이 끝난 매물에 남은 일은 결과를 보는 것이고,
  * 은행 상담은 거기서 이어진다.
  */
 export function propertyStepRoute(planId: number, propertyId: number, step: PropertyStep): string {
@@ -51,7 +51,7 @@ export function propertyStepRoute(planId: number, propertyId: number, step: Prop
     case 'VIOLATION':
       return `${base}/violation`;
     case 'REGISTRY':
-      return `${base}/registry`;
+      return `${base}/detail`;
     case 'COMPLETE':
       return `${base}/detail`;
   }
@@ -65,7 +65,7 @@ export function propertyStepLabel(step: PropertyStep): string {
     case 'VIOLATION':
       return 'STEP 3 위반건축물 확인하기';
     case 'REGISTRY':
-      return 'STEP 4 등기부등본 확인하기';
+      return '매물 상세 보기';
     case 'COMPLETE':
       return '매물 상세 보기';
   }
@@ -81,7 +81,7 @@ export function propertyStepLabel(step: PropertyStep): string {
  *
  * - BUILDING → `building` ∈ {BUILDING} ✓
  * - VIOLATION → `violation` ∈ {VIOLATION} ✓
- * - REGISTRY → `registry` ∈ {REGISTRY, COMPLETE} ✓
+ * - REGISTRY → `detail` ∈ {REGISTRY, COMPLETE} ✓
  * - COMPLETE → `detail` ∈ {REGISTRY, COMPLETE} ✓
  */
 export function propertyStepAllows(screen: PropertyStepScreen, step: PropertyStep): boolean {

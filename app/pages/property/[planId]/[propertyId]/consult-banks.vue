@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BANKS } from '~/components/property/consultation';
+import { COACH_TIME } from '~/components/property/coachSheets';
 import { SECOND_BASE_STEPS } from '~/components/property/steps';
 
 /**
@@ -39,10 +40,25 @@ const start = () =>
       ...(route.query.from === 'property-list' ? { from: 'property-list' } : {}),
     },
   });
+
+/**
+ * ⓘ 없이 오른쪽 아래 FAB 만 연다.
+ *
+ * 시안(`687:15953`)에 FAB/코치 가 있는데 이 화면엔 안 붙어 있었다. "9 은행
+ * 사전상담 안내" 와 같은 은행 상담 STEP 안이고, 이 STEP 엔 코치 TIME 이
+ * "보증기관이란" 하나뿐이라 그걸 그대로 잇는다.
+ */
+const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell brand base="2루" @back="navigateTo(consultGuidePath)">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.guaranteeAgency]"
+    brand
+    base="2루"
+    @back="navigateTo(consultGuidePath)"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="3" />
 

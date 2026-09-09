@@ -33,6 +33,15 @@ const consultations = ref<Consultation[]>([]);
 type FinalCandidate = { property: PropertyCandidate; consultation: Consultation };
 const finalCandidates = ref<FinalCandidate[]>([]);
 const selectedConsultationId = ref<number | null>(null);
+
+/**
+ * 상담까지 끝낸(🔵 상담 완료) 매물 수. 배지 문구("매물 N개 확정!")가 이 값을 그대로 쓴다.
+ *
+ * 이 계획에 걸린 매물이 이 하나만은 아닐 수 있다 — 여러 매물이 상담까지 끝났으면
+ * 부동산에 다 들고 간다. 숫자를 하드코딩하면 매물이 하나뿐이거나 셋이어도 항상
+ * "2개" 로 보인다.
+ */
+const settledCount = ref(0);
 const pending = ref(true);
 const error = ref('');
 const saving = ref(false);
@@ -143,6 +152,7 @@ onMounted(async () => {
       usePropertyApi().candidates(planId),
     ]);
     consultations.value = currentConsultations;
+    settledCount.value = properties.filter((item) => item.trafficLight === 'BLUE').length;
 
     const groups = await Promise.all(
       properties.map(async (property) => {
@@ -194,9 +204,10 @@ const coachOpen = ref(false);
       <h1 class="text-question text-ink-card">부동산에 들고 갈 매물</h1>
 
       <div v-if="settled" class="bg-surface-info rounded-field flex flex-col gap-1 p-4">
-        <p class="text-body3 text-primary-strong font-bold">축하해!</p>
+        <p class="text-body3 text-primary-strong font-bold">🔵 매물 {{ settledCount }}개 확정!</p>
         <p class="text-label2 text-ink-hero-body">
-          상담 완료! 확정된 조건으로 3루(계약+대출 실행)를 진행하자
+          상담 카드까지 끝난 매물만 모았어. 이 리스트 들고 부동산 가자. 계약할 집을 정하면 3루
+          일정을 만들어줄게
         </p>
       </div>
 
@@ -330,7 +341,13 @@ const coachOpen = ref(false);
       닫는 동작이 곧 3루로 가는 동작이라 여기서 넘긴다.
     -->
     <DimOverlay v-if="arrived" placement="center" @close="navigateTo(`/contract/${planId}/visit`)">
-      <img src="/tiger/flag.png" alt="" width="150" height="132" class="w-celebrate-art h-auto" />
+      <img
+        src="/tiger/flag-plain.png"
+        alt=""
+        width="150"
+        height="132"
+        class="w-celebrate-art h-auto"
+      />
       <p class="text-heading text-primary-strong">2루 안착!</p>
       <h2 class="text-body-strong text-ink-strong">이 리스트 들고 부동산 가자</h2>
       <p class="text-note-body text-ink-card-body text-center">

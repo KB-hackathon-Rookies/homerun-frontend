@@ -39,7 +39,7 @@ defineProps<{
     <p v-if="!verdicts.length" class="text-label2 text-ink-muted py-2">
       {{
         property.trafficLight === 'RED'
-          ? '대출이 막힌 매물이라 상품을 보여주지 않아요.'
+          ? (property.redReason ?? '대출이 막힌 매물이라 상품을 보여주지 않아요.')
           : '아직 상품 판정이 없어요. 매물 진단을 끝내면 여기에 쌓여요.'
       }}
     </p>

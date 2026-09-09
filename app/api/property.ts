@@ -30,6 +30,11 @@ export interface PropertyCandidate {
   trafficLight: TrafficLight | null;
   trafficLightLabel: string | null;
   analyzedAt: string | null;
+  /**
+   * RED(불가) 사유. 근저당 과다·근린생활시설·다가구 등 이유가 매물마다 다르다.
+   * 백엔드가 아직 안 채워주면 `null` — 그때는 카드가 공통 문구로 대신한다.
+   */
+  redReason: string | null;
 }
 
 export interface PropertyWorkflow {

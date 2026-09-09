@@ -108,7 +108,7 @@ const blockers = computed(() =>
 const cta = computed(() => {
   if (propertyPending.value) return { label: '불러오는 중…', to: '' };
   if (settled.value) {
-    return { label: '이 매물로 3루 진행', to: `/property/${planId}/${propertyId}/confirm` };
+    return { label: '상담 완료', to: `/property/${planId}` };
   }
   if (!canConsult.value) {
     return {
@@ -220,13 +220,6 @@ const coachOpen = ref(false);
           </button>
         </section>
       </template>
-
-      <div class="bg-surface-info rounded-field flex flex-col gap-1 p-3.5">
-        <p class="text-caption1 text-primary-strong">코치 팁</p>
-        <p class="text-caption2 text-ink-hero-body">
-          은행 3곳 이상 돌아보는 게 좋아요. 한 곳이라도 "가능" 판정을 받으면 상담 완료로 처리돼요
-        </p>
-      </div>
 
       <AppCard class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-2">
