@@ -432,7 +432,12 @@
   body {
     font-family: var(--font-sans);
     color: var(--color-ink);
-    background-color: var(--color-canvas);
+    /*
+     * 프레임 바깥(폰 프레임 둘레) 배경. 흰색으로 둬야 PWA 전체화면에서 흰 프레임이 회색 위에
+     * 떠 잘린 것처럼 보이지 않는다. `--color-canvas`(회색)는 입력창·칩 채움에 그대로 쓰이므로
+     * 그 토큰을 바꾸지 않고 여기서만 surface(흰색)로 맞춘다.
+     */
+    background-color: var(--color-surface);
 
     /*
      * 한국어를 어절 중간에서 자르지 않는다.
