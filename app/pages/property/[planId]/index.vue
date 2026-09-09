@@ -18,7 +18,7 @@ definePageMeta({ middleware: 'auth' });
 const route = useRoute();
 const planId = Number(route.params.planId);
 
-const { candidates, policyVerdicts } = usePropertyApi();
+const { candidates, policyVerdicts, remove } = usePropertyApi();
 
 const properties = ref<Awaited<ReturnType<typeof candidates>>>([]);
 /** 매물 번호 → 상품 판정. 목록 API 에 판정이 실려 오지 않아 카드마다 따로 읽는다. */
@@ -49,6 +49,44 @@ const full = computed(() => properties.value.length >= MAX_PROPERTIES);
  */
 const settled = computed(() => properties.value.find((item) => item.trafficLight === 'BLUE'));
 
+/**
+ * 삭제 확인 중인 매물. 등록은 되돌릴 수 없는 조회(건축물대장·실거래)를 다시 하게 하므로
+ * 실수 삭제를 한 번 막는다. 계약·최종선택 매물은 서버가 막아 여기서 에러로 알린다.
+ */
+const deletingId = ref<number | null>(null);
+const removing = ref(false);
+const deleteError = ref('');
+
+const deletingLabel = computed(() => {
+  const index = properties.value.findIndex((item) => item.propertyId === deletingId.value);
+  return index >= 0 ? labelOf(index) : '';
+});
+
+function askRemove(propertyId: number) {
+  deletingId.value = propertyId;
+  deleteError.value = '';
+}
+
+async function confirmRemove() {
+  if (deletingId.value === null || removing.value) return;
+  removing.value = true;
+  deleteError.value = '';
+  try {
+    const id = deletingId.value;
+    await remove(planId, id);
+    // 판정 캐시(verdicts)의 이 항목은 카드가 사라져 더 읽히지 않으므로 그대로 둔다.
+    properties.value = properties.value.filter((item) => item.propertyId !== id);
+    deletingId.value = null;
+  } catch (cause) {
+    deleteError.value = messageFrom(
+      cause,
+      '이 매물은 삭제할 수 없어요. 최종 선택했거나 계약에 사용한 매물일 수 있어요.',
+    );
+  } finally {
+    removing.value = false;
+  }
+}
+
 onMounted(async () => {
   try {
     properties.value = await candidates(planId);
@@ -77,7 +115,12 @@ const coachOpen = ref(false);
 </script>
 
 <template>
-  <StageShell v-model:coach-open="coachOpen" :coach-sheets="[COACH_TIME.preContract]" brand base="2루">
+  <StageShell
+    v-model:coach-open="coachOpen"
+    :coach-sheets="[COACH_TIME.preContract]"
+    brand
+    base="2루"
+  >
     <div class="bg-canvas-soft flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
       <SubStep :steps="SECOND_BASE_STEPS" :current="0" />
 
@@ -131,20 +174,51 @@ const coachOpen = ref(false);
         실패하면 눌러도 아무 일이 없는 카드가 된다. 허브는 어차피 열리면서 단계를
         묻고 하단 버튼을 그 단계에 맞춰 세운다 — 묻는 자리를 하나로 둔다.
       -->
-      <button
+      <div
         v-for="(property, index) in properties"
         :key="property.propertyId"
-        type="button"
-        class="text-left"
-        @click="navigateTo(`/property/${planId}/${property.propertyId}`)"
+        class="flex flex-col gap-1"
       >
-        <PropertyCard
-          :property="property"
-          :label="labelOf(index)"
-          :verdicts="verdicts[property.propertyId] ?? []"
-        />
-      </button>
+        <button
+          type="button"
+          class="text-left"
+          @click="navigateTo(`/property/${planId}/${property.propertyId}`)"
+        >
+          <PropertyCard
+            :property="property"
+            :label="labelOf(index)"
+            :verdicts="verdicts[property.propertyId] ?? []"
+          />
+        </button>
+        <div class="flex justify-end pr-1">
+          <button
+            type="button"
+            class="text-caption2 text-ink-muted hover:text-danger py-0.5 font-medium"
+            @click="askRemove(property.propertyId)"
+          >
+            매물 삭제
+          </button>
+        </div>
+      </div>
     </div>
+
+    <DimOverlay v-if="deletingId !== null" placement="center" @close="deletingId = null">
+      <p class="text-headline2 text-ink">이 매물을 삭제할까요?</p>
+      <p class="text-label2 text-ink-muted text-center">
+        {{ deletingLabel }}의 진단 결과가 함께 사라져요.
+      </p>
+      <p v-if="deleteError" class="text-label2 text-danger text-center">{{ deleteError }}</p>
+      <div class="flex w-full gap-2.5 pt-2">
+        <div class="flex-1">
+          <AppButton variant="white" @click="deletingId = null">취소</AppButton>
+        </div>
+        <div class="flex-1">
+          <AppButton variant="strong" :disabled="removing" @click="confirmRemove">
+            {{ removing ? '삭제 중…' : '삭제' }}
+          </AppButton>
+        </div>
+      </div>
+    </DimOverlay>
 
     <template #footer>
       <footer

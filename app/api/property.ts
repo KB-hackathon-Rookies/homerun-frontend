@@ -145,6 +145,16 @@ export function usePropertyApi() {
     },
 
     /**
+     * 매물 후보를 삭제한다.
+     *
+     * 최종 선택했거나 계약에 쓴 매물은 서버가 막는다(409). 그 경우는 화면에서
+     * 에러 문구로 알린다 — 여기서 삼키면 사용자는 지워진 줄 안다.
+     */
+    async remove(planId: number, propertyId: number) {
+      await $api.delete(`${properties(planId)}/${propertyId}`);
+    },
+
+    /**
      * 매물을 등록하고 건축물대장·실거래를 한 번에 조회한다.
      *
      * 주소 검색 결과를 통째로 넘긴다. 조회에 필요한 법정동 코드와 지번이
